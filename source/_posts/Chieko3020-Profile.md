@@ -2,7 +2,8 @@
 title: Chieko3020 Profile
 date: 2025-10-12 13:50:01
 sticky: true
-tags:
+tags: "你知道吗"
+categories: "——不可解的它的一切—— 说人话不就是“关于网站”吗"
 ---
 # 你滴什么滴干活？  
 
