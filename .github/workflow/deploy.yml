@@ -11,27 +11,27 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          submodules: true  # 拉取主题子模块（如果主题通过 submodule 管理）
-          fetch-depth: 0    # 拉取完整历史，避免构建时依赖历史提交
+          submodules: true  
+          fetch-depth: 0    
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'npm'      # 缓存 npm 依赖，加速安装
+          cache: 'npm'      
 
       - name: Install dependencies
         run: npm install
 
       - name: Clean cache and generate static files
         run: |
-          npx hexo clean  # 关键：清除旧缓存和构建文件，避免资源残留
-          npx hexo generate  # 重新生成静态文件（包含最新主题资源）
+          npx hexo clean  
+          npx hexo generate  
 
       - name: Deploy to gh-pages branch
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./public
-          force_orphan: true  # 强制创建独立的 gh-pages
-          commit_message: "Auto deploy: ${{ github.event.head_commit.message }}"  # 保留原提交信息
+          force_orphan: true  
+          commit_message: "Auto deploy: ${{ github.event.head_commit.message }}"  
