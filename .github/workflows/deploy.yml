@@ -7,6 +7,11 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -21,7 +26,7 @@ jobs:
           cache: 'npm'      
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Clean cache and generate static files
         run: |
@@ -34,4 +39,6 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./public
           force_orphan: true  
-          commit_message: "Auto deploy: ${{ github.event.head_commit.message }}"  
+          commit_message: "Auto deploy: ${{ github.event.head_commit.message }}"
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'  
