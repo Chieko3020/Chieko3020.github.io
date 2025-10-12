@@ -545,13 +545,13 @@ moe_icp:
 # show the copyright below each article
 article_copyright:
   enable: false
-  content:
-    author: true
-    link: true
-    title: true
-    date: true
-    updated: true
-    license: true
+  content: 
+    author: 
+    link: 
+    title: 
+    date: 
+    updated: 
+    license: 
     license_type: by-nc-sa # https://creativecommons.org/licenses
 
 # Back To Top
