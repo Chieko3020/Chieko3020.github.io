@@ -33,5 +33,5 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./public
-          force_orphan: true  # 强制创建独立的 gh-pages 分支，彻底清除历史残留
+          force_orphan: true  # 强制创建独立的 gh-pages
           commit_message: "Auto deploy: ${{ github.event.head_commit.message }}"  # 保留原提交信息
