@@ -493,11 +493,13 @@ clipboard:
 
 # show categories card on home page
 home_categories:
-  enable: false
+  enable: true
   content:
-    - categories:  # string (single-layer category) or array (multi-layer category)
-      cover: # empty means random cover
-    - categories: 
+    - categories: 不可解的它的一切 ——说人话不就是「关于网站」吗 
+    # string (single-layer category) or array (multi-layer category)
+      cover: 
+    # empty means random cover
+    - categories: 只属于你的赤石小妙招 ——看似有用实则没用
       cover:
 
 # whether to display the notification when the article is outdated
