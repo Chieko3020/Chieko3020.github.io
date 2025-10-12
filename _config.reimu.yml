@@ -27,12 +27,12 @@ banner: "/images/bg.webp" # which means themes/reimu/source/images/banner.webp
 banner_srcset:
   enable: false
   srcset:
-    - src: "/images/bg-600w.webp"
-      media: "(max-width: 479px)"
-    - src: "/images/bg-800w.webp"
-      media: "(max-width: 799px)"
-    - src: "/images/bg.webp"
-      media: "(min-width: 800px)"
+    - src: 
+      media: 
+    - src: 
+      media: 
+    - src: 
+      media: 
 
 favicon: "/images/favi.ico" # which means themes/reimu/source/images/favicon.ico
 # You can also write it in the form of the following url
