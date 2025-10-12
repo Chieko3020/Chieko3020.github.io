@@ -544,7 +544,7 @@ moe_icp:
 
 # show the copyright below each article
 article_copyright:
-  enable: true
+  enable: false
   content:
     author: true
     link: true
