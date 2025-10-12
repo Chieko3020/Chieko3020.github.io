@@ -1,6 +1,7 @@
 ---
 title: Chieko3020 Profile
 date: 2025-10-12 13:50:01
+sticky: true
 tags:
 ---
 # 你滴什么滴干活
