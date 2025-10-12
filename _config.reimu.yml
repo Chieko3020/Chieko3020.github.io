@@ -495,9 +495,9 @@ clipboard:
 home_categories:
   enable: true
   content:
-    - categories: ["——不可解的它的一切—— 说人话不就是“关于网站”吗"] # string (single-layer category) or array (multi-layer category)
+    - categories: ——不可解的它的一切—— 说人话不就是“关于网站”吗 # string (single-layer category) or array (multi-layer category)
       cover: # empty means random cover
-    - categories: ["—只属于你的赤石小妙招— “看起来有用，实际上没用”"]
+    - categories: —只属于你的赤石小妙招— “看起来有用，实际上没用”
       cover:
 
 # whether to display the notification when the article is outdated
