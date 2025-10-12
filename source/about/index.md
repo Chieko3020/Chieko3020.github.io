@@ -1,5 +1,5 @@
 ---
-title: 关于
+title: 关于本站
 date: 2025-10-12 21:01:47
 comments: true
 ---
