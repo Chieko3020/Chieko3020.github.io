@@ -493,7 +493,7 @@ clipboard:
 
 # show categories card on home page
 home_categories:
-  enable: true
+  enable: false
   content:
     - categories: 不可解的它的一切 ——说人话不就是「关于网站」吗 
     # string (single-layer category) or array (multi-layer category)
