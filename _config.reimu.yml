@@ -8,18 +8,18 @@ theme_config_check: true
 menu:
   - name: home
     url: /
-    icon: /images/loading.webp # default use taichi icon, you can use a hexadecimal representation of fontawesome or icon_font, like 'f0c1'
+    icon: https://cdn.jsdelivr.net/gh/Chieko3020/Chieko3020.github.io@main/source/images/loading.webp # default use taichi icon, you can use a hexadecimal representation of fontawesome or icon_font, like 'f0c1'
   - name: archives
     url: /archives
-    icon: /images/loading.webp
+    icon: https://cdn.jsdelivr.net/gh/Chieko3020/Chieko3020.github.io@main/source/images/loading.webp
   - name: about
     url: /about
-    icon: /images/loading.webp
+    icon: https://cdn.jsdelivr.net/gh/Chieko3020/Chieko3020.github.io@main/source/images/loading.webp
   - name: friend
     url: /friend
-    icon: /images/loading.webp
+    icon: https://cdn.jsdelivr.net/gh/Chieko3020/Chieko3020.github.io@main/source/images/loading.webp
 
-banner: "/images/bg.webp" # which means themes/reimu/source/images/banner.webp
+banner: "https://cdn.jsdelivr.net/gh/Chieko3020/Chieko3020.github.io@main/source/images/bg.webp" # which means themes/reimu/source/images/banner.webp
 # You can also write it in the form of the following url
 # banner: "https://example.com"
 
@@ -38,7 +38,7 @@ favicon: "/images/favi.ico" # which means themes/reimu/source/images/favicon.ico
 # You can also write it in the form of the following url
 # favicon: "https://example.com"
 
-avatar: "avatar.webp" # which means source/_data/avatar/avatar.webp
+avatar: "https://cdn.jsdelivr.net/gh/Chieko3020/Chieko3020.github.io@main/source/_data/avatar/avatar.webp" # which means source/_data/avatar/avatar.webp
 
 # Control the display of the post cover
 # If not set, the banner image will be displayed by default
@@ -65,7 +65,7 @@ open_graph:
     #google_plus: <g+:profile_link>
     #fb_admins: <fb:admin_id>
     #fb_app_id: <fb:app_id>
-    default_og_image: /images/bg.webp # the default og:image for Open Graph, support absolute path
+    default_og_image: https://cdn.jsdelivr.net/gh/Chieko3020/Chieko3020.github.io@main/source/images/bg.webp # the default og:image for Open Graph, support absolute path
 
 # Content
 excerpt_link: Read More
@@ -98,7 +98,7 @@ footer:
   count: true # show word count and reading time
   busuanzi: true
   icon:
-    url: "../images/loading.webp" # this path is relative to the css/style.css, so it needs to go up one level to reach the images folder
+    url: "https://cdn.jsdelivr.net/gh/Chieko3020/Chieko3020.github.io@main/source/images/loading.webp" # this path is relative to the css/style.css, so it needs to go up one level to reach the images folder
     rotate: true
     mask: false # whether to use the images as a mask
 
@@ -172,9 +172,9 @@ anchor_icon: # default use '#' icon, you can use a hexadecimal representation of
 reimu_cursor:
   enable: true
   cursor:
-    default: ../images/shizukululu-cursor-default.webp # this path is relative to the css/style.css, so it needs to go up one level to reach the images folder
-    pointer: ../images/shizukululu-cursor-pointer.webp
-    text: ../images/shizukululu-cursor-text.webp
+    default: https://cdn.jsdelivr.net/gh/Chieko3020/Chieko3020.github.io@main/source/images/shizukululu-cursor-default.webp # this path is relative to the css/style.css, so it needs to go up one level to reach the images folder
+    pointer: https://cdn.jsdelivr.net/gh/Chieko3020/Chieko3020.github.io@main/source/images/shizukululu-cursor-pointer.webp
+    text: https://cdn.jsdelivr.net/gh/Chieko3020/Chieko3020.github.io@main/source/images/shizukululu-cursor-text.webp
 
 # set to false to enable fontawesome
 icon_font: 4552607_4k4bc36ef96
@@ -413,7 +413,7 @@ preloader:
     en: Loading...
     ja: 加载中...
     pt-BR: Carregando...
-  icon: /images/loading.webp
+  icon: https://cdn.jsdelivr.net/gh/Chieko3020/Chieko3020.github.io@main/source/images/loading.webp
   rotate: true # whether to rotate the icon
 
 # see https://github.com/D-Sketon/aos.js
@@ -523,7 +523,7 @@ sponsor:
     ja: コーヒーを買ってください
     pt-BR: Compre-me um café
   icon:
-    url: "../images/loading.webp" # this path is relative to the css/style.css, so it needs to go up one level to reach the images folder
+    url: "https://cdn.jsdelivr.net/gh/Chieko3020/Chieko3020.github.io@main/source/images/loading.webp" # this path is relative to the css/style.css, so it needs to go up one level to reach the images folder
     rotate: true
     mask: true # whether to use the images as a mask
   qr:
@@ -559,7 +559,7 @@ top:
   enable: true
   position: right # left or right
   icon:
-    url: "../images/loading.webp" # this path is relative to the css/style.css, so it needs to go up one level to reach the images folder
+    url: "https://cdn.jsdelivr.net/gh/Chieko3020/Chieko3020.github.io@main/source/images/loading.webp" # this path is relative to the css/style.css, so it needs to go up one level to reach the images folder
     rotate: true
     mask: true # whether to use the images as a mask
 
