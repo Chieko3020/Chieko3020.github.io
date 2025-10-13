@@ -161,12 +161,12 @@ OhMyLive2d:
 
     mobileDisplay: true # 是否在移动端显示
     models:
-      - path: "l2dModals/37/37.model3.json"
-        mobilePosition: [-10, 23] # 移动端时模型在舞台中的位置。 默认值: [0,0] [横坐标, 纵坐标]
+      - path: "l2dModals/paimon/paimon.model3.json"
+        mobilePosition: [0,0] # 移动端时模型在舞台中的位置。 默认值: [0,0] [横坐标, 纵坐标]
         mobileScale: 0.1 # 移动端时模型的缩放比例 默认值: 0.1
         mobileStageStyle: # 移动端时舞台的样式
-          width: 180
-          height: 166
+          width: 250
+          height: 250
         motionPreloadStrategy: IDLE # 动作预加载策略 默认值: IDLE 可选值: ALL | IDLE | NONE
         position: [-10, 35] # 模型在舞台中的位置。 默认值: [0,0] [横坐标, 纵坐标]
         scale: 0.15 # 模型的缩放比例 默认值: 0.1
@@ -174,7 +174,7 @@ OhMyLive2d:
         stageStyle:
           width: 250
           height: 250
-      - path: "l2dModals/evernight/evernight.model3.json"
+      - path: "l2dModals/EverNight/EverNight.model3.json"
         mobilePosition: [-10, 23] # 移动端时模型在舞台中的位置。 默认值: [0,0] [横坐标, 纵坐标]
         mobileScale: 0.1 # 移动端时模型的缩放比例 默认值: 0.1
         mobileStageStyle: # 移动端时舞台的样式
@@ -229,3 +229,6 @@ OhMyLive2d:
   #     oml2d.tipsMessage('hello world', 3000, 10);
   #   }, 8000);
   #   }
+
+live2d:
+  enable: true

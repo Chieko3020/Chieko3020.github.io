@@ -608,7 +608,7 @@ live2d:
 
 # Experimental
 live2d_widgets:
-  enable: true
+  enable: false
   position: left # left or right
 
 # Experimental
@@ -772,11 +772,11 @@ vendor:
       src: webcache|theme-shokax-pjax@0.0.3/dist/index.umd.js
       integrity: sha384-xneY1WY8hOfUzswrE4CrYq35N4BdVcxqxwHPr9zawE/jMSCxD+jAPU55x/jj3wlf
     live2d:
-      base: https://cdn.jsdelivr.net/gh/Chieko3020/Chieko3020.github.io@main/source/live2d/
-      js: https://cdn.jsdelivr.net/gh/Chieko3020/Chieko3020.github.io@main/source/live2d/dist/autoload.js
+      base: fastly_jsdelivr_gh|D-Sketon/plugin-live2d/
+      js: fastly_jsdelivr_gh|D-Sketon/plugin-live2d/js/live2d-autoload.js
     live2d_widgets:
-      src: https://cdn.jsdelivr.net/gh/Chieko3020/Chieko3020.github.io@main/source/live2d/dist/autoload.js
-      # integrity: sha384-poTN7wN/SqNhQqo3jdFeX20ikddWeFGkUkDEzsKjgH/ez8aQLn81oI0Cw6q5xNyB
+      src: webcache|live2d-widgets@0.9.0/autoload.js
+      integrity: sha384-poTN7wN/SqNhQqo3jdFeX20ikddWeFGkUkDEzsKjgH/ez8aQLn81oI0Cw6q5xNyB
     md5:
       src: webcache|blueimp-md5@2.19.0/js/md5.min.js
       integrity: sha384-JmVtRz6RWiXnA14QbIOJzPuU3MidULOpBP66deeLLyyoF4Tr/gZlbkHkL6vTthxH

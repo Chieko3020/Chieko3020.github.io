@@ -1,0 +1,96 @@
+{
+	"Version": 3,
+	"FileReferences": {
+		"Moc": "长夜月.moc3",
+		"Textures": [
+			"长夜月.8192/texture_00.png"
+		],
+		"Physics": "长夜月.physics3.json",
+		"DisplayInfo": "长夜月.cdi3.json",
+		"Expressions": [
+			{
+				"Name": "撑伞",
+				"File": "expression/001撑伞.exp3.json"
+			},
+			{
+				"Name": "黑脸",
+				"File": "expression/006黑脸.exp3.json"
+			},
+			{
+				"Name": "高光消失",
+				"File": "expression/007高光消失.exp3.json"
+			},
+			{
+				"Name": "爱心眼",
+				"File": "expression/008爱心眼.exp3.json"
+			},
+			{
+				"Name": "生气",
+				"File": "expression/009生气.exp3.json"
+			},
+			{
+				"Name": "晕",
+				"File": "expression/010晕.exp3.json"
+			},
+			{
+				"Name": "》《",
+				"File": "expression/011》《.exp3.json"
+			},
+			{
+				"Name": "O.O",
+				"File": "expression/012O.O.exp3.json"
+			},
+			{
+				"Name": "星星眼",
+				"File": "expression/013星星眼.exp3.json"
+			},
+			{
+				"Name": "流泪",
+				"File": "expression/014流泪.exp3.json"
+			},
+			{
+				"Name": "泪光",
+				"File": "expression/015泪光.exp3.json"
+			},
+			{
+				"Name": "脸红",
+				"File": "expression/016脸红.exp3.json"
+			},
+			{
+				"Name": "呆呆眼",
+				"File": "expression/017呆呆眼.exp3.json"
+			},
+			{
+				"Name": "鼻涕泡",
+				"File": "expression/018鼻涕泡.exp3.json"
+			},
+			{
+				"Name": "ZZZ",
+				"File": "expression/019ZZZ.exp3.json"
+			},
+			{
+				"Name": "氛围关闭",
+				"File": "expression/020氛围关闭.exp3.json"
+			}
+		],
+		"Motions": {
+			"Idle": [
+				{
+					"File": "motions/idle.motion3.json"
+				}
+			]
+		}
+	},
+	"Groups": [
+		{
+			"Target": "Parameter",
+			"Name": "EyeBlink",
+			"Ids": []
+		},
+		{
+			"Target": "Parameter",
+			"Name": "LipSync",
+			"Ids": []
+		}
+	]
+}
