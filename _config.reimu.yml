@@ -5,6 +5,8 @@ theme_version_check: true
 theme_config_check: true
 # main menu navigation
 # for more icon information, please visit https://github.com/D-Sketon/hexo-theme-reimu/issues/30
+# https://cdn.jsdelivr.net/gh/Chieko3020/Chieko3020.github.io@main/source/images/
+# https://purge.jsdelivr.net/gh/Chieko3020/Chieko3020.github.io@main/source/images/
 menu:
   - name: home
     url: /
@@ -603,7 +605,7 @@ service_worker:
 
 # Experimental
 live2d:
-  enable: true
+  enable: false
   position: left # left or right
 
 # Experimental
