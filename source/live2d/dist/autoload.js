@@ -5,7 +5,7 @@
 
 // Recommended to use absolute path for live2d_path parameter
 // live2d_path 参数建议使用绝对路径
-const live2d_path = '/live2d/';
+const live2d_path = 'https://cdn.jsdelivr.net/gh/Chieko3020/Chieko3020.github.io@main/source/live2d/';
 // const live2d_path = '/dist/';
 
 // Method to encapsulate asynchronous resource loading
