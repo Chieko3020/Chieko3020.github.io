@@ -3,8 +3,8 @@
 	"FileReferences": {
 		"Moc": "37.moc3",
 		"Textures": [
-			"37.4096/texture_00.png",
-			"37.4096/texture_01.png"
+			"37.4096/texture_00.webp",
+			"37.4096/texture_01.webp"
 		],
 		"Physics": "37.physics3.json",
 		"DisplayInfo": "37.cdi3.json",
