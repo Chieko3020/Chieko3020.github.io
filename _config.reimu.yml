@@ -38,7 +38,7 @@ favicon: "/images/favi.ico" # which means themes/reimu/source/images/favicon.ico
 # You can also write it in the form of the following url
 # favicon: "https://example.com"
 
-avatar: "https://cdn.jsdelivr.net/gh/Chieko3020/Chieko3020.github.io@main/source/_data/avatar/avatar.webp" # which means source/_data/avatar/avatar.webp
+avatar: "avatar.webp" # which means source/_data/avatar/avatar.webp
 
 # Control the display of the post cover
 # If not set, the banner image will be displayed by default
