@@ -169,19 +169,7 @@ OhMyLive2d:
 
     mobileDisplay: true # 是否在移动端显示
     models:
-      - path: "/live2d/Resources/model/EverNight/EverNight.model3.json"
-        mobilePosition: [-10, 23] # 移动端时模型在舞台中的位置。 默认值: [0,0] [横坐标, 纵坐标]
-        mobileScale: 0.1 # 移动端时模型的缩放比例 默认值: 0.1
-        mobileStageStyle: # 移动端时舞台的样式
-          width: 180
-          height: 166
-        motionPreloadStrategy: ALL # 动作预加载策略 默认值: IDLE 可选值: ALL | IDLE | NONE
-        position: [-20, 0] # 模型在舞台中的位置。 默认值: [0,0] [横坐标, 纵坐标]
-        scale: 0.12 # 模型的缩放比例 默认值: 0.1
-        # showHitAreaFrames: false # 是否显示点击区域 默认值: false
-        stageStyle:
-          width: 250
-          height: 250
+    
       - path: "/live2d/Resources/model/March7th/March7th.model3.json"
         mobilePosition: [-10, 23] # 移动端时模型在舞台中的位置。 默认值: [0,0] [横坐标, 纵坐标]
         mobileScale: 0.1 # 移动端时模型的缩放比例 默认值: 0.1
@@ -195,6 +183,21 @@ OhMyLive2d:
         stageStyle:
           width: 250
           height: 250
+
+      - path: "/live2d/Resources/model/EverNight/EverNight.model3.json"
+        mobilePosition: [-10, 23] # 移动端时模型在舞台中的位置。 默认值: [0,0] [横坐标, 纵坐标]
+        mobileScale: 0.1 # 移动端时模型的缩放比例 默认值: 0.1
+        mobileStageStyle: # 移动端时舞台的样式
+          width: 180
+          height: 166
+        motionPreloadStrategy: ALL # 动作预加载策略 默认值: IDLE 可选值: ALL | IDLE | NONE
+        position: [-20, 0] # 模型在舞台中的位置。 默认值: [0,0] [横坐标, 纵坐标]
+        scale: 0.12 # 模型的缩放比例 默认值: 0.1
+        # showHitAreaFrames: false # 是否显示点击区域 默认值: false
+        stageStyle:
+          width: 250
+          height: 250
+
     parentElement: document.body #为组件提供一个父元素，如果未指定则默认挂载到 body 中
     primaryColor: 'var(--btn-bg)' # 主题色 支持变量
     sayHello: false # 是否在初始化阶段打印项目信息
