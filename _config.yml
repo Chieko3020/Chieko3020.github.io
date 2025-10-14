@@ -100,11 +100,18 @@ theme: reimu
 
 # Deployment
 ## Docs: https://hexo.io/docs/one-command-deployment
+
 deploy:
   type: git
   repo: https://github.com/Chieko3020/Chieko3020.github.io.git
   branch: gh-pages  # 部署到 gh-pages 分支
   message: "Auto deploy: {{ now('YYYY-MM-DD HH:mm:ss') }}"
+
+# deploy: # 部署到云主机
+#   type: git
+#   repo:   root@43.138.169.151:/var/repo/cn.chieko3020.xyz.git
+#   message: "Auto deploy: {{ now('YYYY-MM-DD HH:mm:ss') }}"
+
 feed:
   enable: true
   type: atom
