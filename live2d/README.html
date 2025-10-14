@@ -1,0 +1,977 @@
+
+  <!DOCTYPE html>
+  <html lang="zh-CN"  
+    
+      data-theme-mode="auto"
+    
+  >
+  <head>
+  
+  <meta charset="utf-8">
+  
+
+  
+
+  
+
+  <script>window.REIMU_CONFIG = {};window.REIMU_CONFIG.icon_font = '4552607_4k4bc36ef96';window.REIMU_CONFIG.clipboard_tips = {"success":{"zh-CN":"复制成功 (*^▽^*)"},"fail":{"zh-CN":"复制失败 (ﾟ⊿ﾟ)ﾂ"},"copyright":{"enable":false,"count":50,"license_type":"by-nc-sa"}};window.REIMU_CONFIG.clipboard_tips.copyright.content = '本博客所有文章除特别声明外，均采用 BY-NC-SA 许可协议。转载请注明出处！';window.REIMU_CONFIG.outdate = {"enable":true,"daysAgo":30,"message":{"en":"This article was last updated on {time}. Please note that the content may no longer be applicable.","zh-CN":"本文最后更新于 {time}，请注意文中内容可能已不适用。","zh-TW":"本文最後更新於 {time}，請注意文中內容可能已不適用。","ja":"この記事は最終更新日：{time}。記載内容が現在有効でない可能性がありますのでご注意ください。","pt-BR":"Este artigo foi atualizado pela última vez em {time}. Observe que o conteúdo pode não ser mais aplicável."}};window.REIMU_CONFIG.code_block = {"expand":true};window.REIMU_CONFIG.base = 'https://Chieko3020.github.io';</script>
+  
+  <title>
+    
+    Chieko3020 的 Github Page
+  </title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  
+  
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin><link rel="preload" as="style" href="https://fonts.googleapis.com/css?family=Mulish:400,400italic,700,700italic%7CNoto%20Serif%20SC:400,400italic,700,700italic&display=swap"><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Mulish:400,400italic,700,700italic%7CNoto%20Serif%20SC:400,400italic,700,700italic&display=swap" media="print" onload="this.media&#x3D;&#39;all&#39;">
+  
+  
+    <link rel="preload" href="//at.alicdn.com/t/c/font_4552607_4k4bc36ef96.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  
+  
+    
+<link rel="stylesheet" href="/css/loader.css">
+
+  
+  
+    <meta name="description" content="fork 自 letere-gzj&#x2F;live2d-widget-v3 项目： jsdelivr cdn: 1https:&#x2F;&#x2F;fastly.jsdelivr.net&#x2F;gh&#x2F;dogxii&#x2F;live2d-widget-v3@main&#x2F;   Live2d-Widget-v3  1 介绍 演示地址：DEMO 文章教程：【Hugo】博客引入 moc3 类型的 live2d 模型    [!NOTE">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Chieko3020 的 Github Page">
+<meta property="og:url" content="https://chieko3020.github.io/live2d/README.html">
+<meta property="og:site_name" content="Chieko3020 的 Github Page">
+<meta property="og:description" content="fork 自 letere-gzj&#x2F;live2d-widget-v3 项目： jsdelivr cdn: 1https:&#x2F;&#x2F;fastly.jsdelivr.net&#x2F;gh&#x2F;dogxii&#x2F;live2d-widget-v3@main&#x2F;   Live2d-Widget-v3  1 介绍 演示地址：DEMO 文章教程：【Hugo】博客引入 moc3 类型的 live2d 模型    [!NOTE">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://chieko3020.github.io/images/bg.webp">
+<meta property="article:published_time" content="2025-10-13T19:17:35.475Z">
+<meta property="article:modified_time" content="2025-07-22T08:14:18.000Z">
+<meta property="article:author" content="Chieko3020">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://chieko3020.github.io/images/bg.webp">
+  
+  
+    <link rel="alternate" href="/atom.xml" title="Chieko3020 的 Github Page" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/images/favi.ico">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  <link rel="preload" as="style" onload="this.onload&#x3D;null;this.rel&#x3D;&#39;stylesheet&#39;" href="https://npm.webcache.cn/photoswipe@5.4.4/dist/photoswipe.css" integrity="sha384-IfxC36XL&#x2F;toUyJ939C73PcgMuRzAZuIzZxE38drsmO5p6jD7ei+Zx&#x2F;1oA&#x2F;0l8ysE" crossorigin="anonymous">
+  
+  
+  
+  
+    
+<script src="https://npm.webcache.cn/pace-js@1.2.4/pace.min.js" integrity="sha384-k6YtvFUEIuEFBdrLKJ3YAUbBki333tj1CSUisai5Cswsg9wcLNaPzsTHDswp4Az8" crossorigin="anonymous"></script>
+
+  
+  
+    
+<link rel="stylesheet" href="https://npm.webcache.cn/@reimujs/aos@0.1.2/dist/aos.css" integrity="sha384-GMRP93c6Hkz9JVKGAuRR3nTS7M07RwPgTFenXiosjq2VbVgvdDNcz1g6Mkj8AONa" crossorigin="anonymous">
+
+  
+  
+    <link rel="preload" as="style" onload="this.onload&#x3D;null;this.rel&#x3D;&#39;stylesheet&#39;" href="https://npm.webcache.cn/aplayer@1.10.1/dist/APlayer.min.css" integrity="sha384-tLMkTWh2pfXNWGFlUS0w1TFtRG5xZ9lPWFOooj+vDDLIL+xBGQU&#x2F;voDBY5XE2lVh" crossorigin="anonymous">
+  
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+  <body>
+    
+    
+  <div id='loader'>
+    <div class="loading-left-bg loading-bg"></div>
+    <div class="loading-right-bg loading-bg"></div>
+    <div class="spinner-box">
+      <div class="loading-taichi rotate">
+        
+          <img src="/images/loading.webp" alt="loading" />
+        
+      </div>
+      
+      
+        
+      
+      <div class="loading-word">加载中...</div>
+    </div>
+  </div>
+  </div>
+  <script>
+    var time = null;
+    var loaderEl = document.getElementById('loader');
+    var startLoading = () => {
+      time = Date.now();
+      loaderEl.classList.remove("loading");
+    }
+    var hideLoader = () => {
+      document.body.style.overflow = 'auto';
+      loader.classList.add('loading');
+    };
+
+    var endLoading = () => {
+      if (!time) {
+        hideLoader();
+      } else {
+        if (Date.now() - time > 500) {
+          time = null;
+          hideLoader();
+        } else {
+          setTimeout(endLoading, 500 - (Date.now() - time));
+          time = null;
+        }
+      }
+    }
+    window.addEventListener('DOMContentLoaded', endLoading);
+    loaderEl.addEventListener('click', endLoading);
+  </script>
+
+<div id="copy-tooltip"></div>
+<div id="heatmap-tooltip"></div>
+
+
+    <div id="container">
+      <div id="wrap">
+        <div id="header-nav">
+  <nav id="main-nav" aria-label="Primary navigation">
+    
+      
+        <span class="main-nav-link-wrap">
+          <div class="main-nav-icon icon ">
+             
+              
+                <img src="/images/loading.webp" alt="home icon" style="height: 1em;">
+              
+             
+          </div>
+          <a class="main-nav-link" href="/">首页</a>
+        </span>
+      
+        <span class="main-nav-link-wrap">
+          <div class="main-nav-icon icon ">
+             
+              
+                <img src="/images/loading.webp" alt="archives icon" style="height: 1em;">
+              
+             
+          </div>
+          <a class="main-nav-link" href="/archives">归档</a>
+        </span>
+      
+        <span class="main-nav-link-wrap">
+          <div class="main-nav-icon icon ">
+             
+              
+                <img src="/images/loading.webp" alt="about icon" style="height: 1em;">
+              
+             
+          </div>
+          <a class="main-nav-link" href="/about">关于</a>
+        </span>
+      
+        <span class="main-nav-link-wrap">
+          <div class="main-nav-icon icon ">
+             
+              
+                <img src="/images/loading.webp" alt="friend icon" style="height: 1em;">
+              
+             
+          </div>
+          <a class="main-nav-link" href="/friend">友链</a>
+        </span>
+      
+    
+    <a id="main-nav-toggle" class="nav-icon" aria-label="Toggle navigation" role="button"></a>
+  </nav>
+  <nav id="sub-nav" aria-label="Secondary navigation">
+    
+    
+  </nav>
+  
+</div>
+<header id="header" aria-label="Site header">
+  
+    
+      <picture>
+        
+      </picture>
+      
+        <img crossorigin="anonymous" fetchpriority="high" src="/images/bg.webp" alt="">
+      
+    
+  
+  <div id="header-outer">
+    <div id="header-title">
+      
+        
+        
+          <span id="logo">
+            <h1 data-aos="slide-up">Chieko3020 的 Github Page</h1>
+          </span>
+        
+      
+      
+        
+        <h2 id="subtitle-wrap" data-aos="slide-down">
+          
+        </h2>
+      
+    </div>
+  </div>
+</header>
+
+        <div id="content" aria-label="Page content"  class="sidebar-right" >
+          <aside id="sidebar" aria-label="Sidebar">
+  
+  <div class="sidebar-wrapper-container ">
+  
+    
+    
+      <meting-js
+        theme="var(--color-link)"
+        id="2700441775"
+        server="netease"
+        type="playlist"
+        auto="https://music.163.com/#/playlist?id=2700441775"
+        fixed="false"
+        autoplay="false"
+        loop="all"
+        order="list"
+        preload="auto"
+        volume="0.3"
+        mutex="true"
+        list-folded="false"
+        lrc-type="0"
+      ></meting-js>
+    
+  
+ 
+  <div class="sidebar-wrapper">
+    <div class="sidebar-wrap" data-aos="fade-up">
+      
+        <div class="sidebar-author">
+  <img data-src="/avatar/avatar.webp" data-sizes="auto" alt="Chieko3020" class="lazyload">
+  <div class="sidebar-author-name">Chieko3020</div>
+  <div class="sidebar-description">「这并非约束我的规则 而是我对她的礼仪」</div>
+</div>
+<div class="sidebar-state">
+  <div class="sidebar-state-article">
+    <div>文章</div>
+    <div class="sidebar-state-number">3</div>
+  </div>
+  <div class="sidebar-state-category">
+    <div>分类</div>
+    <div class="sidebar-state-number">2</div>
+  </div>
+  <div class="sidebar-state-tag">
+    <div>标签</div>
+    <div class="sidebar-state-number">2</div>
+  </div>
+</div>
+<div class="sidebar-social">
+  
+    <div class="icon-github sidebar-social-icon">
+      <a href=https://github.com/Chieko3020 itemprop="url" target="_blank" aria-label="github" rel="noopener nofollow noreferrer"></a>
+    </div>
+  
+    <div class="icon-bilibili sidebar-social-icon">
+      <a href=https://space.bilibili.com/165313953 itemprop="url" target="_blank" aria-label="bilibili" rel="noopener nofollow noreferrer"></a>
+    </div>
+  
+</div>
+<div class="sidebar-menu">
+  
+    
+      <div class="sidebar-menu-link-wrap">
+        <a class="sidebar-menu-link-dummy" href="/" aria-label="首页"></a>
+        <div class="sidebar-menu-icon icon ">
+          
+            
+              <img src="/images/loading.webp" alt="home icon" style="width: 1em;">
+            
+          
+        </div>
+        <div class="sidebar-menu-link">首页</div>
+      </div>
+    
+      <div class="sidebar-menu-link-wrap">
+        <a class="sidebar-menu-link-dummy" href="/archives" aria-label="归档"></a>
+        <div class="sidebar-menu-icon icon ">
+          
+            
+              <img src="/images/loading.webp" alt="archives icon" style="width: 1em;">
+            
+          
+        </div>
+        <div class="sidebar-menu-link">归档</div>
+      </div>
+    
+      <div class="sidebar-menu-link-wrap">
+        <a class="sidebar-menu-link-dummy" href="/about" aria-label="关于"></a>
+        <div class="sidebar-menu-icon icon ">
+          
+            
+              <img src="/images/loading.webp" alt="about icon" style="width: 1em;">
+            
+          
+        </div>
+        <div class="sidebar-menu-link">关于</div>
+      </div>
+    
+      <div class="sidebar-menu-link-wrap">
+        <a class="sidebar-menu-link-dummy" href="/friend" aria-label="友链"></a>
+        <div class="sidebar-menu-icon icon ">
+          
+            
+              <img src="/images/loading.webp" alt="friend icon" style="width: 1em;">
+            
+          
+        </div>
+        <div class="sidebar-menu-link">友链</div>
+      </div>
+    
+  
+</div>
+
+      
+      
+    </div>
+  </div>
+  
+  <div class="sidebar-widget">
+  
+  </div>
+  
+  </div>
+  
+</aside>
+
+          <section id="main" aria-label="Main content"><article id="page-" class="h-entry article" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-inner" data-aos="fade-up">
+    <div class="article-meta">
+      <div class="article-date">
+  <span class="article-date-link icon-calendar" data-aos="zoom-in">
+    <time datetime="2025-10-13T19:17:35.475Z" itemprop="datePublished">2025-10-14</time>
+    <time style="display: none;" id="post-update-time">2025-07-22</time>
+  </span>
+  
+</div>
+
+      
+
+    </div>
+    
+    <div class="hr-line"></div>
+    
+
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <div class="warning custom-block" id="outdate-blockquote" style="display: none;">
+          <p class="custom-block-title">WARNING</p>
+          <p></p>
+        </div>
+      
+      
+        <blockquote>
+<h3 id="fork-自-letere-gzj-live2d-widget-v3-项目："><a href="#fork-自-letere-gzj-live2d-widget-v3-项目：" class="headerlink" title="fork 自 letere-gzj&#x2F;live2d-widget-v3 项目："></a>fork 自 <a target="_blank" rel="noopener" href="https://github.com/letere-gzj/live2d-widget-v3">letere-gzj&#x2F;live2d-widget-v3</a> 项目：</h3></blockquote>
+<p>jsdelivr cdn:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://fastly.jsdelivr.net/gh/dogxii/live2d-widget-v3@main/</span><br></pre></td></tr></table></figure>
+
+<h1 id="Live2d-Widget-v3"><a href="#Live2d-Widget-v3" class="headerlink" title=" Live2d-Widget-v3 "></a><center> Live2d-Widget-v3 </center></h1><hr>
+<h2 id="1-介绍"><a href="#1-介绍" class="headerlink" title="1 介绍"></a>1 介绍</h2><ul>
+<li><strong>演示地址</strong>：<a target="_blank" rel="noopener" href="https://letere-gzj.github.io/live2d-widget-v3/">DEMO</a></li>
+<li><strong>文章教程</strong>：<a target="_blank" rel="noopener" href="https://letere-gzj.github.io/hugo-stack/p/hugo/live2d-moc3/">【Hugo】博客引入 moc3 类型的 live2d 模型</a></li>
+</ul>
+<p><img src="/md/png/sample.png"></p>
+<blockquote>
+<p>[!NOTE]</p>
+<ul>
+<li>（1）此项目是基于【<a target="_blank" rel="noopener" href="https://github.com/stevenjoezhang/live2d-widget">stevenjoezhang&#x2F;live2d-widget</a>】项目的二次开发</li>
+<li>（2）原本 live2d-widget 只能渲染 moc 模型，无法渲染 moc3 模型，于是此项目在原版的架构上，对接了新版的 Cubism SDK for Web(sdk 当前版本 v5)，来渲染 moc3 模型</li>
+<li>（3）因为是基于 live2d-widget 项目的二次开发，使用体验上与原版的 live2d-widget 相差不大，基本的功能都有所保留</li>
+</ul>
+</blockquote>
+<blockquote>
+<p>[!TIP]</p>
+<ul>
+<li><strong>Tips:</strong> 此项目暂适配 moc3 模型，并不适配 moc 模型，且暂时未考虑适配 moc 模型</li>
+</ul>
+</blockquote>
+<hr>
+<h2 id="2-使用方法"><a href="#2-使用方法" class="headerlink" title="2 使用方法"></a>2 使用方法</h2><h3 id="2-1-基础引入"><a href="#2-1-基础引入" class="headerlink" title="2.1 基础引入"></a>2.1 基础引入</h3><ul>
+<li>在页头(head)或页脚(footer)引入以下脚本代码，演示的模型是官方 SDK 自带的模型</li>
+</ul>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">  <span class="keyword">const</span> cdnPath =</span></span><br><span class="line"><span class="language-javascript">    <span class="string">&quot;https://cdn.jsdelivr.net/gh/letere-gzj/live2d-widget-v3@main&quot;</span>;</span></span><br><span class="line"><span class="language-javascript">  <span class="keyword">const</span> config = &#123;</span></span><br><span class="line"><span class="language-javascript">    <span class="comment">// 资源路径</span></span></span><br><span class="line"><span class="language-javascript">    <span class="attr">path</span>: &#123;</span></span><br><span class="line"><span class="language-javascript">      <span class="attr">homePath</span>: <span class="string">&quot;/&quot;</span>,</span></span><br><span class="line"><span class="language-javascript">      <span class="attr">modelPath</span>: cdnPath + <span class="string">&quot;/Resources/&quot;</span>,</span></span><br><span class="line"><span class="language-javascript">      <span class="attr">cssPath</span>: cdnPath + <span class="string">&quot;/waifu.css&quot;</span>,</span></span><br><span class="line"><span class="language-javascript">      <span class="attr">tipsJsonPath</span>: cdnPath + <span class="string">&quot;/waifu-tips.json&quot;</span>,</span></span><br><span class="line"><span class="language-javascript">      <span class="attr">tipsJsPath</span>: cdnPath + <span class="string">&quot;/waifu-tips.js&quot;</span>,</span></span><br><span class="line"><span class="language-javascript">      <span class="attr">live2dCorePath</span>: cdnPath + <span class="string">&quot;/Core/live2dcubismcore.js&quot;</span>,</span></span><br><span class="line"><span class="language-javascript">      <span class="attr">live2dSdkPath</span>: cdnPath + <span class="string">&quot;/live2d-sdk.js&quot;</span>,</span></span><br><span class="line"><span class="language-javascript">    &#125;,</span></span><br><span class="line"><span class="language-javascript">    <span class="comment">// 工具栏</span></span></span><br><span class="line"><span class="language-javascript">    <span class="attr">tools</span>: [</span></span><br><span class="line"><span class="language-javascript">      <span class="string">&quot;hitokoto&quot;</span>,</span></span><br><span class="line"><span class="language-javascript">      <span class="string">&quot;asteroids&quot;</span>,</span></span><br><span class="line"><span class="language-javascript">      <span class="string">&quot;express&quot;</span>,</span></span><br><span class="line"><span class="language-javascript">      <span class="string">&quot;switch-model&quot;</span>,</span></span><br><span class="line"><span class="language-javascript">      <span class="string">&quot;switch-texture&quot;</span>,</span></span><br><span class="line"><span class="language-javascript">      <span class="string">&quot;photo&quot;</span>,</span></span><br><span class="line"><span class="language-javascript">      <span class="string">&quot;info&quot;</span>,</span></span><br><span class="line"><span class="language-javascript">      <span class="string">&quot;quit&quot;</span>,</span></span><br><span class="line"><span class="language-javascript">    ],</span></span><br><span class="line"><span class="language-javascript">    <span class="comment">// 模型拖拽</span></span></span><br><span class="line"><span class="language-javascript">    <span class="attr">drag</span>: &#123;</span></span><br><span class="line"><span class="language-javascript">      <span class="attr">enable</span>: <span class="literal">true</span>,</span></span><br><span class="line"><span class="language-javascript">      <span class="attr">direction</span>: [<span class="string">&quot;x&quot;</span>, <span class="string">&quot;y&quot;</span>],</span></span><br><span class="line"><span class="language-javascript">    &#125;,</span></span><br><span class="line"><span class="language-javascript">    <span class="comment">// 模型切换(order: 顺序切换，random: 随机切换)</span></span></span><br><span class="line"><span class="language-javascript">    <span class="attr">switchType</span>: <span class="string">&quot;order&quot;</span>,</span></span><br><span class="line"><span class="language-javascript">  &#125;;</span></span><br><span class="line"><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">  <span class="comment">// 加载资源并初始化</span></span></span><br><span class="line"><span class="language-javascript">  <span class="keyword">if</span> (screen.<span class="property">width</span> &gt;= <span class="number">768</span>) &#123;</span></span><br><span class="line"><span class="language-javascript">    <span class="title class_">Promise</span>.<span class="title function_">all</span>([</span></span><br><span class="line"><span class="language-javascript">      <span class="title function_">loadExternalResource</span>(config.<span class="property">path</span>.<span class="property">cssPath</span>, <span class="string">&quot;css&quot;</span>),</span></span><br><span class="line"><span class="language-javascript">      <span class="title function_">loadExternalResource</span>(config.<span class="property">path</span>.<span class="property">live2dCorePath</span>, <span class="string">&quot;js&quot;</span>),</span></span><br><span class="line"><span class="language-javascript">      <span class="title function_">loadExternalResource</span>(config.<span class="property">path</span>.<span class="property">live2dSdkPath</span>, <span class="string">&quot;js&quot;</span>),</span></span><br><span class="line"><span class="language-javascript">      <span class="title function_">loadExternalResource</span>(config.<span class="property">path</span>.<span class="property">tipsJsPath</span>, <span class="string">&quot;js&quot;</span>),</span></span><br><span class="line"><span class="language-javascript">    ]).<span class="title function_">then</span>(<span class="function">() =&gt;</span> &#123;</span></span><br><span class="line"><span class="language-javascript">      <span class="title function_">initWidget</span>(&#123;</span></span><br><span class="line"><span class="language-javascript">        <span class="attr">homePath</span>: config.<span class="property">path</span>.<span class="property">homePath</span>,</span></span><br><span class="line"><span class="language-javascript">        <span class="attr">waifuPath</span>: config.<span class="property">path</span>.<span class="property">tipsJsonPath</span>,</span></span><br><span class="line"><span class="language-javascript">        <span class="attr">cdnPath</span>: config.<span class="property">path</span>.<span class="property">modelPath</span>,</span></span><br><span class="line"><span class="language-javascript">        <span class="attr">tools</span>: config.<span class="property">tools</span>,</span></span><br><span class="line"><span class="language-javascript">        <span class="attr">dragEnable</span>: config.<span class="property">drag</span>.<span class="property">enable</span>,</span></span><br><span class="line"><span class="language-javascript">        <span class="attr">dragDirection</span>: config.<span class="property">drag</span>.<span class="property">direction</span>,</span></span><br><span class="line"><span class="language-javascript">        <span class="attr">switchType</span>: config.<span class="property">switchType</span>,</span></span><br><span class="line"><span class="language-javascript">      &#125;);</span></span><br><span class="line"><span class="language-javascript">    &#125;);</span></span><br><span class="line"><span class="language-javascript">  &#125;</span></span><br><span class="line"><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">  <span class="comment">// 异步加载资源</span></span></span><br><span class="line"><span class="language-javascript">  <span class="keyword">function</span> <span class="title function_">loadExternalResource</span>(<span class="params">url, type</span>) &#123;</span></span><br><span class="line"><span class="language-javascript">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</span></span><br><span class="line"><span class="language-javascript">      <span class="keyword">let</span> tag;</span></span><br><span class="line"><span class="language-javascript">      <span class="keyword">if</span> (type === <span class="string">&quot;css&quot;</span>) &#123;</span></span><br><span class="line"><span class="language-javascript">        tag = <span class="variable language_">document</span>.<span class="title function_">createElement</span>(<span class="string">&quot;link&quot;</span>);</span></span><br><span class="line"><span class="language-javascript">        tag.<span class="property">rel</span> = <span class="string">&quot;stylesheet&quot;</span>;</span></span><br><span class="line"><span class="language-javascript">        tag.<span class="property">href</span> = url;</span></span><br><span class="line"><span class="language-javascript">      &#125; <span class="keyword">else</span> <span class="keyword">if</span> (type === <span class="string">&quot;js&quot;</span>) &#123;</span></span><br><span class="line"><span class="language-javascript">        tag = <span class="variable language_">document</span>.<span class="title function_">createElement</span>(<span class="string">&quot;script&quot;</span>);</span></span><br><span class="line"><span class="language-javascript">        tag.<span class="property">src</span> = url;</span></span><br><span class="line"><span class="language-javascript">      &#125;</span></span><br><span class="line"><span class="language-javascript">      <span class="keyword">if</span> (tag) &#123;</span></span><br><span class="line"><span class="language-javascript">        tag.<span class="property">onload</span> = <span class="function">() =&gt;</span> <span class="title function_">resolve</span>(url);</span></span><br><span class="line"><span class="language-javascript">        tag.<span class="property">onerror</span> = <span class="function">() =&gt;</span> <span class="title function_">reject</span>(url);</span></span><br><span class="line"><span class="language-javascript">        <span class="variable language_">document</span>.<span class="property">head</span>.<span class="title function_">appendChild</span>(tag);</span></span><br><span class="line"><span class="language-javascript">      &#125;</span></span><br><span class="line"><span class="language-javascript">    &#125;);</span></span><br><span class="line"><span class="language-javascript">  &#125;</span></span><br><span class="line"><span class="language-javascript"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="2-2-参数说明"><a href="#2-2-参数说明" class="headerlink" title="2.2 参数说明"></a>2.2 参数说明</h3><ul>
+<li>通过修改 config 对象的参数，实现自定义效果</li>
+</ul>
+<p>|                                    参数                                    | 说明                                                                                                                                                                                                                                                                                      |<br>| :————————————————————————: | :—————————————————————————————————————————————————————————————————————————————————————————————- | — |<br>|                             <strong>path.homePath</strong>                              | 网站主页路径，若域名后有子路径，则将子路径填写上，结尾记得带上 <code>/</code> , 如果没有子路经则 <code>/</code> 就好，用来显示 live2d 的时间提示语                                                                                                                                                              |<br>|                             <strong>path.modelPath</strong>                             | 模型文件的路径，即可访问到 model 和 model_list.json 文件的路径，可搭配【<a target="_blank" rel="noopener" href="https://www.jsdelivr.com/">jsDelivr</a>】来使用 cdn 路径                                                                                                                                                            |<br>|                              <strong>path.cssPath</strong>                              | live2d 画布的 css 样式的路径，可直接在仓库下载此文件，来自定义自己想要的样式，然后通过本地或 cdn 引入自己改好的 css 文件                                                                                                                                                                  |<br>|                           <strong>path.tipsJsonPath</strong>                            | live2d 提示语 json 文件的路径，默认适配 hexo-next 主题，可直接在仓库下载此文件，来自定义适配自己的主题，然后通过本地或 cdn 引入自己改好的 json 文件                                                                                                                                       |<br>| <strong>path.tipsJsPath</strong><br> <strong>path.live2dCorePath</strong><br> <strong>path.live2dSdkPath</strong> | 代码核心文件路径，不建议修改                                                                                                                                                                                                                                                              |     |<br>|                                 <strong>tools</strong>                                  | 工具栏按钮：<br> <strong>（1）hitokoto</strong>: 一言<br> <strong>（2）asteroids</strong>: 网页飞机小游戏<br> <strong>（3）express</strong>: 切换模型表情<br> <strong>（4）switch-model</strong>: 切换模型分组<br> <strong>（5）switch-texture</strong>: 切换分组下的模型<br> <strong>（6）photo</strong>: 截图<br> <strong>（7）info</strong>: 作者信息<br> <strong>（8）quit</strong>: 隐藏模型 |<br>|                              <strong>drag.enable</strong>                               | 是否开启模型拖拽功能（true:开启, false:关闭）                                                                                                                                                                                                                                             |<br>|                             <strong>drag.direction</strong>                             | 模型拖拽方向（x:水平移动, y:垂直移动）                                                                                                                                                                                                                                                    |<br>|                               <strong>switchType</strong>                               | 模型切换顺序（order:顺序切换, random:随机切换）                                                                                                                                                                                                                                           |</p>
+<hr>
+<h3 id="2-3-引入自己的模型"><a href="#2-3-引入自己的模型" class="headerlink" title="2.3 引入自己的模型"></a>2.3 引入自己的模型</h3><h4 id="2-3-1-目录结构说明"><a href="#2-3-1-目录结构说明" class="headerlink" title="2.3.1 目录结构说明"></a>2.3.1 目录结构说明</h4><ul>
+<li>模型的引入完全可以参考本仓库的 <strong>Resources</strong> 目录下的模型，以及对应的写法</li>
+<li><strong>model</strong>：模型存放的位置</li>
+<li><strong>model_list.json</strong>：要被加载的模型的列表</li>
+</ul>
+<hr>
+<h4 id="2-3-2-修改方法"><a href="#2-3-2-修改方法" class="headerlink" title="2.3.2 修改方法"></a>2.3.2 修改方法</h4><ul>
+<li><p>(1) 本地仿照 <strong>Resources</strong> 目录，创建一个 model 文件夹，以及 model_list.json 文件</p>
+</li>
+<li><p>(2) 将自己的模型放入 model 文件夹</p>
+</li>
+<li><p>(3) 按实际情况修改 model_list.json 文件</p>
+<ul>
+<li><strong>tips</strong>：模型文件夹路径是以 model 文件夹为根目录进行填写，具体参考 <strong>Resources</strong> 目录</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;models&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="punctuation">[</span><span class="string">&quot;模型1文件夹路径&quot;</span><span class="punctuation">,</span> <span class="string">&quot;模型2文件夹路径&quot;</span><span class="punctuation">]</span><span class="punctuation">,</span> <span class="punctuation">[</span><span class="string">&quot;模型3文件夹路径&quot;</span><span class="punctuation">]</span><span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;messages&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="punctuation">[</span><span class="string">&quot;模型1入场语&quot;</span><span class="punctuation">,</span> <span class="string">&quot;模型2入场语&quot;</span><span class="punctuation">]</span><span class="punctuation">,</span> <span class="punctuation">[</span><span class="string">&quot;模型3入场语&quot;</span><span class="punctuation">]</span><span class="punctuation">]</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>(4) 上传文件到资源服务器，修改 <strong>path.modelPath</strong> 参数，通过 cdn 形式引入<ul>
+<li><strong>tips</strong>: 可通过【<a target="_blank" rel="noopener" href="https://www.jsdelivr.com/">jsDelivr</a>】搭配 github 仓库形式引入</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h4 id="2-3-3-修改模型配置"><a href="#2-3-3-修改模型配置" class="headerlink" title="2.3.3 修改模型配置"></a>2.3.3 修改模型配置</h4><ul>
+<li><strong>(1) 调整模型大小和位置</strong><ul>
+<li>在模型目录下，创建<code>config.json</code>文件，并填写下面的参数，具体参考 <strong>Resources</strong> 目录下的模型</li>
+<li>调整模型大小和位置，可以搭配 <a target="_blank" rel="noopener" href="https://letere-gzj.github.io/live2d-widget-v3/">DEMO</a> 使用</li>
+<li><strong>scale</strong>: 模型大小</li>
+<li><strong>translate.x</strong>：模型 x 轴偏移量</li>
+<li><strong>translate.y</strong>：模型 y 轴偏移量</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;scale&quot;</span><span class="punctuation">:</span> <span class="number">1.0</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;translate&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;x&quot;</span><span class="punctuation">:</span> <span class="number">0.0</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;y&quot;</span><span class="punctuation">:</span> <span class="number">0.0</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>(2) 配置模型表情</strong><ul>
+<li>若模型存在<code>xxx.exp3.json</code>类型的文件，可以通过修改<code>xxx.model3.json</code>文件，来配置表情，具体参考 <strong>Resources</strong> 目录下的模型</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  ...</span><br><span class="line">  <span class="attr">&quot;FileReferences&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    ...<span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;Expressions&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">      <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;Name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;表情名&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;File&quot;</span><span class="punctuation">:</span> <span class="string">&quot;表情文件路径&quot;</span></span><br><span class="line">      <span class="punctuation">&#125;</span></span><br><span class="line">    <span class="punctuation">]</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="/./md/png/%E8%A1%A8%E6%83%85%E5%88%87%E6%8D%A2.gif"></p>
+<ul>
+<li><strong>(3) 配置模型动作与声音</strong><ul>
+<li>若模型存在<code>xxx.motion3.json</code>文件，可以通过修改<code>xxx.model3.json</code>文件，来配置动作以及对应的声音，具体参考 <strong>Resources</strong> 目录下的模型</li>
+<li><strong>Idle</strong>：闲置动作，会一直从闲置动作数组中，随机选一个进行播放</li>
+<li><strong>TapBody</strong>：点击动作，当点击 live2d 画布时，才会从点击动作数组中，随机选一个进行播放</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  ...</span><br><span class="line">  <span class="attr">&quot;FileReferences&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    ...</span><br><span class="line">    <span class="attr">&quot;Motions&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;Idle&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">        <span class="punctuation">&#123;</span></span><br><span class="line">          <span class="attr">&quot;File&quot;</span><span class="punctuation">:</span> <span class="string">&quot;动作文件路径&quot;</span></span><br><span class="line">        <span class="punctuation">&#125;</span></span><br><span class="line">      <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;TapBody&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">        <span class="punctuation">&#123;</span></span><br><span class="line">          <span class="attr">&quot;File&quot;</span><span class="punctuation">:</span> <span class="string">&quot;动作文件路径&quot;</span><span class="punctuation">,</span></span><br><span class="line">          <span class="attr">&quot;Sound&quot;</span><span class="punctuation">:</span> <span class="string">&quot;声音文件路径&quot;</span></span><br><span class="line">        <span class="punctuation">&#125;</span></span><br><span class="line">      <span class="punctuation">]</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="/./md/png/%E5%8A%A8%E4%BD%9C%E7%82%B9%E5%87%BB.gif"></p>
+<hr>
+<h2 id="3-推荐项目"><a href="#3-推荐项目" class="headerlink" title="3 推荐项目"></a>3 推荐项目</h2><ul>
+<li>如果你需要 moc 模型与 moc3 模型都能适配的技术，个人推荐使用以下项目</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/oh-my-live2d/oh-my-live2d">oh-my-live2d&#x2F;oh-my-live2d</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/Konata09/Live2dOnWeb">Konata09&#x2F;Live2dOnWeb</a></li>
+</ul>
+<hr>
+<h2 id="4-参考文献"><a href="#4-参考文献" class="headerlink" title="4 参考文献"></a>4 参考文献</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_44128558/article/details/104792345">笔记：live2d4.0 sdk 博客园网页动画</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_37735413/article/details/119413744">live2d（Web SDK 4.x）Web 看板娘进阶</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_42578046/article/details/123509508">live2d web 笔记之一：官方 SDK 尝试</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      
+      
+      
+      
+      
+      
+      
+      
+      
+
+    </footer>
+  </div>
+  
+
+</article>
+
+
+
+
+
+
+
+
+
+
+</section>
+        </div>
+        <footer id="footer" aria-label="Site footer">
+  <div style="width: 100%; overflow: hidden">
+    <div class="footer-line"></div>
+  </div>
+  <div id="footer-info">
+    
+    <div>
+      <span class="icon-copyright"></span>
+      
+      
+      
+        2025
+      
+      <span class="footer-info-sep rotate"></span>
+      Chieko3020
+    </div>
+    
+      <div>
+        基于&nbsp;<a href="https://hexo.io/" rel="noopener nofollow noreferrer" target="_blank">Hexo</a>&nbsp;
+        Theme.<a href="https://github.com/D-Sketon/hexo-theme-reimu" rel="noopener nofollow noreferrer" target="_blank">Reimu</a>
+      </div>
+    
+    
+      <div>
+        <span class="icon-brush"></span>
+        2.8k
+        &nbsp;|&nbsp;
+        <span class="icon-coffee"></span>
+        00:12
+      </div>
+    
+    
+    
+    
+    
+      <div>
+        <span class="icon-eye"></span>
+        <span id="busuanzi_container_site_pv">总访问量&nbsp;<span id="busuanzi_value_site_pv"></span></span>
+        &nbsp;|&nbsp;
+        <span class="icon-user"></span>
+        <span id="busuanzi_container_site_uv">总访客量&nbsp;<span id="busuanzi_value_site_uv"></span></span>
+      </div>
+    
+  </div>
+</footer>
+
+        
+          <div class="sidebar-top">
+            <div class="sidebar-top-taichi rotate"></div>
+            <div class="arrow-up"></div>
+          </div>
+        
+        <div id="mask" class="hide"></div>
+      </div>
+      <nav id="mobile-nav" aria-label="Mobile navigation">
+  <div class="sidebar-wrap">
+    
+      <div class="sidebar-author">
+  <img data-src="/avatar/avatar.webp" data-sizes="auto" alt="Chieko3020" class="lazyload">
+  <div class="sidebar-author-name">Chieko3020</div>
+  <div class="sidebar-description">「这并非约束我的规则 而是我对她的礼仪」</div>
+</div>
+<div class="sidebar-state">
+  <div class="sidebar-state-article">
+    <div>文章</div>
+    <div class="sidebar-state-number">3</div>
+  </div>
+  <div class="sidebar-state-category">
+    <div>分类</div>
+    <div class="sidebar-state-number">2</div>
+  </div>
+  <div class="sidebar-state-tag">
+    <div>标签</div>
+    <div class="sidebar-state-number">2</div>
+  </div>
+</div>
+<div class="sidebar-social">
+  
+    <div class="icon-github sidebar-social-icon">
+      <a href=https://github.com/Chieko3020 itemprop="url" target="_blank" aria-label="github" rel="noopener nofollow noreferrer"></a>
+    </div>
+  
+    <div class="icon-bilibili sidebar-social-icon">
+      <a href=https://space.bilibili.com/165313953 itemprop="url" target="_blank" aria-label="bilibili" rel="noopener nofollow noreferrer"></a>
+    </div>
+  
+</div>
+<div class="sidebar-menu">
+  
+    
+      <div class="sidebar-menu-link-wrap">
+        <a class="sidebar-menu-link-dummy" href="/" aria-label="首页"></a>
+        <div class="sidebar-menu-icon icon ">
+          
+            
+              <img src="/images/loading.webp" alt="home icon" style="width: 1em;">
+            
+          
+        </div>
+        <div class="sidebar-menu-link">首页</div>
+      </div>
+    
+      <div class="sidebar-menu-link-wrap">
+        <a class="sidebar-menu-link-dummy" href="/archives" aria-label="归档"></a>
+        <div class="sidebar-menu-icon icon ">
+          
+            
+              <img src="/images/loading.webp" alt="archives icon" style="width: 1em;">
+            
+          
+        </div>
+        <div class="sidebar-menu-link">归档</div>
+      </div>
+    
+      <div class="sidebar-menu-link-wrap">
+        <a class="sidebar-menu-link-dummy" href="/about" aria-label="关于"></a>
+        <div class="sidebar-menu-icon icon ">
+          
+            
+              <img src="/images/loading.webp" alt="about icon" style="width: 1em;">
+            
+          
+        </div>
+        <div class="sidebar-menu-link">关于</div>
+      </div>
+    
+      <div class="sidebar-menu-link-wrap">
+        <a class="sidebar-menu-link-dummy" href="/friend" aria-label="友链"></a>
+        <div class="sidebar-menu-icon icon ">
+          
+            
+              <img src="/images/loading.webp" alt="friend icon" style="width: 1em;">
+            
+          
+        </div>
+        <div class="sidebar-menu-link">友链</div>
+      </div>
+    
+  
+</div>
+
+    
+  </div>
+  
+</nav>
+
+    </div>
+    
+    
+    
+    
+<script src="https://npm.webcache.cn/lazysizes@5.3.2/lazysizes.min.js" integrity="sha384-3gT&#x2F;vsepWkfz&#x2F;ff7PpWNUeMzeWoH3cDhm&#x2F;A8jM7ouoAK0&#x2F;fP&#x2F;9bcHHR5kHq2nf+e" crossorigin="anonymous"></script>
+
+
+<script src="https://npm.webcache.cn/clipboard@2.0.11/dist/clipboard.min.js" integrity="sha384-J08i8An&#x2F;QeARD9ExYpvphB8BsyOj3Gh2TSh1aLINKO3L0cMSH2dN3E22zFoXEi0Q" crossorigin="anonymous"></script>
+
+
+
+  
+<script src="https://npm.webcache.cn/material-theme@1.0.0/dist/material-theme.umd.js" integrity="sha384-vLev0II0HKFaxkcm+&#x2F;7kX5IGwVFBASkGchU311wmU&#x2F;veIj2bB0UcBkQbW6yw2asK" crossorigin="anonymous"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+  
+<script src="/js/aos.js"></script>
+
+  <script>
+    var aosInit = () => {
+      AOS.init({
+        duration: 1000,
+        easing: "ease",
+        once: true,
+        offset: 50,
+      });
+    };
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', aosInit);
+    } else {
+      aosInit();
+    }
+  </script>
+
+
+
+<script src="/js/pjax_script.js" data-pjax></script>
+
+
+
+
+
+
+
+  
+<script src="https://npm.webcache.cn/mouse-firework@0.1.1/dist/index.umd.js" integrity="sha384-8LyaidD9GPxQQgLJO&#x2F;WRw&#x2F;O2h3BoNq&#x2F;ApI&#x2F;ecpvM6RsrCz2qP2ppBXUKihP4V&#x2F;2d" crossorigin="anonymous"></script>
+
+  <script>
+    window.firework && window.firework(JSON.parse('{"excludeElements":["a","button"],"particles":[{"shape":"circle","move":["emit"],"easing":"easeOutExpo","colors":["var(--red-1)","var(--red-2)","var(--red-3)","var(--red-4)"],"number":20,"duration":[1200,1800],"shapeOptions":{"radius":[16,32],"alpha":[0.3,0.5]}},{"shape":"circle","move":["diffuse"],"easing":"easeOutExpo","colors":["var(--red-0)"],"number":1,"duration":[1200,1800],"shapeOptions":{"radius":20,"alpha":[0.2,0.5],"lineWidth":6}}]}'))
+  </script>
+
+
+
+  
+<script src="https://npm.webcache.cn/theme-shokax-pjax@0.0.3/dist/index.umd.js" integrity="sha384-xneY1WY8hOfUzswrE4CrYq35N4BdVcxqxwHPr9zawE&#x2F;jMSCxD+jAPU55x&#x2F;jj3wlf" crossorigin="anonymous"></script>
+
+  
+<script src="/js/pjax.js"></script>
+
+
+
+
+
+
+
+
+
+<div id="lazy-script">
+  <div>
+    
+      
+      
+      <script data-pjax>
+        window.REIMU_POST = {
+          author: "Chieko3020",
+          title: "",
+          url: "https://chieko3020.github.io/live2d/README.html",
+          excerpt: "",
+          description: "",
+          stripContent: " fork 自 letere-gzj&amp;#x2F;live2d-widget-v3 项目： jsdelivr cdn: 1https://fastly.jsdelivr.net/gh/dogxii/live2d-widget-v3@main/   Live2d-Widget-v3  1 介绍 演示地址：DEMO 文章教程：【Hugo】博客引入 moc3 类型的 live2d 模型    [!NOTE]  （1）此项目是基于【stevenjoezhang&amp;#x2F;live2d-widget】项目的",
+          date: "Tue Oct 14 2025 03:17:35 GMT+0800",
+          updated: "Tue Jul 22 2025 16:14:18 GMT+0800",
+          cover: "/images/bg.webp",
+        };
+      </script>
+       
+    
+    
+      
+        
+<script src="/js/insert_highlight.js" data-pjax></script>
+
+        
+      
+    
+    
+      <script type="module" data-pjax>
+        const PhotoSwipeLightbox = (await safeImport("https://npm.webcache.cn/photoswipe@5.4.4/dist/photoswipe-lightbox.esm.min.js", "sha384-DiL6M/gG+wmTxmCRZyD1zee6lIhawn5TGvED0FOh7fXcN9B0aZ9dexSF/N6lrZi/")).default;
+        const initPswp = (gallery, children) => {
+          if (_$$(`${gallery} ${children}`).length > 0) {
+            new PhotoSwipeLightbox({
+              gallery,
+              children,
+              pswpModule: () => safeImport("https://npm.webcache.cn/photoswipe@5.4.4/dist/photoswipe.esm.min.js", "sha384-WkkO3GCmgkC3VQWpaV8DqhKJqpzpF9JoByxDmnV8+oTJ7m3DfYEWX1fu1scuS4+s")
+            }).init();
+          }
+        }
+        const pswp = () => {
+          initPswp('.article-entry', 'a.article-gallery-item');
+          initPswp('.article-gallery', 'a.article-gallery-item');
+          window.lightboxStatus = 'done';
+          window.removeEventListener('lightbox:ready', pswp);
+        }
+        if(window.lightboxStatus === 'ready') {
+          pswp()
+        } else {
+          window.addEventListener('lightbox:ready', pswp);
+        }
+      </script>
+      
+        
+
+
+
+
+
+
+
+
+      
+    
+  </div>
+</div>
+
+
+  <script>
+    console.log(String.raw`%c 
+ ______     ______     __     __    __     __  __    
+/\  == \   /\  ___\   /\ \   /\ "-./  \   /\ \/\ \   
+\ \  __<   \ \  __\   \ \ \  \ \ \-./\ \  \ \ \_\ \  
+ \ \_\ \_\  \ \_____\  \ \_\  \ \_\ \ \_\  \ \_____\ 
+  \/_/ /_/   \/_____/   \/_/   \/_/  \/_/   \/_____/ 
+                                                  
+`,'color: #ff5252;')
+    console.log('%c Theme.Reimu v' + '1.10.1' + ' %c https://github.com/D-Sketon/hexo-theme-reimu ', 'color: white; background: #ff5252; padding:5px 0;', 'padding:4px;border:1px solid #ff5252;')
+  </script>
+  
+
+<script data-pjax>
+  var updateTime = _$('#post-update-time')?.innerHTML;
+
+  if (updateTime) {
+    const update = new Date(updateTime);
+    const now = new Date();
+    const diff = now - update;
+    const days = diff / 86400000;
+    const { daysAgo, message: template } = window.REIMU_CONFIG.outdate;
+    if (days >= daysAgo) {
+      let message = `This article was last updated on ${updateTime}. Please note that the content may no longer be applicable.`;
+      if (typeof template === 'string') {
+        message = template.replace(/{time}/, updateTime);
+      } else if (typeof template === 'object') {
+        const lang = document.documentElement.lang;
+        const messageKey = Object.keys(template).find(key => key.toLowerCase() === lang.toLowerCase());
+        if (messageKey && template[messageKey]) {
+          message = template[messageKey].replace(/{time}/, updateTime);
+        }
+      }
+      const blockquote = _$('#outdate-blockquote');
+      if (blockquote) {
+        blockquote.querySelectorAll('p')[1].innerText = message;
+        blockquote.style.display = 'flow-root';
+      }
+    }
+  }
+</script>
+
+
+  
+<script src="https://npm.webcache.cn/busuanzi@2.3.0/bsz.pure.mini.js" integrity="sha384-0M75wtSkhjIInv4coYlaJU83+OypaRCIq2SukQVQX04eGTCBXJDuWAbJet56id+S" crossorigin="anonymous" async></script>
+
+
+
+
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then((registrations) => {
+      for (let registration of registrations) {
+        registration.unregister();
+      }
+    });
+  }
+</script>
+
+
+
+
+
+  
+<script src="https://npm.webcache.cn/aplayer@1.10.1/dist/APlayer.min.js" integrity="sha384-gdGYZwHnfJM54evoZhpO0s6ZF5BQiybkiyW7VXr+h5UfruuRL&#x2F;aORyw+5+HZoU6e" crossorigin="anonymous"></script>
+
+  
+
+
+
+  
+  <script>
+    if (window.matchMedia('(max-width: 959px)').matches) {
+      const meting = _$('meting-js');
+      if (meting) {
+        meting.setAttribute('fixed', 'true');
+        const aside = meting.parentNode?.parentNode;
+        if (aside?.tagName === 'ASIDE') {
+          meting.parentNode.removeChild(meting);
+          document.body.appendChild(meting);
+        }
+      }
+    }
+  </script>
+  
+<script src="https://npm.webcache.cn/meting@2.0.1/dist/Meting.min.js" integrity="sha384-ASVlpKF80A22OXTK3tfEjZm1EL6uFMKIC4p8+0maanw1S&#x2F;IyB+Y4JG+ZDU7GpKE8" crossorigin="anonymous"></script>
+
+
+
+
+    
+    <script>
+      const cdnPath = "/live2d";
+        // "https://cdn.jsdelivr.net/gh/Chieko3020/Chieko3020.github.io@main/source/live2d";
+      const config = {
+        // 资源路径
+        path: {
+          homePath: "/",
+          modelPath: cdnPath + "/Resources/",
+          cssPath: cdnPath + "/waifu.css",
+          tipsJsonPath: cdnPath + "/waifu-tips.json",
+          tipsJsPath: cdnPath + "/waifu-tips.js",
+          live2dCorePath: cdnPath + "/Core/live2dcubismcore.js",
+          live2dSdkPath: cdnPath + "/live2d-sdk.js",
+        },
+        // 工具栏
+        tools: [
+          "hitokoto",
+          // "asteroids",
+          "express",
+          // "switch-model",
+          "switch-texture",
+          "photo",
+          "info",
+          "quit",
+        ],
+        // 模型拖拽
+        drag: {
+          enable: true,
+          direction: ["x", "y"],
+        },
+        // 模型切换(order: 顺序切换，random: 随机切换)
+        switchType: "order",
+      };
+
+      // 加载资源并初始化
+      if (screen.width >= 768) {
+        Promise.all([
+          loadExternalResource(config.path.cssPath, "css"),
+          loadExternalResource(config.path.live2dCorePath, "js"),
+          loadExternalResource(config.path.live2dSdkPath, "js"),
+          loadExternalResource(config.path.tipsJsPath, "js"),
+        ]).then(() => {
+          initWidget({
+            homePath: config.path.homePath,
+            waifuPath: config.path.tipsJsonPath,
+            cdnPath: config.path.modelPath,
+            tools: config.tools,
+            dragEnable: config.drag.enable,
+            dragDirection: config.drag.direction,
+            switchType: config.switchType,
+          });
+        });
+      }
+
+      // 异步加载资源
+      function loadExternalResource(url, type) {
+        return new Promise((resolve, reject) => {
+          let tag;
+          if (type === "css") {
+            tag = document.createElement("link");
+            tag.rel = "stylesheet";
+            tag.href = url;
+          } else if (type === "js") {
+            tag = document.createElement("script");
+            tag.src = url;
+          }
+          if (tag) {
+            tag.onload = () => resolve(url);
+            tag.onerror = () => reject(url);
+            document.head.appendChild(tag);
+          }
+        });
+      }
+    </script>
+  <!-- hexo injector body_end start --><script data-pjax src="https://registry.npmmirror.com/oh-my-live2d/latest/files"></script><script>const oml2d = OML2D.loadOml2d({libraryUrls:{"complete":"https://registry.npmmirror.com/oh-my-live2d/latest/files/lib/complete.js","cubism2":"https://registry.npmmirror.com/oh-my-live2d/latest/files/lib/cubism2.js","cubism5":"https://registry.npmmirror.com/oh-my-live2d/latest/files/lib/cubism5.js"},mobileDisplay:true,models:[{"path":"/live2d/Resources/model/EverNight/EverNight.model3.json","mobilePosition":[-10,23],"mobileScale":0.1,"mobileStageStyle":{"width":180,"height":166},"motionPreloadStrategy":"ALL","position":[-20,0],"scale":0.12,"stageStyle":{"width":250,"height":250}},{"path":"/live2d/Resources/model/March7th/March7th.model3.json","mobilePosition":[-10,23],"mobileScale":0.1,"mobileStageStyle":{"width":180,"height":166},"motionPreloadStrategy":"ALL","position":[-2,-6],"scale":0.08,"stageStyle":{"width":250,"height":250}}],parentElement:document.body,primaryColor:"var(--btn-bg)",sayHello:false,tips:{style: {"width":230,"height":120,"left":"calc(50% - 20px)","top":"-100px"},mobileStyle: {"width":180,"height":80,"left":"calc(50% - 30px)","top":"-100px"},idleTips:{interval:15000,message:function(){
+  return axios.get('https://v1.hitokoto.cn?c=i')
+    .then(function (response) {
+      return response.data.hitokoto ;
+    })
+    .catch(function (error) {
+      console.error(error);
+    });
+}
+}}});</script><!-- hexo injector body_end end --></body>
+  </html>
+
