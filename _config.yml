@@ -169,7 +169,7 @@ OhMyLive2d:
 
     mobileDisplay: true # 是否在移动端显示
     models:
-    
+
       - path: "/live2d/Resources/model/March7th/March7th.model3.json"
         mobilePosition: [-10, 23] # 移动端时模型在舞台中的位置。 默认值: [0,0] [横坐标, 纵坐标]
         mobileScale: 0.1 # 移动端时模型的缩放比例 默认值: 0.1
