@@ -541,7 +541,7 @@ icp:
 
 # 萌国 ICP 备案
 moe_icp:
-  icpnumber: 萌ICP备20258787号
+  icpnumber: 20258787
 
 # show the copyright below each article
 article_copyright:
