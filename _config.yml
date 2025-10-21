@@ -218,16 +218,6 @@ OhMyLive2d:
         #   - 你好呀~
         #   - 欢迎来到我的小站~
         # 自定义提示语 需要 引入 axios 库 ,也可以使用其他方法
-        message: |
-          function(){
-            return axios.get('https://v1.hitokoto.cn?c=i')
-              .then(function (response) {
-                return response.data.hitokoto ;
-              })
-              .catch(function (error) {
-                console.error(error);
-              });
-          }
         # wordTheDay: true
         # 自定义  https://v1.hitokoto.cn  数据
         # wordTheDay: |
