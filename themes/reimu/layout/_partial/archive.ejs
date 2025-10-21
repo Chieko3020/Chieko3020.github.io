@@ -17,7 +17,7 @@
                 <img data-src="<%- url_for(theme.banner, {relative: false}) %>" data-sizes="auto" alt="<%= c.name %>" class="lazyload">
               <% } %>
             <% } %>
-            <h2><%= c.name %></h2>
+            <h2><%- c.name %></h2>
             <h3><%= _p('home_categories.count', c.count) %></h3>
           </div>
         </div>

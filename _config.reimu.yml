@@ -496,11 +496,11 @@ clipboard:
 home_categories:
   enable: true
   content:
-    - categories: "不可解的它的一切 ———“不就是「关于网站」吗”"
+    - categories: "不可解的它的一切 <br> 说白了不就是「关于网站」吗"
     # string (single-layer category) or array (multi-layer category)
       cover: 
     # empty means random cover
-    - categories: "只属于你的小妙招 ———“看似有用实则没用QAQ”"
+    - categories: "只属于你的小妙招 <br> 看似有用实则没用"
       cover:
 
 # whether to display the notification when the article is outdated
@@ -535,7 +535,7 @@ sponsor:
 
 # ICP 备案
 icp:
-  icpnumber: # ICP备案号
+  icpnumber: 闽ICP备2025117501号 # ICP备案号
   beian: # 网安备案号
   recordcode: # 网安备案链接中的recordcode参数
 

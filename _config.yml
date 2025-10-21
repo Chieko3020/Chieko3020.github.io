@@ -3,9 +3,9 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: Chieko3020 的 Github Page
-subtitle: ''
-description: '「这并非约束我的规则 而是我对她的礼仪」'
+title: Chieko3020 | Nostalgia
+subtitle: "過ぎさる3月の中を歩く君へ そして同じ春に立ち止まる私へ <br> 致渐逝三月里迈步前进的你 然后致同一个春天里停步不前的我"
+description: '这并非约束我的规则 <br> 而是我对她的礼仪'
 keywords: 
 author: Chieko3020
 language: zh-CN
@@ -13,7 +13,7 @@ timezone: 'Asia/Shanghai'
 
 # URL
 ## Set your site url here. For example, if you use GitHub Page, set url as 'https://username.github.io/project'
-url: https://Chieko3020.github.io
+url: https://chieko3020.xyz
 permalink: :year/:month/:day/:title/
 permalink_defaults:
 pretty_urls:
