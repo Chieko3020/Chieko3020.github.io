@@ -635,7 +635,7 @@ player:
     # https://github.com/metowolf/MetingJS
     # if you want to use meting, please enable aplayer first
     enable: true
-    meting_api: # custom api
+    meting_api: https://www.chieko3020.xyz/meting/api?server=netease&type=playlist&id=14424322349 # custom api
     options:
       id: 2700441775
       server: netease
