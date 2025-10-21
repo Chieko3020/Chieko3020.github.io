@@ -630,7 +630,7 @@ player:
       volume: 0.3
       mutex: true
       listFolded: false
-      lrcType: 1
+      lrcType: 0
   meting:
     # https://github.com/metowolf/MetingJS
     # if you want to use meting, please enable aplayer first
