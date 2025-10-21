@@ -3,7 +3,7 @@ title: Chieko3020 Profile
 date: 2025-10-12 13:50:01
 sticky: true
 tags: "你知道吗"
-categories: "不可解的它的一切 <br> 说白了不就是「关于网站」吗"
+categories: "不可解的它的一切 <br> 那不就是「关于网站」吗"
 ---
 # 介绍一下自己吧？  
 

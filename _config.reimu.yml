@@ -496,7 +496,7 @@ clipboard:
 home_categories:
   enable: true
   content:
-    - categories: "不可解的它的一切 <br> 说白了不就是「关于网站」吗"
+    - categories: "不可解的它的一切 <br> 那不就是「关于网站」吗"
     # string (single-layer category) or array (multi-layer category)
       cover: 
     # empty means random cover
