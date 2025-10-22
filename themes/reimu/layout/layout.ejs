@@ -147,6 +147,10 @@
         <% if (theme.player.aplayer.options.lrcType != null) { %>lrc-type="<%= theme.player.aplayer.options.lrcType %>"<% } %>
       ></meting-js>
     <% } %>
+    <!-- Preset OML2D status to sleep before OML2D script loads -->
+    <script>
+      try { localStorage.setItem('oml2d-status', 'sleep') } catch (e) {}
+    </script>
     <%- partial('_partial/after-footer', {post: page}) %>
     <% if (theme.injector.body_end) { %>
       <%- render(theme.injector.body_end, 'html'); %>
