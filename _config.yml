@@ -201,6 +201,7 @@ OhMyLive2d:
     parentElement: document.body #为组件提供一个父元素，如果未指定则默认挂载到 body 中
     primaryColor: 'var(--btn-bg)' # 主题色 支持变量
     sayHello: false # 是否在初始化阶段打印项目信息
+    initialStatus: "sleep" # 初始状态设置为休眠
     tips:
       style:
         width: 230
@@ -224,9 +225,9 @@ OhMyLive2d:
         #   function(wordTheDayData){
         #     return `${wordTheDayData.hitokoto}    by.${wordTheDayData.from}`;
         #   }
-  # then: |
-  #   (oml2d)=>{
-  #      setTimeout(() => {
-  #     oml2d.tipsMessage('hello world', 3000, 10);
-  #   }, 8000);
-  #   }
+  then: |
+    (oml2d)=>{
+      try { localStorage.removeItem('oml2d-status') } catch(e){}
+      try { oml2d && oml2d.sleep && oml2d.sleep() } catch(e){}
+      try { oml2d && oml2d.statusBar && oml2d.statusBar.setRest && oml2d.statusBar.setRest('看板娘休息中', '💤') } catch(e){}
+    }
