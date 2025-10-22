@@ -58,11 +58,18 @@
       ]
     },
     {
-      "selector": "#waifu-tool-switch-texture",
+      "selector": "#waifu-tool-switch-model",
       "text": [
         "拜托了，另一个我！"
       ]
-    },    
+    },   
+    {
+      "selector": "#waifu-tool-switch-texture",
+      "text": [
+        "该模型没有其它衣服 ~"
+      ]
+    },  
+
     {
       "selector": "#waifu-tool-photo",
       "text": [
