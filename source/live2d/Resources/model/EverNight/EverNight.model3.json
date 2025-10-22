@@ -3,7 +3,7 @@
 	"FileReferences": {
 		"Moc": "长夜月.moc3",
 		"Textures": [
-			"长夜月.8192/texture_00.webp"
+			"长夜月.8192/texture_00.png"
 		],
 		"Physics": "长夜月.physics3.json",
 		"DisplayInfo": "长夜月.cdi3.json",
