@@ -630,19 +630,18 @@ player:
       volume: 0.3
       mutex: true
       listFolded: false
-      lrcType: 1
+      # lrcType: Meting 自动设置歌词
   meting:
     # https://github.com/metowolf/MetingJS
     # if you want to use meting, please enable aplayer first
     enable: true
     meting_api: https://api.qijieya.cn/meting/?server=netease&type=playlist&id=14424322349 # custom api
     # 个人api  https://music-api.chieko3020.xyz/api?server=netease&type=playlist&id=14424322349
-    
-    options:
-      server: netease
-      type: playlist
-      id: 2700441775
-      auto: https://music.163.com/playlist?id=14424322349
+    # options:
+    #   server: netease
+    #   type: playlist
+    #   id: 2700441775
+    #   auto: 
 
 ########################################
 # pangu.js
