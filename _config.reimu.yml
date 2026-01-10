@@ -316,7 +316,7 @@ valine:
 # https://waline.js.org/
 # version 2.15.8
 waline:
-  enable: true
+  enable: false
   serverURL: https://chieko3020xyz-comments.vercel.app/
   # https://chieko3020xyz-comments.vercel.app/ui/register 评论管理
   # lang: zh-CN # deprecated, use html.lang instead
@@ -341,8 +341,8 @@ waline:
 
 # https://twikoo.js.org
 twikoo:
-  enable: false
-  envId: # 腾讯云环境填 envId；Vercel 环境填地址（https://xxx.vercel.app）
+  enable: true
+  envId: https://twikoo.chieko3020.xyz
   region:
 
 # https://github.com/gitalk/gitalk/blob/master/readme-cn.md
@@ -636,7 +636,7 @@ player:
     # if you want to use meting, please enable aplayer first
     enable: true
     meting_api: https://api.qijieya.cn/meting/?server=netease&type=playlist&id=14424322349 # custom api
-    # 个人api  https://music-api.chieko3020.xyz/api?server=netease&type=playlist&id=14424322349
+    # meting_api:  https://music-api.chieko3020.xyz/api?server=netease&type=playlist&id=14424322349 # 个人api
     # options:
     #   server: netease
     #   type: playlist
