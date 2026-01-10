@@ -314,7 +314,7 @@ valine:
   serverURLs: # leancloud server url
 
 # https://waline.js.org/
-version 2.15.8
+# version 2.15.8
 waline:
   enable: false
   serverURL:
