@@ -314,10 +314,10 @@ valine:
   serverURLs: # leancloud server url
 
 # https://waline.js.org/
-# version 2.15.8
+version 2.15.8
 waline:
   enable: false
-  serverURL: https://chieko3020xyz-comments.vercel.app/
+  serverURL:
   # https://chieko3020xyz-comments.vercel.app/ui/register 评论管理
   # lang: zh-CN # deprecated, use html.lang instead
   locale: {} # https://waline.js.org/guide/features/i18n.html#%E8%87%AA%E5%AE%9A%E4%B9%89%E8%AF%AD%E8%A8%80
