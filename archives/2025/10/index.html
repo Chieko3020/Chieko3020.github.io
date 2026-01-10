@@ -14,12 +14,12 @@
 
   
 
-  <script>window.REIMU_CONFIG = {};window.REIMU_CONFIG.icon_font = '4552607_4k4bc36ef96';window.REIMU_CONFIG.clipboard_tips = {"success":{"zh-CN":"复制成功 (*^▽^*)"},"fail":{"zh-CN":"复制失败 (ﾟ⊿ﾟ)ﾂ"},"copyright":{"enable":false,"count":50,"license_type":"by-nc-sa"}};window.REIMU_CONFIG.clipboard_tips.copyright.content = '本博客所有文章除特别声明外，均采用 BY-NC-SA 许可协议。转载请注明出处！';window.REIMU_CONFIG.outdate = {"enable":true,"daysAgo":30,"message":{"en":"This article was last updated on {time}. Please note that the content may no longer be applicable.","zh-CN":"本文最后更新于 {time}，请注意文中内容可能已不适用。","zh-TW":"本文最後更新於 {time}，請注意文中內容可能已不適用。","ja":"この記事は最終更新日：{time}。記載内容が現在有効でない可能性がありますのでご注意ください。","pt-BR":"Este artigo foi atualizado pela última vez em {time}. Observe que o conteúdo pode não ser mais aplicável."}};window.REIMU_CONFIG.code_block = {"expand":true};window.REIMU_CONFIG.base = 'https://Chieko3020.github.io';</script>
+  <script>window.REIMU_CONFIG = {};window.REIMU_CONFIG.icon_font = '4552607_4k4bc36ef96';window.REIMU_CONFIG.clipboard_tips = {"success":{"zh-CN":"复制成功 (*^▽^*)"},"fail":{"zh-CN":"复制失败 (ﾟ⊿ﾟ)ﾂ"},"copyright":{"enable":false,"count":50,"license_type":"by-nc-sa"}};window.REIMU_CONFIG.clipboard_tips.copyright.content = '本博客所有文章除特别声明外，均采用 BY-NC-SA 许可协议。转载请注明出处！';window.REIMU_CONFIG.outdate = {"enable":true,"daysAgo":30,"message":{"en":"This article was last updated on {time}. Please note that the content may no longer be applicable.","zh-CN":"本文最后更新于 {time}，请注意文中内容可能已不适用。","zh-TW":"本文最後更新於 {time}，請注意文中內容可能已不適用。","ja":"この記事は最終更新日：{time}。記載内容が現在有効でない可能性がありますのでご注意ください。","pt-BR":"Este artigo foi atualizado pela última vez em {time}. Observe que o conteúdo pode não ser mais aplicável."}};window.REIMU_CONFIG.code_block = {"expand":true};window.REIMU_CONFIG.base = 'https://chieko3020.xyz';</script>
   
   <title>
     归档: 2025/10 |
     
-    Chieko3020 的 Github Page
+    Chieko3020 | Nostalgia
   </title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   
@@ -35,20 +35,20 @@
 
   
   
-    <meta name="description" content="「这并非约束我的规则 而是我对她的礼仪」">
+    <meta name="description" content="这并非约束我的规则而是我对她的礼仪">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Chieko3020 的 Github Page">
-<meta property="og:url" content="https://chieko3020.github.io/archives/2025/10/index.html">
-<meta property="og:site_name" content="Chieko3020 的 Github Page">
-<meta property="og:description" content="「这并非约束我的规则 而是我对她的礼仪」">
+<meta property="og:title" content="Chieko3020 | Nostalgia">
+<meta property="og:url" content="https://chieko3020.xyz/archives/2025/10/index.html">
+<meta property="og:site_name" content="Chieko3020 | Nostalgia">
+<meta property="og:description" content="这并非约束我的规则而是我对她的礼仪">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://chieko3020.github.io/images/bg.webp">
+<meta property="og:image" content="https://chieko3020.xyz/images/bg.webp">
 <meta property="article:author" content="Chieko3020">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://chieko3020.github.io/images/bg.webp">
+<meta name="twitter:image" content="https://chieko3020.xyz/images/bg.webp">
   
   
-    <link rel="alternate" href="/atom.xml" title="Chieko3020 的 Github Page" type="application/atom+xml">
+    <link rel="alternate" href="/atom.xml" title="Chieko3020 | Nostalgia" type="application/atom+xml">
   
   
     <link rel="shortcut icon" href="/images/favi.ico">
@@ -82,6 +82,80 @@
 
   <body>
     
+    <script>
+      const cdnPath = "/live2d";
+        // "https://cdn.jsdelivr.net/gh/Chieko3020/Chieko3020.github.io@main/source/live2d";
+      const config = {
+        // 资源路径
+        path: {
+          homePath: "/",
+          modelPath: cdnPath + "/Resources/",
+          cssPath: cdnPath + "/waifu.css",
+          tipsJsonPath: cdnPath + "/waifu-tips.json",
+          tipsJsPath: cdnPath + "/waifu-tips.js",
+          live2dCorePath: cdnPath + "/Core/live2dcubismcore.js",
+          live2dSdkPath: cdnPath + "/live2d-sdk.js",
+        },
+        // 工具栏
+        tools: [
+          "hitokoto",
+          // "asteroids",
+          "express",
+          "switch-model",
+          "switch-texture",
+          "photo",
+          "info",
+          "quit",
+        ],
+        // 模型拖拽
+        drag: {
+          enable: true,
+          direction: ["x", "y"],
+        },
+        // 模型切换(order: 顺序切换，random: 随机切换)
+        switchType: "order",
+      };
+
+      // 加载资源并初始化
+      if (screen.width >= 768) {
+        Promise.all([
+          loadExternalResource(config.path.cssPath, "css"),
+          loadExternalResource(config.path.live2dCorePath, "js"),
+          loadExternalResource(config.path.live2dSdkPath, "js"),
+          loadExternalResource(config.path.tipsJsPath, "js"),
+        ]).then(() => {
+          initWidget({
+            homePath: config.path.homePath,
+            waifuPath: config.path.tipsJsonPath,
+            cdnPath: config.path.modelPath,
+            tools: config.tools,
+            dragEnable: config.drag.enable,
+            dragDirection: config.drag.direction,
+            switchType: config.switchType,
+          });
+        });
+      }
+
+      // 异步加载资源
+      function loadExternalResource(url, type) {
+        return new Promise((resolve, reject) => {
+          let tag;
+          if (type === "css") {
+            tag = document.createElement("link");
+            tag.rel = "stylesheet";
+            tag.href = url;
+          } else if (type === "js") {
+            tag = document.createElement("script");
+            tag.src = url;
+          }
+          if (tag) {
+            tag.onload = () => resolve(url);
+            tag.onerror = () => reject(url);
+            document.head.appendChild(tag);
+          }
+        });
+      }
+    </script>
     
   <div id='loader'>
     <div class="loading-left-bg loading-bg"></div>
@@ -236,10 +310,10 @@
     
       <meting-js
         theme="var(--color-link)"
-        id="2700441775"
+        id="2265921590"
         server="netease"
         type="playlist"
-        auto="https://music.163.com/playlist?id=14424322349"
+        
         fixed="false"
         autoplay="false"
         loop="all"
@@ -248,7 +322,7 @@
         volume="0.3"
         mutex="true"
         list-folded="false"
-        lrc-type="0"
+        
       ></meting-js>
     
   
@@ -259,16 +333,16 @@
         <div class="sidebar-author">
   <img data-src="/avatar/avatar.webp" data-sizes="auto" alt="Chieko3020" class="lazyload">
   <div class="sidebar-author-name">Chieko3020</div>
-  <div class="sidebar-description">「这并非约束我的规则 而是我对她的礼仪」</div>
+  <div class="sidebar-description">这并非约束我的规则<br>而是我对她的礼仪</div>
 </div>
 <div class="sidebar-state">
   <div class="sidebar-state-article">
     <div>文章</div>
-    <div class="sidebar-state-number">3</div>
+    <div class="sidebar-state-number">6</div>
   </div>
   <div class="sidebar-state-category">
     <div>分类</div>
-    <div class="sidebar-state-number">4</div>
+    <div class="sidebar-state-number">2</div>
   </div>
   <div class="sidebar-state-tag">
     <div>标签</div>
@@ -359,30 +433,22 @@
     <div class="tag-wrap">
   
     <div class="archives-tag-list-item" data-aos="zoom-in">
-      <a class="archives-tag-list-link" href="/tags/%E4%BD%A0%E7%9F%A5%E9%81%93%E5%90%97/">你知道吗</a>
+      <a class="archives-tag-list-link" href="/tags/%E7%A6%BB%E7%A5%9E%E5%BE%88%E8%BF%91%E4%BD%86%E7%A6%BB%E4%BA%BA%E5%BE%88%E8%BF%9C/">离神很近但离人很远</a>
     </div>
   
     <div class="archives-tag-list-item" data-aos="zoom-in">
-      <a class="archives-tag-list-link" href="/tags/%E7%A6%BB%E7%A5%9E%E5%BE%88%E8%BF%91%E4%BD%86%E7%A6%BB%E4%BA%BA%E5%BE%88%E8%BF%9C/">离神很近但离人很远</a>
+      <a class="archives-tag-list-link" href="/tags/%E4%BD%A0%E7%9F%A5%E9%81%93%E5%90%97/">你知道吗</a>
     </div>
   
 </div>
 <div class="category-wrap">
   
     <div class="archives-category-list-item" data-aos="zoom-in">
-      <a class="archives-category-list-link" href="/categories/%E4%B8%8D%E5%8F%AF%E8%A7%A3%E7%9A%84%E5%AE%83%E7%9A%84%E4%B8%80%E5%88%87-%E2%80%94%E2%80%94%E8%AF%B4%E4%BA%BA%E8%AF%9D%E4%B8%8D%E5%B0%B1%E6%98%AF%E3%80%8C%E5%85%B3%E4%BA%8E%E7%BD%91%E7%AB%99%E3%80%8D%E5%90%97/">不可解的它的一切 ——说人话不就是「关于网站」吗</a>
+      <a class="archives-category-list-link" href="/categories/%E5%8F%AA%E5%B1%9E%E4%BA%8E%E4%BD%A0%E7%9A%84%E5%B0%8F%E5%A6%99%E6%8B%9B-br-%E7%9C%8B%E4%BC%BC%E6%9C%89%E7%94%A8%E5%AE%9E%E5%88%99%E6%B2%A1%E7%94%A8/">只属于你的小妙招 &lt;br&gt; 看似有用实则没用</a>
     </div>
   
     <div class="archives-category-list-item" data-aos="zoom-in">
-      <a class="archives-category-list-link" href="/categories/%E5%8F%AA%E5%B1%9E%E4%BA%8E%E4%BD%A0%E7%9A%84%E8%B5%A4%E7%9F%B3%E5%B0%8F%E5%A6%99%E6%8B%9B-%E2%80%94%E2%80%94%E7%9C%8B%E4%BC%BC%E6%9C%89%E7%94%A8%E5%AE%9E%E5%88%99%E6%B2%A1%E7%94%A8/">只属于你的赤石小妙招 ——看似有用实则没用</a>
-    </div>
-  
-    <div class="archives-category-list-item" data-aos="zoom-in">
-      <a class="archives-category-list-link" href="/categories/%E4%B8%8D%E5%8F%AF%E8%A7%A3%E7%9A%84%E5%AE%83%E7%9A%84%E4%B8%80%E5%88%87-%E2%80%94%E2%80%94%E2%80%94%E2%80%9C%E4%B8%8D%E5%B0%B1%E6%98%AF%E3%80%8C%E5%85%B3%E4%BA%8E%E7%BD%91%E7%AB%99%E3%80%8D%E5%90%97%E2%80%9D/">不可解的它的一切 ———“不就是「关于网站」吗”</a>
-    </div>
-  
-    <div class="archives-category-list-item" data-aos="zoom-in">
-      <a class="archives-category-list-link" href="/categories/%E5%8F%AA%E5%B1%9E%E4%BA%8E%E4%BD%A0%E7%9A%84%E5%B0%8F%E5%A6%99%E6%8B%9B-%E2%80%94%E2%80%94%E2%80%94%E2%80%9C%E7%9C%8B%E4%BC%BC%E6%9C%89%E7%94%A8%E5%AE%9E%E5%88%99%E6%B2%A1%E7%94%A8QAQ%E2%80%9D/">只属于你的小妙招 ———“看似有用实则没用QAQ”</a>
+      <a class="archives-category-list-link" href="/categories/%E4%B8%8D%E5%8F%AF%E8%A7%A3%E7%9A%84%E5%AE%83%E7%9A%84%E4%B8%80%E5%88%87-br-%E9%82%A3%E4%B8%8D%E5%B0%B1%E6%98%AF%E3%80%8C%E5%85%B3%E4%BA%8E%E7%BD%91%E7%AB%99%E3%80%8D%E5%90%97/">不可解的它的一切 &lt;br&gt; 那不就是「关于网站」吗</a>
     </div>
   
 </div>
@@ -401,6 +467,20 @@
           </div>
           <ul>
             
+            <li class="archive-article">
+  <div class="archive-article-date">
+    <span>
+      <time class="dt-published" datetime="2025-10-21T04:50:51.000Z" itemprop="datePublished">10-21</time>
+    </span>
+  </div>
+  
+    <a class="archive-article-title" href="/2025/10/21/%E5%85%B3%E4%BA%8E%E9%AD%94%E6%B3%95%E5%B0%91%E5%A5%B3%E3%83%8E%E9%AD%94%E5%A5%B3%E8%A3%81%E5%88%A4/">关于魔法少女ノ魔女裁判</a>
+  
+</li>
+
+            
+      
+      
             <li class="archive-article">
   <div class="archive-article-date">
     <span>
@@ -436,7 +516,7 @@
     </span>
   </div>
   
-    <a class="archive-article-title" href="/2025/10/12/%E5%85%B3%E4%BA%8E%E6%9C%AC%E7%AB%99/">关于本站</a>
+    <a class="archive-article-title" href="/2025/10/12/%E7%94%BB%E5%BB%8A/">画廊</a>
   
 </li>
 
@@ -463,7 +543,7 @@
       
       
       
-        2025
+        2025-2026
       
       <span class="footer-info-sep rotate"></span>
       Chieko3020
@@ -477,14 +557,29 @@
     
       <div>
         <span class="icon-brush"></span>
-        2.8k
+        12.4k
         &nbsp;|&nbsp;
         <span class="icon-coffee"></span>
-        00:12
+        00:47
+      </div>
+    
+    
+      <div class="footer-beian">
+        <a target="_blank" rel="noopener nofollow noreferrer" href="https://beian.miit.gov.cn">闽ICP备2025117501号</a>
       </div>
     
     
     
+      <div class="footer-beian">
+        <img
+          style="object-fit: contain;margin-right: 2px;"
+          src="https://icp.gov.moe/images/ico64.png"
+          alt=""
+          width="24"
+          height="24"
+        />
+        <a target="_blank" rel="noopener nofollow noreferrer" href="https://icp.gov.moe/?keyword=20258787">萌ICP备20258787号</a>
+      </div>
     
     
       <div>
@@ -512,16 +607,16 @@
       <div class="sidebar-author">
   <img data-src="/avatar/avatar.webp" data-sizes="auto" alt="Chieko3020" class="lazyload">
   <div class="sidebar-author-name">Chieko3020</div>
-  <div class="sidebar-description">「这并非约束我的规则 而是我对她的礼仪」</div>
+  <div class="sidebar-description">这并非约束我的规则<br>而是我对她的礼仪</div>
 </div>
 <div class="sidebar-state">
   <div class="sidebar-state-article">
     <div>文章</div>
-    <div class="sidebar-state-number">3</div>
+    <div class="sidebar-state-number">6</div>
   </div>
   <div class="sidebar-state-category">
     <div>分类</div>
-    <div class="sidebar-state-number">4</div>
+    <div class="sidebar-state-number">2</div>
   </div>
   <div class="sidebar-state-tag">
     <div>标签</div>
@@ -618,6 +713,10 @@
     
     
     
+    <!-- Preset OML2D status to sleep before OML2D script loads -->
+    <script>
+      try { localStorage.setItem('oml2d-status', 'sleep') } catch (e) {}
+    </script>
     
 <script src="https://npm.webcache.cn/lazysizes@5.3.2/lazysizes.min.js" integrity="sha384-3gT&#x2F;vsepWkfz&#x2F;ff7PpWNUeMzeWoH3cDhm&#x2F;A8jM7ouoAK0&#x2F;fP&#x2F;9bcHHR5kHq2nf+e" crossorigin="anonymous"></script>
 
@@ -775,6 +874,10 @@
 
 
   
+    <script>
+      var meting_api = "https://music-api.chieko3020.xyz/api?server=netease&type=playlist&id=14424322349";
+    </script>
+  
   <script>
     if (window.matchMedia('(max-width: 959px)').matches) {
       const meting = _$('meting-js');
@@ -795,89 +898,6 @@
 
 
     
-    <script>
-      const cdnPath = "/live2d";
-        // "https://cdn.jsdelivr.net/gh/Chieko3020/Chieko3020.github.io@main/source/live2d";
-      const config = {
-        // 资源路径
-        path: {
-          homePath: "/",
-          modelPath: cdnPath + "/Resources/",
-          cssPath: cdnPath + "/waifu.css",
-          tipsJsonPath: cdnPath + "/waifu-tips.json",
-          tipsJsPath: cdnPath + "/waifu-tips.js",
-          live2dCorePath: cdnPath + "/Core/live2dcubismcore.js",
-          live2dSdkPath: cdnPath + "/live2d-sdk.js",
-        },
-        // 工具栏
-        tools: [
-          "hitokoto",
-          // "asteroids",
-          "express",
-          // "switch-model",
-          "switch-texture",
-          "photo",
-          "info",
-          "quit",
-        ],
-        // 模型拖拽
-        drag: {
-          enable: true,
-          direction: ["x", "y"],
-        },
-        // 模型切换(order: 顺序切换，random: 随机切换)
-        switchType: "order",
-      };
-
-      // 加载资源并初始化
-      if (screen.width >= 768) {
-        Promise.all([
-          loadExternalResource(config.path.cssPath, "css"),
-          loadExternalResource(config.path.live2dCorePath, "js"),
-          loadExternalResource(config.path.live2dSdkPath, "js"),
-          loadExternalResource(config.path.tipsJsPath, "js"),
-        ]).then(() => {
-          initWidget({
-            homePath: config.path.homePath,
-            waifuPath: config.path.tipsJsonPath,
-            cdnPath: config.path.modelPath,
-            tools: config.tools,
-            dragEnable: config.drag.enable,
-            dragDirection: config.drag.direction,
-            switchType: config.switchType,
-          });
-        });
-      }
-
-      // 异步加载资源
-      function loadExternalResource(url, type) {
-        return new Promise((resolve, reject) => {
-          let tag;
-          if (type === "css") {
-            tag = document.createElement("link");
-            tag.rel = "stylesheet";
-            tag.href = url;
-          } else if (type === "js") {
-            tag = document.createElement("script");
-            tag.src = url;
-          }
-          if (tag) {
-            tag.onload = () => resolve(url);
-            tag.onerror = () => reject(url);
-            document.head.appendChild(tag);
-          }
-        });
-      }
-    </script>
-  <!-- hexo injector body_end start --><script data-pjax src="https://registry.npmmirror.com/oh-my-live2d/latest/files"></script><script>const oml2d = OML2D.loadOml2d({libraryUrls:{"complete":"https://registry.npmmirror.com/oh-my-live2d/latest/files/lib/complete.js","cubism2":"https://registry.npmmirror.com/oh-my-live2d/latest/files/lib/cubism2.js","cubism5":"https://registry.npmmirror.com/oh-my-live2d/latest/files/lib/cubism5.js"},mobileDisplay:true,models:[{"path":"/live2d/Resources/model/March7th/March7th.model3.json","mobilePosition":[-10,23],"mobileScale":0.1,"mobileStageStyle":{"width":180,"height":166},"motionPreloadStrategy":"ALL","position":[-2,-6],"scale":0.08,"stageStyle":{"width":250,"height":250}},{"path":"/live2d/Resources/model/EverNight/EverNight.model3.json","mobilePosition":[-10,23],"mobileScale":0.1,"mobileStageStyle":{"width":180,"height":166},"motionPreloadStrategy":"ALL","position":[-20,0],"scale":0.12,"stageStyle":{"width":250,"height":250}}],parentElement:document.body,primaryColor:"var(--btn-bg)",sayHello:false,tips:{style: {"width":230,"height":120,"left":"calc(50% - 20px)","top":"-100px"},mobileStyle: {"width":180,"height":80,"left":"calc(50% - 30px)","top":"-100px"},idleTips:{interval:15000,message:function(){
-  return axios.get('https://v1.hitokoto.cn?c=i')
-    .then(function (response) {
-      return response.data.hitokoto ;
-    })
-    .catch(function (error) {
-      console.error(error);
-    });
-}
-}}});</script><!-- hexo injector body_end end --></body>
+  <!-- hexo injector body_end start --><script data-pjax src="https://registry.npmmirror.com/oh-my-live2d/latest/files"></script><script>const oml2d = OML2D.loadOml2d({libraryUrls:{"complete":"https://registry.npmmirror.com/oh-my-live2d/latest/files/lib/complete.js","cubism2":"https://registry.npmmirror.com/oh-my-live2d/latest/files/lib/cubism2.js","cubism5":"https://registry.npmmirror.com/oh-my-live2d/latest/files/lib/cubism5.js"},mobileDisplay:true,models:[{"path":"/live2d/Resources/model/March7th/March7th.model3.json","mobilePosition":[-10,23],"mobileScale":0.1,"mobileStageStyle":{"width":180,"height":166},"motionPreloadStrategy":"ALL","position":[-2,-6],"scale":0.08,"stageStyle":{"width":250,"height":250}},{"path":"/live2d/Resources/model/EverNight/EverNight.model3.json","mobilePosition":[-10,23],"mobileScale":0.1,"mobileStageStyle":{"width":180,"height":166},"motionPreloadStrategy":"ALL","position":[-20,0],"scale":0.12,"stageStyle":{"width":250,"height":250}}],parentElement:document.body,primaryColor:"var(--btn-bg)",sayHello:false,initialStatus:"sleep",tips:{style: {"width":300,"height":100,"left":"calc(50% - -40px)","top":"-80px","fontSize":"13px","lineHeight":1.3,"padding":"8px","textAlign":"left","maxHeight":"200px","overflowY":"auto","wordWrap":"break-word","whiteSpace":"normal"},mobileStyle: {"width":250,"height":150,"left":"calc(50% - -125px)","top":"-100px","fontSize":"12px","lineHeight":1.2,"padding":"6px","textAlign":"left","maxHeight":"150px","overflowY":"auto","wordWrap":"break-word","whiteSpace":"normal"},idleTips:{interval:500,message:["你好，欢迎入职星穹列车，我是三月七，星穹列车的乘员，也是你的同事。现在，请先拍摄入职照…瞧把你吓的，咱是在开玩笑啦~","名字是我自己取的，大家也叫我三月、小三月…你呢？你想叫我什么？","我的过去，或许不在从前，而是在我的未来里。所以我一定会一站站走下去，哪怕有一天…没有列车。","果汁…一说就觉得馋，一馋就忒想喝，一喝就…停不下来……","要是没人和我聊天，我就闷得要命。但在列车上的时候，姬子很忙，杨叔很忙，帕姆很忙，丹恒倒是不忙，可他不喜欢聊天……","每次坐在书桌前整理完相册，抬头看向窗外，即使那一幕已经见过千遍万遍，我总是想再拍一张照片…现在咱能坐在列车里，像这样看着星星，真的很幸福。","我平时很喜欢仙舟幻戏嘛，心里一直有点剑侠情结。等我真正开始学剑之后，才发现比起幻戏里飞天遁地的大侠，还是教我一招一式的两位小师父更厉害！","即使看起来很「黑暗」的料理，也要拿出「开拓」的精神来面对！但，实话实说，砂鳗冻和姬子泡的咖啡真不太好……","丹恒…他在我之前上的车，从没透露过自己的来历…你要是有机会，也帮我打探打探？","美丽的姬子姐姐，成熟，可靠，又优雅，还是列车的领航员…以后，我也可以成为那样的大人吧！不过咱现在这样也很好~","听说杨叔曾经是秘密组织的首领，拯救过星球，当过老师，还画过动画的原画！哎，简直是外星人了……","列车长就是最棒的！","即使知道了他的神秘过去，他还是我们认识的那个丹恒呀！","彦卿师父的教学风格非常严谨，也一直把「将军当年是这么教我的」挂在嘴边…看来，景元将军教给他的，他都记得清清楚楚。","云璃师父的教学风格非常自由，她最常和我说的话是：「这是一种感觉！」…也许这就是「体验式教学」吧？","如果让列车长听到那段「七休日」的主张，不知道会是什么反应呀。","翁法罗斯的三月，是属于永夜之帷的时间…就请以「长夜月」这个称呼，将我放进你的回忆中吧。若能躲进岁月的罅隙，属于我们的时间还有很多，很多♭","我是被遗忘的过去，是陪伴「她」的长夜。那些残酷的往事由我来代劳，而我也将看护她的前路…不惜任何代价♭","「三月七」，多么美妙、可爱、活泼、有趣的名字，还带着一丝生日的甜蜜。所以，她应当也会喜欢「长夜月」这个称号……","三月抵达翁法罗斯的时间坐标比你们早许多，她已如烛火熄灭，但我是那烛火的影，藏进岁月的狭间，等待你们的到来。","为什么随身带伞？因为美好的记忆就像连绵的雨，一度落在伞上又悄无痕迹地滑落…当然，也因为拍照出片。","翁法罗斯，一颗悲剧的宝石，它与神相争的光芒吸引了那些觊觎记忆的窃贼。但那些伤痕累累的「岁月」，分明向我诉说着对「忘却」的渴求。","与你们一起旅行的日子，早在他身上留下了不可磨灭的烙印。","对她来说，最好的未来，就是我可以彻底消失的那一天。","能在我面前保持镇定的忆者，不超过一掌之数。难道说…她看过更可怕的东西？","这位优秀的裁衣师本该为翁法罗斯编织出更多的回忆，若是我的话，一定会为自己无法亲眼见证翁法罗斯的未来而感到遗憾。","「明天见」，无论对谁来说，都是个简单而又奢侈的愿望。","身为王储的他，还是身为战士的他，都肩负着太多关于仇恨的记忆。但当他履行自己的职责时，却从未将过往与未来混为一谈。","以前她种下的那片花海，是否能挺过感官之雨的洗礼呢？","我一直都想问他一个问题：「大地兽和世界真理的真相都掉到了海里，你先捡哪个？」","晴天让人烦躁，但不得不说，她洒下的光，连我也觉得柔和舒适。","一个美好的谎言，的确胜过万千残酷的真相。","每个轮回里，他都在空白的起点出发，却又总是走向同一个结局。我和三月七的命运，是否会有所不同？","能把那位「天才」拉下马，果然不能小看擅长益智游戏的人…有机会好想和她过过招呀。","她就像那美丽的泡沫，即便破裂时，也像弦上落下的颤音一样令人动容。","我能看到，过往的英雄之火仍在他的心中燃烧。有这样经验丰富的前辈引路，让人放心多了。","成熟、优雅、如玫瑰般馥郁…三月一直在努力向她学习呢。当列车驶向更深邃的星空，未来…她又会以怎样的姿态绽放？","好想摸摸它呀。可惜，这位神秘莫测的「列车长」，一看就不会乖乖就范呢~","何物能使生灵长存？是记忆么？不，记忆只能保存腐朽的过去。而它却甘愿成为后世的基石，为这个世界留下了生生不息的传承。","希望我带来的这一场意料之外的「雨」，能让荒芜的岁月盛开…如她所愿的百花♭"]}},then:"(oml2d)=>{\ntry { localStorage.removeItem('oml2d-status') } catch(e){}\ntry { oml2d && oml2d.sleep && oml2d.sleep() } catch(e){}\ntry { oml2d && oml2d.statusBar && oml2d.statusBar.setRest && oml2d.statusBar.setRest('看板娘休息中', '💤') } catch(e){}\n}\n"});</script><!-- hexo injector body_end end --></body>
   </html>
 
