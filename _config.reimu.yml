@@ -316,7 +316,7 @@ valine:
 # https://waline.js.org/
 # version 2.15.8
 waline:
-  enable: true
+  enable: false
   serverURL: https://chieko3020xyz-comments.vercel.app/
   # https://chieko3020xyz-comments.vercel.app/ui/register 评论管理
   # lang: zh-CN # deprecated, use html.lang instead
@@ -341,7 +341,7 @@ waline:
 
 # https://twikoo.js.org
 twikoo:
-  enable: false
+  enable: true
   envId: https://twikoo.chieko3020.xyz
   region:
 
