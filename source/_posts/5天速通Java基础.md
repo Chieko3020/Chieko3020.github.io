@@ -1,5 +1,5 @@
 ---
-title: 5天速通Java基础.md
+title: 5天速通Java基础
 date: 2026-01-12 01:26:18
 tags: "你知道吗"
 categories: "只属于你的小妙招 <br> 看似有用实则没用"
