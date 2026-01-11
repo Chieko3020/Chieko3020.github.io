@@ -35,15 +35,15 @@
 
   
   
-    <meta name="description" content="某次面试被问到 一时没反应过来要回答连续与非连续再细分为分区,分页,分段,段页式 这里记录一下  连续分配 特点连续分配要求为进程分配一块连续的内存空间，内存分配和回收相对简单，但容易产生内存碎片，降低内存利用率  具体类型    单一连续分配   内存划分：将整个物理内存分为两个连续区域：   系统区：存放操作系统内核代码和数据（如中断处理程序、进程管理模块等），通常位于内存低地址（如0地址开">
+    <meta name="description" content="某次面试被问到 一时没反应过来要回答连续与非连续再细分为分区,分页,分段,段页式 这里记录一下  连续分配 特点  连续分配要求为进程分配一块连续的内存空间，内存分配和回收相对简单，但容易产生内存碎片，降低内存利用率  具体类型   单一连续分配   内存划分：将整个物理内存分为两个连续区域：  系统区：存放操作系统内核代码和数据（如中断处理程序、进程管理模块等），通常位于内存低地址（如0地址开">
 <meta property="og:type" content="article">
 <meta property="og:title" content="进程分配内存空间的方式">
 <meta property="og:url" content="https://chieko3020.xyz/2025/11/02/%E8%BF%9B%E7%A8%8B%E5%88%86%E9%85%8D%E5%86%85%E5%AD%98%E7%A9%BA%E9%97%B4%E7%9A%84%E6%96%B9%E5%BC%8F/index.html">
 <meta property="og:site_name" content="Chieko3020 | Nostalgia">
-<meta property="og:description" content="某次面试被问到 一时没反应过来要回答连续与非连续再细分为分区,分页,分段,段页式 这里记录一下  连续分配 特点连续分配要求为进程分配一块连续的内存空间，内存分配和回收相对简单，但容易产生内存碎片，降低内存利用率  具体类型    单一连续分配   内存划分：将整个物理内存分为两个连续区域：   系统区：存放操作系统内核代码和数据（如中断处理程序、进程管理模块等），通常位于内存低地址（如0地址开">
+<meta property="og:description" content="某次面试被问到 一时没反应过来要回答连续与非连续再细分为分区,分页,分段,段页式 这里记录一下  连续分配 特点  连续分配要求为进程分配一块连续的内存空间，内存分配和回收相对简单，但容易产生内存碎片，降低内存利用率  具体类型   单一连续分配   内存划分：将整个物理内存分为两个连续区域：  系统区：存放操作系统内核代码和数据（如中断处理程序、进程管理模块等），通常位于内存低地址（如0地址开">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2025-11-02T12:39:59.000Z">
-<meta property="article:modified_time" content="2025-11-02T15:39:45.184Z">
+<meta property="article:modified_time" content="2026-01-10T03:10:50.891Z">
 <meta property="article:author" content="Chieko3020">
 <meta property="article:tag" content="你知道吗">
 <meta name="twitter:card" content="summary">
@@ -59,12 +59,6 @@
 
   <link rel="preload" as="style" onload="this.onload&#x3D;null;this.rel&#x3D;&#39;stylesheet&#39;" href="https://npm.webcache.cn/photoswipe@5.4.4/dist/photoswipe.css" integrity="sha384-IfxC36XL&#x2F;toUyJ939C73PcgMuRzAZuIzZxE38drsmO5p6jD7ei+Zx&#x2F;1oA&#x2F;0l8ysE" crossorigin="anonymous">
   
-  
-    
-      
-<link rel="stylesheet" href="https://npm.webcache.cn/@waline/client@2.15.8/dist/waline.css" integrity="sha384-vltfZtesCdl6NYVcFVcjEaIi5RpNvZe9t7fXvq8twVtcoy+Ub9QgnxUYJmwOhYCK" crossorigin="anonymous">
-
-    
   
   
   
@@ -349,7 +343,7 @@
 <div class="sidebar-state">
   <div class="sidebar-state-article">
     <div>文章</div>
-    <div class="sidebar-state-number">6</div>
+    <div class="sidebar-state-number">8</div>
   </div>
   <div class="sidebar-state-category">
     <div>分类</div>
@@ -452,11 +446,11 @@
       <div class="article-date">
   <span class="article-date-link icon-calendar" data-aos="zoom-in">
     <time datetime="2025-11-02T12:39:59.000Z" itemprop="datePublished">2025-11-02</time>
-    <time style="display: none;" id="post-update-time">2025-11-02</time>
+    <time style="display: none;" id="post-update-time">2026-01-10</time>
   </span>
   
     <span class="article-date-link icon-calendar-plus" data-aos="zoom-in">
-      <time datetime="2025-11-02T15:39:45.184Z" itemprop="dateModified">2025-11-02</time>
+      <time datetime="2026-01-10T03:10:50.891Z" itemprop="dateModified">2026-01-10</time>
     </span>
   
 </div>
@@ -484,35 +478,41 @@
 <li>某次面试被问到 一时没反应过来要回答连续与非连续再细分为分区,分页,分段,段页式 这里记录一下</li>
 </ul>
 <h1 id="连续分配"><a href="#连续分配" class="headerlink" title="连续分配"></a>连续分配</h1><ul>
-<li><p>特点<br>连续分配要求为进程分配一块连续的内存空间，内存分配和回收相对简单，但容易产生内存碎片，降低内存利用率</p>
-</li>
-<li><p>具体类型</p>
-</li>
+<li>特点</li>
+</ul>
+<p>连续分配要求为进程分配一块连续的内存空间，内存分配和回收相对简单，但容易产生内存碎片，降低内存利用率</p>
+<ul>
+<li>具体类型</li>
 </ul>
 <ol>
 <li>单一连续分配</li>
 </ol>
 <ul>
-<li>内存划分：将整个物理内存分为两个连续区域：  <ul>
-<li>系统区：存放操作系统内核代码和数据（如中断处理程序、进程管理模块等），通常位于内存低地址（如0地址开始）或高地址。  </li>
+<li><p>内存划分：将整个物理内存分为两个连续区域：</p>
+<ul>
+<li>系统区：存放操作系统内核代码和数据（如中断处理程序、进程管理模块等），通常位于内存低地址（如0地址开始）或高地址。</li>
 <li>用户区：整个剩余内存作为一个连续的区域，同一时间只分配给一个用户进程使用。</li>
 </ul>
 </li>
-<li>分配逻辑：进程运行时，整个用户区全部分配给它；进程结束后，释放用户区供下一个进程使用。  </li>
-<li>特点:<ul>
-<li>单任务特性：同一时间只能有一个用户进程在内存中运行（操作系统常驻内存）。  </li>
-<li>地址转换简单：通过重定位寄存器（基址寄存器）实现逻辑地址到物理地址的转换。例如，进程逻辑地址为 L，物理地址 &#x3D; 重定位寄存器值 + L（确保不越界访问系统区）。  </li>
+<li><p>分配逻辑：进程运行时，整个用户区全部分配给它；进程结束后，释放用户区供下一个进程使用。</p>
+</li>
+<li><p>特点:</p>
+<ul>
+<li>单任务特性：同一时间只能有一个用户进程在内存中运行（操作系统常驻内存）。</li>
+<li>地址转换简单：通过重定位寄存器（基址寄存器）实现逻辑地址到物理地址的转换。例如，进程逻辑地址为 L，物理地址 &#x3D; 重定位寄存器值 + L（确保不越界访问系统区）。</li>
 <li>无碎片问题：用户区作为整体分配，没有内碎片或外碎片（但进程大小若小于用户区，会浪费部分空间，可视为一种“隐性内碎片”）。</li>
 </ul>
 </li>
-<li>优点：  <ul>
-<li>实现最简单，无需复杂的内存管理算法（只需标记用户区是否空闲）。  </li>
+<li><p>优点：</p>
+<ul>
+<li>实现最简单，无需复杂的内存管理算法（只需标记用户区是否空闲）。</li>
 <li>地址转换速度快（仅需一次加法运算）。</li>
 </ul>
 </li>
-<li>缺点：  <ul>
-<li>资源利用率极低：内存中只能有一个用户进程，CPU和内存常处于空闲状态。  </li>
-<li>不支持多任务：无法同时运行多个进程，严重限制系统吞吐量。  </li>
+<li><p>缺点：</p>
+<ul>
+<li>资源利用率极低：内存中只能有一个用户进程，CPU和内存常处于空闲状态。</li>
+<li>不支持多任务：无法同时运行多个进程，严重限制系统吞吐量。</li>
 <li>内存浪费：若进程大小远小于用户区，剩余空间无法利用（例如用户区1GB，进程仅需100MB，浪费900MB）。</li>
 </ul>
 </li>
@@ -521,37 +521,43 @@
 <li>固定分区分配</li>
 </ol>
 <ul>
-<li>预先划分分区：操作系统初始化时，将用户区内存划分为多个固定大小的连续分区（分区大小可相同或不同），划分后分区大小和数量不再改变。  </li>
-<li>分区管理：通过“分区表”记录每个分区的信息：起始地址、大小、状态（空闲&#x2F;已分配）。  </li>
-<li>分配逻辑：当进程请求内存时，从分区表中找一个大小大于等于进程需求且状态为空闲的分区，分配给进程（一个分区只能装一个进程）；进程结束后，将分区标记为空闲。  </li>
-<li>特点<ul>
-<li>多任务支持：可同时运行多个进程（最多等于分区数量）。  </li>
-<li>分区大小设计：  <ul>
-<li>等大小分区：所有分区尺寸相同（如4个1GB分区），适合运行大小相近的进程。  </li>
+<li><p>预先划分分区：操作系统初始化时，将用户区内存划分为多个固定大小的连续分区（分区大小可相同或不同），划分后分区大小和数量不再改变。</p>
+</li>
+<li><p>分区管理：通过“分区表”记录每个分区的信息：起始地址、大小、状态（空闲&#x2F;已分配）。</p>
+</li>
+<li><p>分配逻辑：当进程请求内存时，从分区表中找一个大小大于等于进程需求且状态为空闲的分区，分配给进程（一个分区只能装一个进程）；进程结束后，将分区标记为空闲。</p>
+</li>
+<li><p>特点</p>
+<ul>
+<li>多任务支持：可同时运行多个进程（最多等于分区数量）。</li>
+<li>分区大小设计：<ul>
+<li>等大小分区：所有分区尺寸相同（如4个1GB分区），适合运行大小相近的进程。</li>
 <li>不等大小分区：分区尺寸不同（如1个4GB、2个2GB、4个1GB），适配不同规模的进程（大型、中型、小型）。</li>
 </ul>
 </li>
 <li>内部碎片问题：若进程大小小于分区大小，分区内未使用的空间称为“内碎片”（例如512MB分区装入300MB进程，产生212MB内碎片）。</li>
 </ul>
 </li>
-<li>优点：  <ul>
-<li>实现简单：分区表管理成本低，分配&#x2F;回收仅需修改分区状态。  </li>
+<li><p>优点：</p>
+<ul>
+<li>实现简单：分区表管理成本低，分配&#x2F;回收仅需修改分区状态。</li>
 <li>支持多任务：相比单一连续分配，提高了CPU和内存利用率。</li>
 </ul>
 </li>
-<li>缺点：  <ul>
-<li>内碎片浪费：进程大小通常小于分区，导致内存利用率不高（不等大小分区可缓解但无法消除）。  </li>
-<li>灵活性差：分区大小固定，若进程大于所有分区则无法分配（“内存溢出”）；若进程远小于分区，浪费严重。  </li>
+<li><p>缺点：</p>
+<ul>
+<li>内碎片浪费：进程大小通常小于分区，导致内存利用率不高（不等大小分区可缓解但无法消除）。</li>
+<li>灵活性差：分区大小固定，若进程大于所有分区则无法分配（“内存溢出”）；若进程远小于分区，浪费严重。</li>
 <li>分区数量固定：能同时运行的进程数量受限（例如8个分区最多同时运行8个进程）。</li>
 </ul>
 </li>
 </ul>
 <ol start="3">
 <li>动态分区分配<ul>
-<li>按需动态划分：不预先划分分区，而是在进程加载时，根据其实际内存需求，从空闲内存中“切割”出一块大小恰好合适的连续区域分配给进程（分区大小 &#x3D; 进程需求）。  </li>
-<li>空闲分区管理：通过“空闲分区链”（链表）记录所有空闲区域的起始地址和大小（空闲分区之间可能不连续）。  </li>
-<li>分配与回收：  <ul>
-<li>分配：从空闲链中找合适的分区，切割后分配给进程，剩余部分仍作为空闲分区保留在链中。  </li>
+<li>按需动态划分：不预先划分分区，而是在进程加载时，根据其实际内存需求，从空闲内存中“切割”出一块大小恰好合适的连续区域分配给进程（分区大小 &#x3D; 进程需求）。</li>
+<li>空闲分区管理：通过“空闲分区链”（链表）记录所有空闲区域的起始地址和大小（空闲分区之间可能不连续）。</li>
+<li>分配与回收：<ul>
+<li>分配：从空闲链中找合适的分区，切割后分配给进程，剩余部分仍作为空闲分区保留在链中。</li>
 <li>回收：进程结束后，释放的分区重新加入空闲链，若与相邻空闲分区连续，则合并为一个大分区（“分区合并”，减少碎片）。</li>
 </ul>
 </li>
@@ -559,27 +565,30 @@
 </li>
 </ol>
 <ul>
-<li>特点<ul>
-<li>分区大小动态变化：分区大小完全由进程需求决定，无固定尺寸。  </li>
-<li>分配算法：需通过算法从空闲链中选择分区，常见算法包括：  <ul>
-<li>首次适应：从链头开始，选第一个能容纳进程的空闲分区。  </li>
-<li>最佳适应：遍历所有空闲分区，选最小的、能容纳进程的分区（减少内碎片）。  </li>
-<li>最坏适应：选最大的空闲分区（剩余部分仍可能被利用）。  </li>
+<li><p>特点</p>
+<ul>
+<li>分区大小动态变化：分区大小完全由进程需求决定，无固定尺寸。</li>
+<li>分配算法：需通过算法从空闲链中选择分区，常见算法包括：<ul>
+<li>首次适应：从链头开始，选第一个能容纳进程的空闲分区。</li>
+<li>最佳适应：遍历所有空闲分区，选最小的、能容纳进程的分区（减少内碎片）。</li>
+<li>最坏适应：选最大的空闲分区（剩余部分仍可能被利用）。</li>
 <li>邻近适应：从上次分配位置开始查找，选第一个合适的分区。</li>
 </ul>
 </li>
 <li>外部碎片问题：频繁分配和回收后，空闲内存会被分割成许多分散的小分区（“外碎片”），总空闲内存足够但无法分配给需要连续空间的大进程。</li>
 </ul>
 </li>
-<li>优点：  <ul>
-<li>内存利用率高：按需分配，几乎无内碎片（仅最后一次切割可能产生极小内碎片）。  </li>
-<li>灵活性好：支持任意大小的进程（只要总空闲内存足够），能动态适应进程需求。  </li>
+<li><p>优点：</p>
+<ul>
+<li>内存利用率高：按需分配，几乎无内碎片（仅最后一次切割可能产生极小内碎片）。</li>
+<li>灵活性好：支持任意大小的进程（只要总空闲内存足够），能动态适应进程需求。</li>
 <li>支持多任务：无分区数量限制（理论上可运行任意多个进程，只要内存足够）。</li>
 </ul>
 </li>
-<li>缺点：  <ul>
-<li>外碎片问题：长期运行后，大量小碎片导致“内存总量足够但无法分配”。  </li>
-<li>分配&#x2F;回收效率低：需遍历空闲链查找合适分区，算法复杂度高于固定分区；回收时可能需要合并相邻分区，进一步增加开销。  </li>
+<li><p>缺点：</p>
+<ul>
+<li>外碎片问题：长期运行后，大量小碎片导致“内存总量足够但无法分配”。</li>
+<li>分配&#x2F;回收效率低：需遍历空闲链查找合适分区，算法复杂度高于固定分区；回收时可能需要合并相邻分区，进一步增加开销。</li>
 <li>需支持动态重定位：进程内存地址可能不连续，需硬件（如基址-限长寄存器）支持地址转换。</li>
 </ul>
 </li>
@@ -594,25 +603,32 @@
 <li>分页存储管理<br>将进程的逻辑地址空间和物理内存空间均划分为大小相等的“块”（逻辑上称为“页”，物理上称为“页框”），通过“页表”建立页与页框的映射，使进程的不同页可以分散存储在物理内存的不同页框中（无需连续）。</li>
 </ol>
 <ul>
-<li>页：进程逻辑地址空间的基本单位，大小固定（如4KB、8KB，由系统决定）。  </li>
-<li>页框：物理内存的基本单位，大小与页相同（保证一页恰好放入一个页框）。  </li>
-<li>页表：每个进程一张，记录逻辑页号到物理页框号的映射关系（还可能包含权限位、有效位等控制信息）。  </li>
-<li>地址结构：逻辑地址 &#x3D; 页号（高位） + 页内偏移量（低位）。</li>
-<li>地址转换过程<ul>
-<li>进程访问逻辑地址时，CPU自动拆分出页号和页内偏移量。  </li>
-<li>用页号查页表，得到对应的物理页框号。  </li>
+<li><p>页：进程逻辑地址空间的基本单位，大小固定（如4KB、8KB，由系统决定）。</p>
+</li>
+<li><p>页框：物理内存的基本单位，大小与页相同（保证一页恰好放入一个页框）。</p>
+</li>
+<li><p>页表：每个进程一张，记录逻辑页号到物理页框号的映射关系（还可能包含权限位、有效位等控制信息）。</p>
+</li>
+<li><p>地址结构：逻辑地址 &#x3D; 页号（高位） + 页内偏移量（低位）。</p>
+</li>
+<li><p>地址转换过程</p>
+<ul>
+<li>进程访问逻辑地址时，CPU自动拆分出页号和页内偏移量。</li>
+<li>用页号查页表，得到对应的物理页框号。</li>
 <li>物理地址 &#x3D; 物理页框号 × 页大小 + 页内偏移量。</li>
 </ul>
 </li>
-<li>优点：  <ul>
-<li>彻底消除外碎片（物理内存按页框划分，分配粒度固定）。  </li>
-<li>内存利用率高（进程无需连续空间，小页框可适配不同大小的进程）。  </li>
+<li><p>优点：</p>
+<ul>
+<li>彻底消除外碎片（物理内存按页框划分，分配粒度固定）。</li>
+<li>内存利用率高（进程无需连续空间，小页框可适配不同大小的进程）。</li>
 <li>分配&#x2F;回收简单（按页框操作，无需考虑连续性）。</li>
 </ul>
 </li>
-<li>缺点：  <ul>
-<li>存在少量内碎片（进程最后一页未装满的部分）。  </li>
-<li>页表可能过大（例如32位系统，4KB页大小，页表需1M个条目，占用4MB内存）。  </li>
+<li><p>缺点：</p>
+<ul>
+<li>存在少量内碎片（进程最后一页未装满的部分）。</li>
+<li>页表可能过大（例如32位系统，4KB页大小，页表需1M个条目，占用4MB内存）。</li>
 <li>按页划分不符合程序逻辑（页可能割裂代码、数据等逻辑单元，不便于共享和保护）。</li>
 </ul>
 </li>
@@ -621,30 +637,30 @@
 <li>分段存储管理<br>按进程的逻辑结构（如代码段、数据段、堆段、栈段）将逻辑地址空间划分为若干个“段”（每个段有独立的逻辑意义），每个段的大小不固定（由内容决定），通过“段表”建立段与物理内存的映射，段内连续、段间离散存储。</li>
 </ol>
 <ul>
-<li><p>段：进程逻辑地址空间的基本单位，大小不固定（如代码段可能100KB，栈段可能20KB），每个段有唯一的段号。  </p>
+<li><p>段：进程逻辑地址空间的基本单位，大小不固定（如代码段可能100KB，栈段可能20KB），每个段有唯一的段号。</p>
 </li>
-<li><p>段表：每个进程一张，记录段号对应的物理内存起始地址（段基址）和段的长度（段限长）。  </p>
+<li><p>段表：每个进程一张，记录段号对应的物理内存起始地址（段基址）和段的长度（段限长）。</p>
 </li>
 <li><p>地址结构：逻辑地址 &#x3D; 段号（高位） + 段内偏移量（低位），段内偏移量不能超过段长（否则越界）。</p>
 </li>
 <li><p>地址转换过程</p>
 <ul>
-<li>进程访问逻辑地址时，拆分出段号和段内偏移量。  </li>
-<li>用段号查段表，得到段基址和段限长，检查偏移量是否超过段限长（防止越界）。  </li>
+<li>进程访问逻辑地址时，拆分出段号和段内偏移量。</li>
+<li>用段号查段表，得到段基址和段限长，检查偏移量是否超过段限长（防止越界）。</li>
 <li>物理地址 &#x3D; 段基址 + 段内偏移量</li>
 </ul>
 </li>
-<li><p>优点：  </p>
+<li><p>优点：</p>
 <ul>
-<li>符合程序逻辑（按功能划分段，便于理解和维护）。  </li>
-<li>便于共享和保护（例如多个进程可共享代码段，对数据段设置只读&#x2F;读写权限）。  </li>
+<li>符合程序逻辑（按功能划分段，便于理解和维护）。</li>
+<li>便于共享和保护（例如多个进程可共享代码段，对数据段设置只读&#x2F;读写权限）。</li>
 <li>无内碎片（段大小由内容决定，无需预留空间）。</li>
 </ul>
 </li>
-<li><p>缺点：  </p>
+<li><p>缺点：</p>
 <ul>
-<li>存在外碎片（段间分散的空闲空间，难以利用）。  </li>
-<li>段大小可变，分配&#x2F;回收复杂（需匹配大小合适的连续空闲区）。  </li>
+<li>存在外碎片（段间分散的空闲空间，难以利用）。</li>
+<li>段大小可变，分配&#x2F;回收复杂（需匹配大小合适的连续空闲区）。</li>
 <li>段表管理成本高（段数量可能多，且段大小差异大）。</li>
 </ul>
 </li>
@@ -653,29 +669,36 @@
 <li>段页式存储管理<br>结合分页和分段的优点：先将进程按逻辑结构分段，再将每个段分页。既保留分段的逻辑清晰性，又利用分页解决外碎片问题。</li>
 </ol>
 <ul>
-<li>段：进程按逻辑结构划分（如代码段、数据段），每个段有段号。  </li>
-<li>页：每个段再划分为大小固定的页（与物理页框大小一致）。  </li>
-<li>段表和页表：  <ul>
-<li>段表：每个段对应一个页表，段表项记录该段的页表起始地址和页表长度。  </li>
+<li><p>段：进程按逻辑结构划分（如代码段、数据段），每个段有段号。</p>
+</li>
+<li><p>页：每个段再划分为大小固定的页（与物理页框大小一致）。</p>
+</li>
+<li><p>段表和页表：</p>
+<ul>
+<li>段表：每个段对应一个页表，段表项记录该段的页表起始地址和页表长度。</li>
 <li>页表：每个页表记录该段内页号到物理页框号的映射。</li>
 </ul>
 </li>
-<li>地址结构：逻辑地址 &#x3D; 段号 + 页号 + 页内偏移量（三级结构）。</li>
-<li>地址转换过程<ul>
-<li>拆分逻辑地址为段号、页号、页内偏移量。  </li>
-<li>用段号查段表，得到该段的页表基址和页表长度（检查页号是否越界）。  </li>
-<li>用页号查该段的页表，得到物理页框号。  </li>
+<li><p>地址结构：逻辑地址 &#x3D; 段号 + 页号 + 页内偏移量（三级结构）。</p>
+</li>
+<li><p>地址转换过程</p>
+<ul>
+<li>拆分逻辑地址为段号、页号、页内偏移量。</li>
+<li>用段号查段表，得到该段的页表基址和页表长度（检查页号是否越界）。</li>
+<li>用页号查该段的页表，得到物理页框号。</li>
 <li>物理地址 &#x3D; 物理页框号 × 页大小 + 页内偏移量。</li>
 </ul>
 </li>
-<li>优点：  <ul>
-<li>兼顾逻辑清晰性（分段）和内存高效利用（分页）。  </li>
-<li>消除外碎片（分页机制），内碎片少（仅页内少量剩余）。  </li>
+<li><p>优点：</p>
+<ul>
+<li>兼顾逻辑清晰性（分段）和内存高效利用（分页）。</li>
+<li>消除外碎片（分页机制），内碎片少（仅页内少量剩余）。</li>
 <li>便于共享和保护（按段管理权限，按页分配内存）。</li>
 </ul>
 </li>
-<li>缺点：  <ul>
-<li>地址转换复杂（需查段表和页表两级映射），速度较慢（通常需TLB硬件缓存加速）。  </li>
+<li><p>缺点：</p>
+<ul>
+<li>地址转换复杂（需查段表和页表两级映射），速度较慢（通常需TLB硬件缓存加速）。</li>
 <li>管理成本高（段表和页表均需占用内存）。</li>
 </ul>
 </li>
@@ -690,7 +713,7 @@
     <p><strong><span class="icon-link icon"></span>本文链接：</strong><a href="https://chieko3020.xyz/2025/11/02/%E8%BF%9B%E7%A8%8B%E5%88%86%E9%85%8D%E5%86%85%E5%AD%98%E7%A9%BA%E9%97%B4%E7%9A%84%E6%96%B9%E5%BC%8F/">https://chieko3020.xyz/2025/11/02/%E8%BF%9B%E7%A8%8B%E5%88%86%E9%85%8D%E5%86%85%E5%AD%98%E7%A9%BA%E9%97%B4%E7%9A%84%E6%96%B9%E5%BC%8F/</a></p>
     <p><strong><span class="icon-pencil icon"></span>本文标题：</strong>「进程分配内存空间的方式」</p>
     <p><strong><span class="icon-calendar icon"></span>本文发布时间：</strong>2025-11-02 20:39:59</p>
-    <p><strong><span class="icon-calendar icon"></span>本文更新时间：</strong>2025-11-02 23:39:45</p>
+    <p><strong><span class="icon-calendar icon"></span>本文更新时间：</strong>2026-01-10 11:10:50</p>
     <p><strong><span class="icon-copyright icon"></span>本文版权：</strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" rel="noopener nofollow noreferrer" target="_blank"><span class="icon-creative-commons"></span>BY-NC-SA</a> 许可协议。转载请注明出处！</p>
     <span class="icon-creative-commons article-copyright-bg"></span>
   </blockquote>
@@ -699,18 +722,13 @@
       
       
       
+      
         <a data-aos="zoom-in" href="/2025/11/02/%E8%BF%9B%E7%A8%8B%E5%88%86%E9%85%8D%E5%86%85%E5%AD%98%E7%A9%BA%E9%97%B4%E7%9A%84%E6%96%B9%E5%BC%8F/#comments" class="article-comment-link">
-          <span class="post-comments-count waline-comment-count" data-path="/2025/11/02/%E8%BF%9B%E7%A8%8B%E5%88%86%E9%85%8D%E5%86%85%E5%AD%98%E7%A9%BA%E9%97%B4%E7%9A%84%E6%96%B9%E5%BC%8F/" itemprop="commentCount"></span>
+          <span class="post-comments-count twikoo-comment-count" data-path="/2025/11/02/%E8%BF%9B%E7%A8%8B%E5%88%86%E9%85%8D%E5%86%85%E5%AD%98%E7%A9%BA%E9%97%B4%E7%9A%84%E6%96%B9%E5%BC%8F/" itemprop="commentCount"></span>
           留言
         </a>
       
       
-      
-      
-        <span data-aos="zoom-in" class="article-visitor-link">
-          <span class="waline-pageview-count" data-path="/2025/11/02/%E8%BF%9B%E7%A8%8B%E5%88%86%E9%85%8D%E5%86%85%E5%AD%98%E7%A9%BA%E9%97%B4%E7%9A%84%E6%96%B9%E5%BC%8F/">0</span>
-          <em class="post-meta-item-text">阅读量</em>
-        </span>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item" data-aos="zoom-in"><a class="article-tag-list-link" href="/tags/%E4%BD%A0%E7%9F%A5%E9%81%93%E5%90%97/" rel="tag" title="你知道吗">你知道吗</a></li></ul>
@@ -726,7 +744,7 @@
         
           
           
-            <img data-src="/images/Still_030_001.webp" data-sizes="auto" alt="网络IO模型" class="lazyload">
+            <img data-src="/images/V-5_silent.webp" data-sizes="auto" alt="网络IO模型" class="lazyload">
           
         
         <a href="/2025/11/02/%E7%BD%91%E7%BB%9CIO%E6%A8%A1%E5%9E%8B/" aria-label="前一篇: 网络IO模型" title="前一篇: 网络IO模型"></a>
@@ -744,7 +762,7 @@
       
         
         
-          <img data-src="/images/Still_020_001.webp" data-sizes="auto" alt="关于魔法少女ノ魔女裁判" class="lazyload">
+          <img data-src="/images/2024_12_23_15_59_02_655519.webp" data-sizes="auto" alt="关于魔法少女ノ魔女裁判" class="lazyload">
         
       
       <a href="/2025/10/21/%E5%85%B3%E4%BA%8E%E9%AD%94%E6%B3%95%E5%B0%91%E5%A5%B3%E3%83%8E%E9%AD%94%E5%A5%B3%E8%A3%81%E5%88%A4/" aria-label="后一篇: 关于魔法少女ノ魔女裁判"  title="后一篇: 关于魔法少女ノ魔女裁判"></a>
@@ -779,8 +797,8 @@
       <div class="comment-selector">
         <div class="comment-selector-wrap">
             
-            <div class="selector-item" data-selector="waline">
-              <span>waline</span>
+            <div class="selector-item" data-selector="twikoo">
+              <span>twikoo</span>
             </div>
             
         </div>
@@ -788,8 +806,8 @@
     </div>
     <div class="comment-content">
       
-        <div class="comment waline-comment" data-aos="fade-up"
-          id="waline-comment">
+        <div class="comment twikoo-comment" data-aos="fade-up"
+          id="twikoo-comment">
         </div>
       
     </div>
@@ -823,10 +841,10 @@
     
       <div>
         <span class="icon-brush"></span>
-        12.4k
+        86k
         &nbsp;|&nbsp;
         <span class="icon-coffee"></span>
-        00:47
+        05:27
       </div>
     
     
@@ -886,7 +904,7 @@
 <div class="sidebar-state">
   <div class="sidebar-state-article">
     <div>文章</div>
-    <div class="sidebar-state-number">6</div>
+    <div class="sidebar-state-number">8</div>
   </div>
   <div class="sidebar-state-category">
     <div>分类</div>
@@ -1085,9 +1103,9 @@
           url: "https://chieko3020.xyz/2025/11/02/%E8%BF%9B%E7%A8%8B%E5%88%86%E9%85%8D%E5%86%85%E5%AD%98%E7%A9%BA%E9%97%B4%E7%9A%84%E6%96%B9%E5%BC%8F/",
           excerpt: "",
           description: "",
-          stripContent: " 某次面试被问到 一时没反应过来要回答连续与非连续再细分为分区,分页,分段,段页式 这里记录一下  连续分配 特点连续分配要求为进程分配一块连续的内存空间，内存分配和回收相对简单，但容易产生内存碎片，降低内存利用率  具体类型    单一连续分配   内存划分：将整个物理内存分为两个连续区域：   系统区：存放操作系统内核代码和数据（如中断处理程序、进程管理模块等），通常位于内存低地址（如0地址开始）或高地址。   用户区：整个剩余内存作为一个连续的区域，同一时间只分配给一个用户进程使用。   ",
+          stripContent: " 某次面试被问到 一时没反应过来要回答连续与非连续再细分为分区,分页,分段,段页式 这里记录一下  连续分配 特点  连续分配要求为进程分配一块连续的内存空间，内存分配和回收相对简单，但容易产生内存碎片，降低内存利用率  具体类型   单一连续分配   内存划分：将整个物理内存分为两个连续区域：  系统区：存放操作系统内核代码和数据（如中断处理程序、进程管理模块等），通常位于内存低地址（如0地址开始）或高地址。 用户区：整个剩余内存作为一个连续的区域，同一时间只分配给一个用户进程使用。   分配",
           date: "Sun Nov 02 2025 20:39:59 GMT+0800",
-          updated: "Sun Nov 02 2025 23:39:45 GMT+0800",
+          updated: "Sat Jan 10 2026 11:10:50 GMT+0800",
           cover: "/images/bg.webp",
         };
       </script>
@@ -1144,41 +1162,49 @@
     return script;
   };
 
-  var commentConfigKeys = ["waline"];
+  var commentConfigKeys = ["twikoo"];
   var commentConfig = {
     
     
-    waline: {
+    
+    twikoo: {
       enable: true,
-      load: async () => {
-        const container = document.querySelector('.waline-comment');
+      load: () => {
+        const container = document.querySelector('.twikoo-comment');
         if (!container) return;
         container.style.display = 'block';
 
-        let walineInit;
-        const walineCdn = 'https://npm.webcache.cn/@waline/client@2.15.8/dist/waline.mjs';
-        const walineIntegrity = 'sha384-9sbqJjrfGjbkI6/PI4nU/MvBfEmkkPC4YK9I4zBeMIf1CVCZdCMH/KinBEAZII/5';
+        const script = loadScript(
+          'https://npm.webcache.cn/twikoo@1.6.44/dist/twikoo.all.min.js',
+          'sha384-kwWLC0HjeZZnVPqCJ1AncI8tsk+kQqF9TbAmCclcc9Z0hGkfgHRzeQZxmdmZhE0K'
+        );
 
-        const module = await safeImport(walineCdn, walineIntegrity);
-        walineInit = module.init;
+        script.onload = () => {
+          if (window.twikoo) {
+            twikoo.init({
+              envId: 'https://twikoo.chieko3020.xyz',
+              el: '.twikoo-comment',
+              region: '',
+              lang: document.documentElement.lang || 'en',
+            });
 
-        window.walineInstance = walineInit({
-          el: '.waline-comment',
-          serverURL: 'https://chieko3020xyz-comments.vercel.app/',
-          lang: document.documentElement.lang || 'en',
-          locale: {},
-          emoji: ["https://unpkg.com/@waline/emojis@1.2.0/weibo","https://unpkg.com/@waline/emojis@1.2.0/alus","https://unpkg.com/@waline/emojis@1.2.0/bilibili","https://unpkg.com/@waline/emojis@1.2.0/qq","https://unpkg.com/@waline/emojis@1.2.0/tieba","https://unpkg.com/@waline/emojis@1.2.0/tw-emoji"],
-          meta: ["nick","mail","link"],
-          requiredMeta: ["nick","mail"],
-          wordLimit: JSON.parse('0'),
-          comment: true,
-          pageSize: JSON.parse('10'),
-          dark: 'html[data-theme="dark"]',
-          pageview: JSON.parse('true'),
-        });
+            twikoo.getCommentsCount({
+              envId: 'https://twikoo.chieko3020.xyz',
+              region: '',
+              urls: [
+                '/friend/index.html'
+              ],
+              includeReply: false
+            }).then((res) => {
+              _$('.twikoo-comment-count').innerText = res[0].count;
+            }).catch((err) => {
+              console.error(err);
+            });
+          }
+        } 
+        document.head.appendChild(script);
       }
     },
-    
     
     
     
@@ -1369,7 +1395,7 @@
 
   
     <script>
-      var meting_api = "https://music-api.chieko3020.xyz/api?server=netease&type=playlist&id=14424322349";
+      var meting_api = "https://api.qijieya.cn/meting/?server=netease&type=playlist&id=14424322349";
     </script>
   
   <script>

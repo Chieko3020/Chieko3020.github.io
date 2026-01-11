@@ -50,7 +50,7 @@
 <meta property="og:image" content="https://chieko3020.xyz/images/%E7%BD%91%E7%BB%9CIO%E6%A8%A1%E5%9E%8B/sigio.png">
 <meta property="og:image" content="https://chieko3020.xyz/images/%E7%BD%91%E7%BB%9CIO%E6%A8%A1%E5%9E%8B/aio.png">
 <meta property="article:published_time" content="2025-11-02T13:01:15.000Z">
-<meta property="article:modified_time" content="2025-11-02T15:38:22.273Z">
+<meta property="article:modified_time" content="2026-01-10T03:10:50.891Z">
 <meta property="article:author" content="Chieko3020">
 <meta property="article:tag" content="你知道吗">
 <meta name="twitter:card" content="summary">
@@ -67,12 +67,6 @@
 
   <link rel="preload" as="style" onload="this.onload&#x3D;null;this.rel&#x3D;&#39;stylesheet&#39;" href="https://npm.webcache.cn/photoswipe@5.4.4/dist/photoswipe.css" integrity="sha384-IfxC36XL&#x2F;toUyJ939C73PcgMuRzAZuIzZxE38drsmO5p6jD7ei+Zx&#x2F;1oA&#x2F;0l8ysE" crossorigin="anonymous">
   
-  
-    
-      
-<link rel="stylesheet" href="https://npm.webcache.cn/@waline/client@2.15.8/dist/waline.css" integrity="sha384-vltfZtesCdl6NYVcFVcjEaIi5RpNvZe9t7fXvq8twVtcoy+Ub9QgnxUYJmwOhYCK" crossorigin="anonymous">
-
-    
   
   
   
@@ -357,7 +351,7 @@
 <div class="sidebar-state">
   <div class="sidebar-state-article">
     <div>文章</div>
-    <div class="sidebar-state-number">6</div>
+    <div class="sidebar-state-number">8</div>
   </div>
   <div class="sidebar-state-category">
     <div>分类</div>
@@ -460,11 +454,11 @@
       <div class="article-date">
   <span class="article-date-link icon-calendar" data-aos="zoom-in">
     <time datetime="2025-11-02T13:01:15.000Z" itemprop="datePublished">2025-11-02</time>
-    <time style="display: none;" id="post-update-time">2025-11-02</time>
+    <time style="display: none;" id="post-update-time">2026-01-10</time>
   </span>
   
     <span class="article-date-link icon-calendar-plus" data-aos="zoom-in">
-      <time datetime="2025-11-02T15:38:22.273Z" itemprop="dateModified">2025-11-02</time>
+      <time datetime="2026-01-10T03:10:50.891Z" itemprop="dateModified">2026-01-10</time>
     </span>
   
 </div>
@@ -495,7 +489,7 @@
 <h1 id="太长不看-？"><a href="#太长不看-？" class="headerlink" title="太长不看 ？"></a>太长不看 ？</h1><ul>
 <li>网络 IO 模型 分为 5 种：阻塞 IO、非阻塞 IO、IO 多路复用、信号驱动 IO、异步 IO（AIO）</li>
 <li>同步 IO 和 异步 IO <ul>
-<li>这俩不是网络 IO 模型, 而是根据消息通信机制对 IO 类型的分类，同步异步强调的是两个操作之间的顺序关系，两个操作之间是有序的还是无序的。同步与异步的核心区别在于<strong>内核是否主动将数据准备好并通知应用程序</strong>，以及数据拷贝的责任方。</li>
+<li>这俩不是网络 IO 模型, 而是根据消息通信机制对 IO 类型的分类，同步异步强调的是两个操作之间的顺序关系，两个操作之间是有序的还是无序的。</li>
 <li>所以网络 IO 模型中， 前四个都是同步，最后一个是异步</li>
 </ul>
 </li>
@@ -586,7 +580,7 @@
 <tr>
 <td align="left"><strong>阻塞IO</strong></td>
 <td align="left">1. 阻塞IO</td>
-<td align="left">应用程序发起IO请求后，会一直等待（被内核挂起），直到数据准备好并完成拷贝，期间无法执行其他任务。</td>
+<td align="left">应用程序发出IO调用后，会一直等待（被内核挂起），直到I&#x2F;O操作完成。</td>
 </tr>
 <tr>
 <td align="left"><strong>非阻塞IO</strong></td>
@@ -594,7 +588,8 @@
 <td align="left">应用程序发起IO请求后，不会被挂起，可立即返回并执行其他任务；数据准备阶段不占用程序的等待时间。</td>
 </tr>
 </tbody></table>
-<h1 id="什么是-IO-？"><a href="#什么是-IO-？" class="headerlink" title="什么是 IO ？"></a>什么是 IO ？</h1><p><img src="/images/%E7%BD%91%E7%BB%9CIO%E6%A8%A1%E5%9E%8B/io.png" alt="io"><br>IO 即输入输出操作，指计算机系统中数据在不同设备之间的传输过程。IO 操作通常涉及 CPU、内存和外设（如磁盘、网络接口等）之间的数据交换。</p>
+<h1 id="什么是-IO-？"><a href="#什么是-IO-？" class="headerlink" title="什么是 IO ？"></a>什么是 IO ？</h1><p><img src="/images/%E7%BD%91%E7%BB%9CIO%E6%A8%A1%E5%9E%8B/io.png" alt="io"></p>
+<p>IO 即输入输出操作，指计算机系统中数据在不同设备之间的传输过程。IO 操作通常涉及 CPU、内存和外设（如磁盘、网络接口等）之间的数据交换。</p>
 <ul>
 <li>通常用户进程中的一个完整IO分为两阶段：用户进程空间&lt;–&gt;内核空间、内核空间&lt;–&gt;设备空间（磁盘、网络等）。</li>
 <li>IO 有内存 IO 、网络 IO 和磁盘 IO 三种，通常我们说的 IO 指的是后两者。</li>
@@ -639,7 +634,8 @@
 <li>准备阶段是判断是否能够操作(即等待数据是否可用)，在内核进程完成的，等待网络数据到达网卡→读取到内核缓冲区，</li>
 <li>操作阶段则执行实际的 IO 调用，数据准备好之后会从内核缓冲区复制数据到进程空间。</li>
 </ul>
-<h1 id="网络-IO-模型"><a href="#网络-IO-模型" class="headerlink" title="网络 IO 模型"></a>网络 IO 模型</h1><p><img src="/images/%E7%BD%91%E7%BB%9CIO%E6%A8%A1%E5%9E%8B/5-io.png" alt="5-io"><br>网络IO模型是指操作系统中处理网络 IO 请求的不同方式。常见的网络 IO 模型有以下五种：<br><img src="/images/%E7%BD%91%E7%BB%9CIO%E6%A8%A1%E5%9E%8B/bio.png" alt="bio"></p>
+<h1 id="网络-IO-模型"><a href="#网络-IO-模型" class="headerlink" title="网络 IO 模型"></a>网络 IO 模型</h1><p><img src="/images/%E7%BD%91%E7%BB%9CIO%E6%A8%A1%E5%9E%8B/5-io.png" alt="5-io"></p>
+<p>网络IO模型是指操作系统中处理网络 IO 请求的不同方式。常见的网络 IO 模型有以下五种：<br><img src="/images/%E7%BD%91%E7%BB%9CIO%E6%A8%A1%E5%9E%8B/bio.png" alt="bio"></p>
 <ol>
 <li><p>阻塞 IO ：进程发起 IO 系统调用后，进程被阻塞，转到内核空间处理，只有等待要操作的数据准备好，并复制到应用进程的缓冲区中才返回；</p>
 <ul>
@@ -742,18 +738,23 @@
 <li>select</li>
 </ol>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">select</span><span class="params">(<span class="type">int</span> maxfdp1, fd_set *readset, fd_set *writeset, fd_set *exceptset,</span></span></span><br><span class="line"><span class="params"><span class="function">          <span class="type">const</span> <span class="keyword">struct</span> timeval *timeout)</span></span>;</span><br><span class="line"><span class="comment">// return：表示此时有多少个监控的描述符就绪，若超时则为0，出错为-1。</span></span><br></pre></td></tr></table></figure>
+
 <p>select 函数监视的文件描述符分三类，分别是 writefds、readfds 和 exceptfds。<br>select 调用过程：</p>
 <ul>
 <li>核心逻辑：进程通过 select 系统调用，将需要监听的 文件描述符（FD） 集合（读 &#x2F; 写 &#x2F; 异常三类）传递给内核，内核阻塞等待这些 FD 中任意一个就绪（有数据可读 &#x2F; 可写 &#x2F; 异常），就绪后返回就绪的 FD 数量，进程再遍历所有 FD 找出就绪的进行处理。</li>
 <li>用户进程需要监控某些资源 fds，在调用 select 函数后会阻塞，操作系统会将用户线程加入这些资源的等待队列中。</li>
 <li>直到有文件描述符就绪（有数据可读、可写或有 except）或超时（timeout 指定等待时间，如果立即返回设为 null 即可），函数返回。</li>
 <li>select 函数返回后，中断程序唤起用户线程。用户可以遍历 fds（所有 fd, 包括未就绪的），通过 FD_ISSET 判断具体哪个 fd 收到数据，并做出相应处理。</li>
-<li>使用位掩码（bitmask）存储 FD 集合（如 fd_set 结构体），本质是固定大小的整数数组（每个位代表一个 FD）。<br>优点：实现起来简单有效，且几乎所有操作系统都有对应的实现。<br>缺点：</li>
+<li>使用位掩码（bitmask）存储 FD 集合（如 fd_set 结构体），本质是固定大小的整数数组（每个位代表一个 FD）。</li>
+<li>优点：实现起来简单有效，且几乎所有操作系统都有对应的实现。</li>
+<li>缺点：<ul>
 <li>每次调用 select 都需要将进程加入到所有监视 fd 的等待队列，每次唤醒都需要从每个队列中移除。 </li>
 <li>每次调用后，就绪的 FD 集会被内核修改（未就绪的位被清空），下次调用前需重新初始化 FD 集合。</li>
 <li>这里涉及了两次遍历，而且每次都要将整个 fd_set 列表传递给内核，有一定的开销。</li>
 <li>当函数返回时，系统会将就绪描述符写入 fd_set 中，并将其拷贝到用户空间。进程被唤醒后，用户线程并不知道哪些 fd 收到数据，还需要遍历一次。</li>
 <li>受 fd_set 的大小限制，32 位系统最多能监听 1024 个 fd，64 位最多监听 2048 个。</li>
+</ul>
+</li>
 </ul>
 <ol start="2">
 <li>poll</li>
@@ -765,33 +766,66 @@
 <li>核心逻辑：与 select 类似，也是阻塞等待多个 FD 就绪，但解决了 FD 数量限制问题。进程通过 poll 传递一个 事件结构体链表（pollfd），每个结构体包含 FD 和需要监听的事件（读 &#x2F; 写 &#x2F; 异常），内核返回时标记就绪的事件，进程遍历数组处理就绪 FD。</li>
 <li>poll 函数采用链表的方式替代原来 select 中 fd_set 结构，因此可监听文件描述符数量不受限。</li>
 <li>poll 函数返回后，可以通过 pollfd 结构中的内容进行处理就绪文件描述符，相比 select 效率要高。</li>
-<li>新增水平触发 LT ：也就是通知程序 fd 就绪后，这次没有被处理，那么下次 poll 的时候会再次通知同个 fd 已经就绪。<br>缺点:</li>
+<li>新增水平触发 LT ：也就是通知程序 fd 就绪后，这次没有被处理，那么下次调用 poll 的时候会再次通知同个 fd 已经就绪。</li>
+<li>缺点:<ul>
 <li>和 select 函数一样，poll 返回后，需要轮询 pollfd 来获取就绪的描述符。事实上，同时连接的大量客户端在一时刻可能只有很少的处于就绪状态，因此随着监视的描述符数量的增长，其效率也会线性下降。</li>
+</ul>
+</li>
 </ul>
 <ol start="3">
 <li>epoll</li>
 </ol>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">epoll_create</span><span class="params">(<span class="type">int</span> size)</span>；</span></span><br><span class="line"><span class="function"><span class="comment">//  创建一个 epoll 的句柄，size 用来告诉内核这个监听的数目一共有多大,但并非限制了 epoll 所能监听的描述符最大个数，只是对内核初始分配内部数据结构的一个建议。</span></span></span><br><span class="line"><span class="function"><span class="comment">//  当 epoll 句柄创建后，它就会占用一个 fd 值，在 linux 中查看/proc/进程id/fd/，能够看到这个 fd，所以 epoll 使用完后，必须调用 close() 关闭，否则可能导致 fd 被耗尽。</span></span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">epoll_ctl</span><span class="params">(<span class="type">int</span> epfd, <span class="type">int</span> op, <span class="type">int</span> fd, <span class="keyword">struct</span> epoll_event *event)</span>；</span></span><br><span class="line"><span class="function"><span class="comment">//  事件注册函数，将需要监听的事件和需要监听的 fd 交给 epoll 对象。</span></span></span><br><span class="line"><span class="function"><span class="comment">//  OP 用三个宏来表示：添加（EPOLL_CTL_ADD）、删除（EPOLL_CTL_DEL）、修改（EPOLL_CTL_MOD）。分别表示添加、删除和修改 fd 的监听事件。</span></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="keyword">struct</span> epoll_event </span>&#123;</span><br><span class="line">  <span class="type">__uint32_t</span> events;  <span class="comment">/* Epoll events */</span></span><br><span class="line">  <span class="type">epoll_data_t</span> data;  <span class="comment">/* User data variable */</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">//  events可以是以下几个宏的集合：</span></span><br><span class="line"><span class="comment">//  EPOLLIN ：表示对应的文件描述符可以读（包括对端SOCKET正常关闭）；</span></span><br><span class="line"><span class="comment">//  EPOLLOUT：表示对应的文件描述符可以写；</span></span><br><span class="line"><span class="comment">//  EPOLLPRI：表示对应的文件描述符有紧急的数据可读（这里应该表示有带外数据到来）；</span></span><br><span class="line"><span class="comment">//  EPOLLERR：表示对应的文件描述符发生错误；</span></span><br><span class="line"><span class="comment">//  EPOLLHUP：表示对应的文件描述符被挂断；</span></span><br><span class="line"><span class="comment">//  EPOLLET： 将EPOLL设为边缘触发(Edge Triggered)模式，这是相对于水平触发(Level Triggered)来说的。</span></span><br><span class="line"><span class="comment">//  EPOLLONESHOT：只监听一次事件，当监听完这次事件之后，如果还需要继续监听这个socket的话，需要再次把这个socket加入到EPOLL队列里</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">epoll_wait</span><span class="params">(<span class="type">int</span> epfd, <span class="keyword">struct</span> epoll_event * events, <span class="type">int</span> maxevents, <span class="type">int</span> timeout)</span></span>;</span><br><span class="line"><span class="comment">// 等待 epfd 上的 io 事件，最多返回 maxevents 个事件。参数 timeout 是超时时间（毫秒，0 会立即返回，-1 是永久阻塞）。</span></span><br><span class="line"><span class="comment">//  epoll_wait调用ep_poll，当rdlist为空（无就绪fd）时挂起当前进程，直到rdlist不空时进程才被唤醒。</span></span><br><span class="line"><span class="comment">//  文件fd状态改变（buffer由不可读变为可读或由不可写变为可写），导致相应fd上的回调函数ep_poll_callback()被调用。</span></span><br><span class="line"><span class="comment">//  ep_poll_callback将相应fd对应epitem加入rdlist，导致rdlist不空，进程被唤醒，epoll_wait得以继续执行。</span></span><br><span class="line"><span class="comment">//  ep_events_transfer函数将rdlist中的epitem拷贝到txlist中，并将rdlist清空。</span></span><br><span class="line"><span class="comment">//  ep_send_events函数（很关键），它扫描txlist中的每个epitem，调用其关联fd对用的poll方法。此时对poll的调用仅仅是取得fd上较新的events（防止之前events被更新），之后将取得的events和相应的fd发送到用户空间（封装在struct epoll_event，从epoll_wait返回）。</span></span><br></pre></td></tr></table></figure>
+<pre><code class="language-cpp">int epoll_create(int size)；
+//  创建一个 epoll 的句柄，size 用来告诉内核这个监听的数目一共有多大,但并非限制了 epoll 所能监听的描述符最大个数，只是对内核初始分配内部数据结构的一个建议。
+//  当 epoll 句柄创建后，它就会占用一个 fd 值，在 linux 中查看/proc/进程id/fd/，能够看到这个 fd，所以 epoll 使用完后，必须调用 close() 关闭，否则可能导致 fd 被耗尽。
+int epoll_ctl(int epfd, int op, int fd, struct epoll_event *event)；
+//  事件注册函数，将需要监听的事件和需要监听的 fd 交给 epoll 对象。
+//  OP 用三个宏来表示：添加（EPOLL_CTL_ADD）、删除（EPOLL_CTL_DEL）、修改（EPOLL_CTL_MOD）。分别表示添加、删除和修改 fd 的监听事件。
 
-<p>epoll 使用一个文件描述符管理多个描述符，将用户进程监控的文件描述符的事件存放到内核的一个事件表中，这样在用户空间和内核空间只需拷贝一次。</p>
-<ul>
-<li>核心逻辑：通过 三步操作 实现高效监听：</li>
-<li>创建 epoll 实例：进程调用 epoll_create 创建一个内核态的 事件表（红黑树），用于存储需要监听的 FD 和事件。</li>
-<li>注册 &#x2F; 修改 &#x2F; 删除事件：通过 epoll_ctl 向事件表中添加、修改或删除 FD 及对应的监听事件（如 EPOLLIN 可读）。</li>
-<li>等待事件就绪：调用 epoll_wait 阻塞等待事件表中的 FD 就绪，内核直接返回 仅就绪的 FD 列表，进程无需遍历所有 FD。</li>
-<li>当把事件添加进来的时候时候会完成关键的一步，那就是该事件都会与相应的设备驱动程序建立回调关系，当相应的事件发生后，就会调用这个回调函数，该回调函数在内核中被称为 ep_poll_callback，这个回调函数其实就所把这个事件添加到 rdllist 这个双向链表中。</li>
-<li>一旦有事件发生，epoll 就会将该事件添加到双向链表中。那么当我们调用 epoll_wait 时，epoll_wait 只需要检查 rdlist 双向链表中是否有存在注册的事件，效率非常可观。</li>
-<li>内核用红黑树存储所有注册的 FD 和事件（支持高效的插入、删除、查找，时间复杂度 O (log n)）。</li>
-<li>用就绪链表存储就绪的 FD，epoll_wait 直接返回该链表，避免遍历。因为所有就绪 FD 都需要处理，最好的选择便是线性数据结构。<br>工作模式:</li>
-<li>LT模式：也是默认模式，即当 epoll_wait 检测到描述符事件发生并将此事件通知应用程序，应用程序可以不立即处理该事件，并且下次调用 epoll_wait 时，会再次响应应用程序并通知此事件。</li>
-<li>ET模式：当 epoll_wait 检测到描述符事件发生并将此事件通知应用程序，应用程序必须立即处理该事件。如果不处理，下次调用 epoll_wait 时，不会再次响应应用程序并通知此事件。</li>
-<li>ET 是一种高速工作方式，很大程度上减少了 epoll 事件被重复触发的次数。epoll 工作在 ET 模式的时候，必须使用非阻塞 socket ，以避免由于一个 socket 因为没有数据而阻塞读&#x2F;阻塞写操作把处理多个文件描述符的任务饿死。<br>优点：</li>
-<li>内核维护事件表，FD 和事件仅需注册一次（通过 epoll_ctl），无需每次调用都从用户态拷贝到内核态（仅 epoll_ctl 时拷贝，epoll_wait 无大量拷贝）。</li>
-<li>epoll_ctrl 是不太频繁调用的，而 epoll_wait 是非常频繁调用的。而 epoll_wait 却几乎没有入参，这比 select 的效率高出一大截，而且，它也不会随着并发连接的增加使得入参越发多起来，导致内核执行效率下降。</li>
-<li>mmap 的引入，将用户空间的一块地址和内核空间的一块地址同时映射到相同的一块物理内存地址（不管是用户空间还是内核空间都是虚拟地址，最终要通过地址映射映射到物理地址），使得这块物理内存对内核和对用户均可见，减少用户态和内核态之间的数据交换。<br>缺点:</li>
-<li>仅 Linux 系统支持（不跨平台，Windows 用 IOCP，BSD 用 kqueue）。</li>
-<li>编程复杂度高于 select&#x2F;poll。</li>
-</ul>
+struct epoll_event {
+  __uint32_t events;  /* Epoll events */
+  epoll_data_t data;  /* User data variable */
+};
+
+//  events可以是以下几个宏的集合：
+//  EPOLLIN ：表示对应的文件描述符可以读（包括对端SOCKET正常关闭）；
+//  EPOLLOUT：表示对应的文件描述符可以写；
+//  EPOLLPRI：表示对应的文件描述符有紧急的数据可读（这里应该表示有带外数据到来）；
+//  EPOLLERR：表示对应的文件描述符发生错误；
+//  EPOLLHUP：表示对应的文件描述符被挂断；
+//  EPOLLET： 将EPOLL设为边缘触发(Edge Triggered)模式，这是相对于水平触发(Level Triggered)来说的。
+//  EPOLLONESHOT：只监听一次事件，当监听完这次事件之后，如果还需要继续监听这个socket的话，需要再次把这个socket加入到EPOLL队列里
+
+int epoll_wait(int epfd, struct epoll_event * events, int maxevents, int timeout);
+// 等待 epfd 上的 io 事件，最多返回 maxevents 个事件。参数 timeout 是超时时间（毫秒，0 会立即返回，-1 是永久阻塞）。
+//  epoll_wait调用ep_poll，当rdlist为空（无就绪fd）时挂起当前进程，直到rdlist不空时进程才被唤醒。
+//  文件fd状态改变（buffer由不可读变为可读或由不可写变为可写），导致相应fd上的回调函数ep_poll_callback()被调用。
+//  ep_poll_callback将相应fd对应epitem加入rdlist，导致rdlist不空，进程被唤醒，epoll_wait得以继续执行。
+//  文件fd状态改变（buffer由不可读变为可读或由不可写变为可写），导致相应fd上的回调函数ep_poll_callback()被调用。
+//  ep_events_transfer函数将rdlist中的epitem拷贝到txlist中，并将rdlist清空。
+//  ep_send_events函数（很关键），它扫描txlist中的每个epitem，调用其关联fd对用的poll方法。此时对poll的调用仅仅是取得fd上较新的events（防止之前events被更新），之后将取得的events和相应的fd发送到用户空间（封装在struct epoll_event，从epoll_wait返回）。
+
+// epoll 使用一个文件描述符管理多个描述符，将用户进程监控的文件描述符的事件存放到内核的一个事件表中，这样在用户空间和内核空间只需拷贝一次。
+// 核心逻辑：通过 三步操作 实现高效监听：
+// 创建 epoll 实例：进程调用 epoll_create 创建一个内核态的 事件表（红黑树），用于存储需要监听的 FD 和事件。
+// 注册 / 修改 / 删除事件：通过 epoll_ctl 向事件表中添加、修改或删除 FD 及对应的监听事件（如 EPOLLIN 可读）。
+// 等待事件就绪：调用 epoll_wait 阻塞等待事件表中的 FD 就绪，内核直接返回 仅就绪的 FD 列表，进程无需遍历所有 FD。
+// 当把事件添加进来的时候时候会完成关键的一步，那就是该事件都会与相应的设备驱动程序建立回调关系，当相应的事件发生后，就会调用这个回调函数，该回调函数在内核中被称为 ep_poll_callback，这个回调函数其实就所把这个事件添加到 rdllist 这个双向链表中。
+// 一旦有事件发生，epoll 就会将该事件添加到双向链表中。那么当我们调用 epoll_wait 时，epoll_wait 只需要检查 rdlist 双向链表中是否有存在注册的事件，效率非常可观。
+// 内核用红黑树存储所有注册的 FD 和事件（支持高效的插入、删除、查找，时间复杂度 O (log n)）。
+// 用就绪链表存储就绪的 FD，epoll_wait 直接返回该链表，避免遍历。因为所有就绪 FD 都需要处理，最好的选择便是线性数据结构。
+// 工作模式:
+// LT模式：也是默认模式，即当 epoll_wait 检测到描述符事件发生并将此事件通知应用程序，应用程序可以不立即处理该事件，并且下次调用 epoll_wait 时，会再次响应应用程序并通知此事件。
+// ET模式：当 epoll_wait 检测到描述符事件发生并将此事件通知应用程序，应用程序必须立即处理该事件。如果不处理，下次调用 epoll_wait 时，不会再次响应应用程序并通知此事件。
+// ET 是一种高速工作方式，很大程度上减少了 epoll 事件被重复触发的次数。epoll 工作在 ET 模式的时候，必须使用非阻塞 socket ，以避免由于一个 socket 因为没有数据而阻塞读/阻塞写操作把处理多个文件描述符的任务饿死。
+// 优点：
+// 内核维护事件表，FD 和事件仅需注册一次（通过 epoll_ctl），无需每次调用都从用户态拷贝到内核态（仅 epoll_ctl 时拷贝，epoll_wait 无大量拷贝）。
+// epoll_ctrl 是不太频繁调用的，而 epoll_wait 是非常频繁调用的。而 epoll_wait 却几乎没有入参，这比 select 的效率高出一大截，而且，它也不会随着并发连接的增加使得入参越发多起来，导致内核执行效率下降。
+// mmap 的引入，将用户空间的一块地址和内核空间的一块地址同时映射到相同的一块物理内存地址（不管是用户空间还是内核空间都是虚拟地址，最终要通过地址映射映射到物理地址），使得这块物理内存对内核和对用户均可见，减少用户态和内核态之间的数据交换。
+// 缺点:
+// 仅 Linux 系统支持（不跨平台，Windows 用 IOCP，BSD 用 kqueue）。
+// 编程复杂度高于 select/poll。
+</code></pre>
 
       
     </div>
@@ -802,7 +836,7 @@
     <p><strong><span class="icon-link icon"></span>本文链接：</strong><a href="https://chieko3020.xyz/2025/11/02/%E7%BD%91%E7%BB%9CIO%E6%A8%A1%E5%9E%8B/">https://chieko3020.xyz/2025/11/02/%E7%BD%91%E7%BB%9CIO%E6%A8%A1%E5%9E%8B/</a></p>
     <p><strong><span class="icon-pencil icon"></span>本文标题：</strong>「网络IO模型」</p>
     <p><strong><span class="icon-calendar icon"></span>本文发布时间：</strong>2025-11-02 21:01:15</p>
-    <p><strong><span class="icon-calendar icon"></span>本文更新时间：</strong>2025-11-02 23:38:22</p>
+    <p><strong><span class="icon-calendar icon"></span>本文更新时间：</strong>2026-01-10 11:10:50</p>
     <p><strong><span class="icon-copyright icon"></span>本文版权：</strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" rel="noopener nofollow noreferrer" target="_blank"><span class="icon-creative-commons"></span>BY-NC-SA</a> 许可协议。转载请注明出处！</p>
     <span class="icon-creative-commons article-copyright-bg"></span>
   </blockquote>
@@ -811,18 +845,13 @@
       
       
       
+      
         <a data-aos="zoom-in" href="/2025/11/02/%E7%BD%91%E7%BB%9CIO%E6%A8%A1%E5%9E%8B/#comments" class="article-comment-link">
-          <span class="post-comments-count waline-comment-count" data-path="/2025/11/02/%E7%BD%91%E7%BB%9CIO%E6%A8%A1%E5%9E%8B/" itemprop="commentCount"></span>
+          <span class="post-comments-count twikoo-comment-count" data-path="/2025/11/02/%E7%BD%91%E7%BB%9CIO%E6%A8%A1%E5%9E%8B/" itemprop="commentCount"></span>
           留言
         </a>
       
       
-      
-      
-        <span data-aos="zoom-in" class="article-visitor-link">
-          <span class="waline-pageview-count" data-path="/2025/11/02/%E7%BD%91%E7%BB%9CIO%E6%A8%A1%E5%9E%8B/">0</span>
-          <em class="post-meta-item-text">阅读量</em>
-        </span>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item" data-aos="zoom-in"><a class="article-tag-list-link" href="/tags/%E4%BD%A0%E7%9F%A5%E9%81%93%E5%90%97/" rel="tag" title="你知道吗">你知道吗</a></li></ul>
@@ -833,13 +862,30 @@
   
   <nav id="article-nav" aria-label="Article navigation" data-aos="fade-up">
     
+      
+      <div class="article-nav-link-wrap left">
+        
+          
+          
+            <img data-src="/images/Still_380_001.webp" data-sizes="auto" alt="5天速通Golang基础.md" class="lazyload">
+          
+        
+        <a href="/2026/01/12/5%E5%A4%A9%E9%80%9F%E9%80%9AGolang%E5%9F%BA%E7%A1%80/" aria-label="前一篇: 5天速通Golang基础.md" title="前一篇: 5天速通Golang基础.md"></a>
+        <div class="article-nav-caption">前一篇</div>
+        <h3 class="article-nav-title">
+          
+            5天速通Golang基础.md
+          
+        </h3>
+      </div>
+    
     
     
     <div class="article-nav-link-wrap right">
       
         
         
-          <img data-src="/images/Still_030_001.webp" data-sizes="auto" alt="进程分配内存空间的方式" class="lazyload">
+          <img data-src="/images/Still_120_001.webp" data-sizes="auto" alt="进程分配内存空间的方式" class="lazyload">
         
       
       <a href="/2025/11/02/%E8%BF%9B%E7%A8%8B%E5%88%86%E9%85%8D%E5%86%85%E5%AD%98%E7%A9%BA%E9%97%B4%E7%9A%84%E6%96%B9%E5%BC%8F/" aria-label="后一篇: 进程分配内存空间的方式"  title="后一篇: 进程分配内存空间的方式"></a>
@@ -874,8 +920,8 @@
       <div class="comment-selector">
         <div class="comment-selector-wrap">
             
-            <div class="selector-item" data-selector="waline">
-              <span>waline</span>
+            <div class="selector-item" data-selector="twikoo">
+              <span>twikoo</span>
             </div>
             
         </div>
@@ -883,8 +929,8 @@
     </div>
     <div class="comment-content">
       
-        <div class="comment waline-comment" data-aos="fade-up"
-          id="waline-comment">
+        <div class="comment twikoo-comment" data-aos="fade-up"
+          id="twikoo-comment">
         </div>
       
     </div>
@@ -918,10 +964,10 @@
     
       <div>
         <span class="icon-brush"></span>
-        12.4k
+        86k
         &nbsp;|&nbsp;
         <span class="icon-coffee"></span>
-        00:47
+        05:27
       </div>
     
     
@@ -981,7 +1027,7 @@
 <div class="sidebar-state">
   <div class="sidebar-state-article">
     <div>文章</div>
-    <div class="sidebar-state-number">6</div>
+    <div class="sidebar-state-number">8</div>
   </div>
   <div class="sidebar-state-category">
     <div>分类</div>
@@ -1180,9 +1226,9 @@
           url: "https://chieko3020.xyz/2025/11/02/%E7%BD%91%E7%BB%9CIO%E6%A8%A1%E5%9E%8B/",
           excerpt: "",
           description: "",
-          stripContent: " 网络IO模型也是 Linux 网络编程经常问到的题目，有次面试没答详细，只是简单介绍了一下，这里再写出来复习用 原文参考： IO 模型 五种 IO 模型详解 Unix 网络编程例图  太长不看 ？ 网络 IO 模型 分为 5 种：阻塞 IO、非阻塞 IO、IO 多路复用、信号驱动 IO、异步 IO（AIO） 同步 IO 和 异步 IO  这俩不是网络 IO 模型, 而是根据消息通信机制对 IO 类型的分类，同步异步强调的是两个操作之间的顺序关系，两个操作之间是有序的还是无序的。同步与异步的核心",
+          stripContent: " 网络IO模型也是 Linux 网络编程经常问到的题目，有次面试没答详细，只是简单介绍了一下，这里再写出来复习用 原文参考： IO 模型 五种 IO 模型详解 Unix 网络编程例图  太长不看 ？ 网络 IO 模型 分为 5 种：阻塞 IO、非阻塞 IO、IO 多路复用、信号驱动 IO、异步 IO（AIO） 同步 IO 和 异步 IO  这俩不是网络 IO 模型, 而是根据消息通信机制对 IO 类型的分类，同步异步强调的是两个操作之间的顺序关系，两个操作之间是有序的还是无序的。 所以网络 IO",
           date: "Sun Nov 02 2025 21:01:15 GMT+0800",
-          updated: "Sun Nov 02 2025 23:38:22 GMT+0800",
+          updated: "Sat Jan 10 2026 11:10:50 GMT+0800",
           cover: "/images/bg.webp",
         };
       </script>
@@ -1239,41 +1285,49 @@
     return script;
   };
 
-  var commentConfigKeys = ["waline"];
+  var commentConfigKeys = ["twikoo"];
   var commentConfig = {
     
     
-    waline: {
+    
+    twikoo: {
       enable: true,
-      load: async () => {
-        const container = document.querySelector('.waline-comment');
+      load: () => {
+        const container = document.querySelector('.twikoo-comment');
         if (!container) return;
         container.style.display = 'block';
 
-        let walineInit;
-        const walineCdn = 'https://npm.webcache.cn/@waline/client@2.15.8/dist/waline.mjs';
-        const walineIntegrity = 'sha384-9sbqJjrfGjbkI6/PI4nU/MvBfEmkkPC4YK9I4zBeMIf1CVCZdCMH/KinBEAZII/5';
+        const script = loadScript(
+          'https://npm.webcache.cn/twikoo@1.6.44/dist/twikoo.all.min.js',
+          'sha384-kwWLC0HjeZZnVPqCJ1AncI8tsk+kQqF9TbAmCclcc9Z0hGkfgHRzeQZxmdmZhE0K'
+        );
 
-        const module = await safeImport(walineCdn, walineIntegrity);
-        walineInit = module.init;
+        script.onload = () => {
+          if (window.twikoo) {
+            twikoo.init({
+              envId: 'https://twikoo.chieko3020.xyz',
+              el: '.twikoo-comment',
+              region: '',
+              lang: document.documentElement.lang || 'en',
+            });
 
-        window.walineInstance = walineInit({
-          el: '.waline-comment',
-          serverURL: 'https://chieko3020xyz-comments.vercel.app/',
-          lang: document.documentElement.lang || 'en',
-          locale: {},
-          emoji: ["https://unpkg.com/@waline/emojis@1.2.0/weibo","https://unpkg.com/@waline/emojis@1.2.0/alus","https://unpkg.com/@waline/emojis@1.2.0/bilibili","https://unpkg.com/@waline/emojis@1.2.0/qq","https://unpkg.com/@waline/emojis@1.2.0/tieba","https://unpkg.com/@waline/emojis@1.2.0/tw-emoji"],
-          meta: ["nick","mail","link"],
-          requiredMeta: ["nick","mail"],
-          wordLimit: JSON.parse('0'),
-          comment: true,
-          pageSize: JSON.parse('10'),
-          dark: 'html[data-theme="dark"]',
-          pageview: JSON.parse('true'),
-        });
+            twikoo.getCommentsCount({
+              envId: 'https://twikoo.chieko3020.xyz',
+              region: '',
+              urls: [
+                '/friend/index.html'
+              ],
+              includeReply: false
+            }).then((res) => {
+              _$('.twikoo-comment-count').innerText = res[0].count;
+            }).catch((err) => {
+              console.error(err);
+            });
+          }
+        } 
+        document.head.appendChild(script);
       }
     },
-    
     
     
     
@@ -1464,7 +1518,7 @@
 
   
     <script>
-      var meting_api = "https://music-api.chieko3020.xyz/api?server=netease&type=playlist&id=14424322349";
+      var meting_api = "https://api.qijieya.cn/meting/?server=netease&type=playlist&id=14424322349";
     </script>
   
   <script>
