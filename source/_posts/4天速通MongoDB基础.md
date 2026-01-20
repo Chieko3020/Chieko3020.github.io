@@ -424,6 +424,7 @@ $or:[{expression1}, {expression2},...]
 cursor.sort({field1: order, field2: order, ...}) 
 ```
 - **{ field: 1 }表示按照字段的升序排序，{ field: -1}表示按照字段的降序排序**
+- field可以指定多个，如果对多个字段进行排序，则**按从左到右的顺序进行排序**。例如文档首先按 `<field1>` 排序。然后，具有相同 `<field1>` 值的文档将按 `<field2>` 进一步排序。
 - 如果排序字段的类型不同将按如下顺序进行比较：
 MinKey（内部类型）-> null -> 数值（int、long、double、decimal） -> 符号，字符串 -> 对象 -> 数组 -> BinData -> ObjectId -> 布尔 -> Date -> 时间戳 -> 正则表达式 -> JavaScript代码 -> 带作用域的 JavaScript 代码 -> MaxKey（内部类型）
 - **最多可以对 32 个键进行排序**。
@@ -463,6 +464,9 @@ db.collection.updateOne(filter, update, options)
 - updateOne()方法将会返回一个结果文档，包括但不限于以下字段： 
     - 1. matchedCount字段返回了**满足条件的文档数量**。 
     - 2. modifiedCount字段返回了**被更新的文档数量**。对于updateOne()方法，结果为0或者1。
+    - 3. upsertedId 包含用于已更新或插入的文档的 _id
+    - 4. upsertedCount 包含更新或插入文档的数量。
+    - 5. 如果操作使用写关注来运行，则布尔值 acknowledged 为 true；如果已禁用写关注，则为 false
 - updateOne() 与 db.collection.explain() 不兼容。
 - $set 操作符 用于替换指定字段的值，语法如下：
 ```js 
@@ -493,6 +497,9 @@ db.collection.updateMany(filter, update, options)
 - updateOne()方法将会返回一个结果文档，包括但不限于以下字段： 
     - 1. matchedCount字段返回了**满足条件的文档数量**。 
     - 2. modifiedCount字段返回了**被更新的文档数量**。
+    - 3. upsertedId 包含用于已更新或插入的文档的 _id
+    - 4. upsertedCount 包含更新或插入文档的数量。
+    - 5. 如果操作使用写关注来运行，则布尔值 acknowledged 为 true；如果已禁用写关注，则为 false
 - updateMany() 同样使用 $set 操作符执行更新操作。
 - updateMany() 单独修改每个文档，**MongoDB保证单文档写入都是一个原子操作**，**但updateMany() 作为一个整体不是原子操作**，如果单个文档更新失败，则**保留失败之前写入的所有文档更新，但不会更新任何剩余的匹配文档**
 - 如果想要实现更新插入，可以将 updateMany()方法中的 upsert 选项设置为 true
@@ -511,23 +518,50 @@ db.collection.replaceOne(filter, replacement, options)
         - 1. upsert：如果没有匹配的文档，是否插入一个新文档。true将创建并插入一个新文档。如果存在匹配的文档又设置该字段为true, 则该操作会修改或替换匹配的一个或多个文档。
         - 2. arrayFilters：当更新嵌套数组时，指定应更新的数组元素的条件。
         - 3. collation：指定比较字符串时使用的排序规则。
+- replaceOne()方法返回一个文档包含以下内容：
+    - 1. 如果插入文档时指定了安全写入（writeConcern），acknowledged字段的值为true；如果禁用了安全写入机制，该字段的值为false。
+    - 2. matchedCount 包含匹配文档的数量
+    - 3. modifiedCount 包含已修改文档的数量
+    - 4. upsertedId 包含用于**已更新或插入的文档的 _id**
 - replacement替换文档中可以省略 _id 字段，因为 _id 字段是不可变的。但是，如果确实包括 _id 字段，则它的值必须与当前值相同。
 
 ### findOneAndUpdate()方法
-- findOneAndUpdate()方法用于查找并更新单个文档，**可以选择返回更新前或更新后的文档**。除非指定选项，**默认返回旧文档**。
+- findOneAndUpdate()方法用于查找并更新单个文档，**可以选择返回更新前或更新后的文档**。除非指定选项，**默认返回旧文档**。可以使用sort选项来指定查找时的顺序。
 ```js
-db.collection.findOneAndUpdate(filter, replacement, options)
+db.collection.findOneAndUpdate(filter, update, options)
 ```
 - 其中， 
-    - 1. filter用于指定一个查询条件。如果多个文档都满足条件，findOneAndUpdate()只会替换第一个满足条件的文档。如果指定一个空文档（{}）作为查询条件，findOneAndUpdate()将会更新集合中返回的第一个文档。 
-    - 2. replacement用于替换文档，可以具有与原始文档不同的字段，**必须仅包含字段/值对，不能包含更新操作符表达式**
-    - 3. options参数用于指定一些更新选项
+    - 1. filter用于指定一个查询条件。如果多个文档都满足条件，findOneAndUpdate()只会更新第一个满足条件的文档。如果指定一个空文档（{}）作为查询条件，findOneAndUpdate()将会更新集合中返回的第一个文档。 
+    - 2. update用于指定更新操作。可以是更新文档或者**聚合管道**
+    - 3. options参数用于指定一些更新选项，不限于以下选项：
         - 1. upsert：如果没有匹配的文档，是否插入一个新文档。true将创建并插入一个新文档。如果存在匹配的文档又设置该字段为true, 则该操作会修改或替换匹配的一个或多个文档。
-        - 2. arrayFilters：当更新嵌套数组时，指定应更新的数组元素的条件。
-        - 3. collation：指定比较字符串时使用的排序规则。
-        - 4. **returnDocument字段根据状态指定返回文档，before返回更新前的文档，after返回更新后的文档**。
+        - 2. sort，可选。为 filter 所匹配的文档指定排序顺序。
+        - 3. arrayFilters：当更新嵌套数组时，指定应更新的数组元素的条件。
+        - 4. collation：指定比较字符串时使用的排序规则。
+        - 5. **returnDocument字段根据状态指定返回文档，before返回更新前的文档，after返回更新后的文档**。
+        - 6. projection：投影，指定返回的字段。
+        - 7. writeConcern：指定写操作的确认级别。
 - findOneAndUpdate()方法是个**原子操作**，因为它也是对单文档进行操作，只是先读再写
 - 如果没有文档与 filter 匹配，则**不会更新任何文档**，并且也**不会返回任何文档而是Null**。
+
+### findOneAndReplace()方法
+- findOneAndReplace()方法用于查找并更新单个文档，**可以选择返回更新前或更新后的文档**。除非指定选项，**默认返回旧文档**。可以使用sort选项来指定查找时的顺序。
+```js
+db.collection.findOneAndReplace(filter, replacement, options)
+```
+- 其中， 
+    - 1. filter用于指定一个查询条件。如果多个文档都满足条件，findOneAndReplace()只会替换第一个满足条件的文档。如果指定一个空文档（{}）作为查询条件，findOneAndReplace()将会替换集合中返回的第一个文档。 
+    - 2. replacement用于指定更新替换的文档。可以具有与原始文档不同的字段，**必须仅包含字段/值对，不能包含更新操作符表达式**
+    - 3. options参数用于指定一些更新选项，不限于以下选项：
+        - 1. upsert：如果没有匹配的文档，是否插入一个新文档。true将创建并插入一个新文档。如果存在匹配的文档又设置该字段为true, 则该操作会修改或替换匹配的一个或多个文档。
+        - 2. sort，可选。为 filter 所匹配的文档指定排序顺序。
+        - 3. collation：指定比较字符串时使用的排序规则。
+        - 4. **returnDocument字段根据状态指定返回文档，before返回更新前的文档，after返回更新后的文档**。
+        - 5. projection：投影，指定返回的字段。
+        - 6. writeConcern：指定写操作的确认级别。
+- findOneAndReplace()方法是个**原子操作**，因为它也是对单文档进行操作，只是先读再替换
+- 如果没有文档与 filter 匹配，则**不会更新任何文档**，并且也**不会返回任何文档而是Null**。
+
 
 ### 更新操作符
 #### $set 和 $unset操作符
@@ -586,8 +620,8 @@ db.collection.findOneAndUpdate(filter, replacement, options)
 - 如果$rename操作符的更新文档为空{}，不会执行任何操作
 - 如果文档中已经存在一个名为field_name的字段，$rename 操作符将会删除该字段，然后将字段field_name改名为new_field_name。
 - 实际上，$rename执行两步操作：
-    - 1. 从文档中删除旧 <field> 和具有 <newName> 的字段（使用 $unset）。
-    - 2. 通过使用 <field> 中的值，使用 <newName> 执行 $set 操作。 
+    - 1. 从文档中删除旧 `<field>` 和具有 `<newName>` 的字段（使用 $unset）。
+    - 2. 通过使用 `<field>` 中的值，使用 `<newName>` 执行 $set 操作。 
 
 ## 删除文档
 ### deleteOne()方法
@@ -610,7 +644,7 @@ db.collection.deleteOne(filter, option)
 db.collection.deleteMany(filter, option)
 ```
 - 该方法包含两个参数： 
-    - 1. filter 是一个**必选**参数，用于指定一个查询条件，满足条件的文档才会被删除。如果指定一个空文档（{}）作为查询条件，将会删除集合中的**全部文档**
+    - 1. filter 是一个**必选**参数，用于指定一个查询条件，满足条件的文档才会被删除。如果指定一个空文档（{}）作为查询条件，将会删除集合中的**全部文档**。**返回已经删除的文档**。
     - 2. option 是一个可选参数，用于指定删除选项
         - 1. writeConcern：指定写操作的确认级别。
         - 2. collation：指定比较字符串时使用的排序规则。
@@ -619,14 +653,19 @@ db.collection.deleteMany(filter, option)
     - 2. deleteCount 字段存储了**被删除文档的数量**。
 ### findOneAndDelete()方法
 - findOneAndDelete()根据条件删除单个文档，并返回**已删除的文档**。
+```js
+db.collection.findOneAndDelete()(filter, options)
+```
 - 该方法包含两个参数： 
-    - 1. filter 是一个**必选**参数，用于指定一个查询条件，满足条件的文档才会被删除。如果指定一个空文档（{}）作为查询条件，将会删除集合中的**全部文档**
+    - 1. filter 是一个**必选**参数，用于指定一个查询条件，满足条件的文档才会被删除。如果多个文档都满足条件，findOneAndDelete()只会删除第一个满足条件的文档。如果指定一个空文档（{}）作为查询条件，将会删除集合中的**全部文档**
     - 2. option 是一个可选参数，用于指定删除选项
             - 1. writeConcern：指定写操作的确认级别。
             - 2. collation：指定比较字符串时使用的排序规则。
             - 3. projection：投影，指定返回的字段。
             - 4. sort：指定排序顺序以确定要删除的文档。
 - findOneAndDelete()方法同样也是**原子操作**
+- 如果没有文档与 filter 匹配，则**不会删除任何文档**，并且也**不会返回任何文档而是Null**。
+
 ### 其它更新操作符
 #### 字段
 
@@ -650,7 +689,7 @@ db.collection.deleteMany(filter, option)
 |$[]|充当占位符，以更新数组中与查询条件匹配的文档中的所有元素|
 |`$[<identifier>]`|充当占位符，以更新与查询条件匹配的文档中所有符合 arrayFilters 条件的元素|
 |$addToSet|仅向数组中添加尚不存在于该数组的元素|
-|$pop|删除数组的第一项或最后一项|
+|$pop|**删除数组的第一项或最后一项**|
 |$pull|**删除与指定查询匹配的所有数组元素，必须传入条件**|
 |$push|**向数组添加一项**|
 |$pullAll|**从数组中删除所有匹配值，必须传入明确的值**|
@@ -671,8 +710,8 @@ db.collection.aggregate( <pipeline>, <options> )
 - 其中：
     - 1. pipeline是一个数组，接受多个阶段操作，该方法仍然可以接受管道阶段作为单独的参数，而不是作为数组中的元素；但是，如果您未将 pipeline 指定为数组，则无法指定 options 参数。
     - 2. options是可选项，仅当将 pipeline 指定为数组时才可用。
-- aggregate()方法返回一个在聚合分析管道的最后阶段生成的**文档游标**。、
-- 由于mongo shell自动遍历aggregate()返回的游标，我们不需要执行额外的操作就可以获取游标中的文档。默认情况下，mongo shell只显示前20篇文档，输入it命令可以显示更多文档。 
+- aggregate()方法返回一个在聚合分析管道的最后阶段生成的**文档游标**。
+    - 由于mongo shell自动遍历aggregate()返回的游标，我们不需要执行额外的操作就可以获取游标中的文档。默认情况下，mongo shell只显示前20篇文档，输入it命令可以显示更多文档。 
 - 如果管道包含 explain 选项，查询将返回一个详细说明聚合操作处理的文档。
 - 如果管道包含 $out 或 $merge 操作符，查询将返回一个**空游标**。
 - 示例：以下聚合操作选择状态等于 "A" 的文档，按 cust_id 字段对匹配文档进行分组，并根据 amount 字段的总和计算每个 cust_id 字段的 total，并对结果按 total 字段降序排列：
@@ -687,20 +726,19 @@ db.orders.aggregate( [
 
 |MongoDB|MySQL|
 |---|---|
-|$project|select|
-|db.collection.aggregate(…)|from|
-|$unwind|join|
-|$match|where|
-|$group|group by|
-|聚合表达式：$avg、$count、$sum、$max、$min|聚合函数：avg、count、sum、max、min|
-|$match|having|
-|$limit|limit|
-|$lookup|join|
+|**$project**|**select**|
+|**db.collection.aggregate(…)**|**from**|
+|**$unwind**|**UNNEST/LATERAL JOIN**|
+|**$match**|**where**|
+|**$group**|**group by**|
+|**聚合表达式**：$avg、$count、$sum、$max、$min|**聚合函数**：avg、count、sum、max、min|
+|**$match**|**having**|
+|**$limit**|**limit**|
+|**$lookup**|**join**|
 |$out|SELECT INTO NEW_TABLE|
 |$merge|MERGE INTO TABLE|
 |$unionWith|UNION ALL|
 
-- 参考管道顺序：$match → $project/$addFields → $sort → $skip/$limit → $group → $lookup → $unwind → $project/$sort
 ## 聚合操作
 ### $project
 - $project：将带所请求字段的文档传递至管道中的下个阶段。指定的字段可以是输入文档中的已有字段或新计算的字段。相当于投影操作。
@@ -713,7 +751,7 @@ db.orders.aggregate( [
 - 如果指定包含的字段在文档中并不存在，那么 $project 将**忽略**该字段。
 - 如果指定排除一个或多个字段，则**所有其他字段均为在输出文档中返回**
 ### $addFields
-- $addFields: 为文档**添加新字段**。$addFields 输出文档包含输入文档中的所有现有字段和新添加的字段。指定要添加的每个字段的名称，并将其值设立为聚合表达式或空对象。
+- $addFields: 为文档**添加新字段**。$addFields 输出文档包含输入文档中的**所有现有字段**和**新添加的字段**。指定要添加的每个字段的名称，并将其值设立为聚合表达式或空对象。
 ```js
 { $addFields: { <newField>: <expression>, ... } }
 ```
@@ -761,7 +799,7 @@ db.orders.aggregate( [
     - 3. findAndModify()方法中的 sort 字段
 - 因为对包含重复值的字段进行排序时，可能会在多次执行中对这些重复字段返回不一致的排序顺序，尤其是当集合正在接收写入时。为确保排序一致，最简单方法是在排序查询中纳入 _id 字段。
 ### $unwind
-- $unwind：将文档中的某一个数组类型字段**拆分成多条**，每条包含数组中的一个值, 解构输入文档中的数组字段，以便为每个元素输出文档。每个输出文档包含数组中的一个字段。$unwind有以下**两种**用法：
+- $unwind：解构输入文档中的数组字段，以便为每个元素输出文档。具体来说，将文档中的某一个数组类型字段**拆分成多条**，每条包含数组中的一个值, 再为它们创建输出文档，每个文档包含数组中的一个字段。$unwind有以下**两种**用法：
 ```js
 { 
   $unwind: <field path> 
@@ -776,7 +814,7 @@ db.orders.aggregate( [
     }
 }
 ```
-- 可以将数组字段路径传递给 $unwind。使用该语法时，如果字段值为 null、缺失或空数组，则 $unwind 不会输出文档。
+- 可以将数组字段路径传递给 $unwind。使用该语法时，如果**字段值为 null、缺失或空数组**，则 $unwind **不会输出文档**。
 - 可以将文档传递给 $unwind 以指定各种行为选项：
     - 1. includeArrayIndex可选，新字段的名称，用于保存该元素的数组索引。名称不能以美元符号 $ 开头。
     - 2. preserveNullAndEmptyArrays可选，一个布尔值，默认值为 false。true：如果path 为 null、缺失或空数组，$unwind 会输出文档；false：如果为path ，如果 为 null、缺失或空数组，则$unwind 不会输出文档。
@@ -793,8 +831,8 @@ db.orders.aggregate( [
  }
 ```
 - $group 有两个参数：
-    - 1. _id：必需。分组规则，_id表达式指定分组依据的键，可以是字段名、常量、表达式、多个字段联合分组。如果指定的 _id 值为null或任何其他常量值，$group 阶段将返回聚合所有输入文档值的单个文档，相当于对整个集合的文档分一组。
-    - _id: "$字段名" ： 字段名必须加 $ 前缀，这是 MongoDB 聚合中引用字段值的固定语法
+    - 1. _id：必需。分组规则，_id表达式指定分组依据的键，可以是字段名、常量、表达式、多个字段联合分组。如果指定的 _id 值为null或任何其他常量值，$group 阶段将返回聚合所有输入文档值的单个文档，相当于**对整个集合的文档分一组**。
+        - 格式： **`_id: "$field_name"`** ，字段名**必须加 $ 前缀**，这是 MongoDB 聚合中引用字段值的固定语法
     - 2. field ：自定义聚合字段名与聚合表达式，对每个分组内的所有文档，执行聚合计算，得到统计结果，也就是`新字段名: { 聚合表达式: 参数 }`
 - **$group 不会对其输出文档进行排序**，应使用$sort
 
@@ -829,7 +867,7 @@ db.orders.aggregate( [
 { $sort: { <field1>: <sort order>, <field2>: <sort order> ... } }
 ```
 - $sort 接受一个文档参数：
-    - 1. field指定多个如果对多个字段进行排序，则**按从左到右的顺序进行排序**。例如文档首先按 <field1> 排序。然后，具有相同 <field1> 值的文档将按 <field2> 进一步排序。
+    - 1. field指定多个如果对多个字段进行排序，则**按从左到右的顺序进行排序**。例如文档首先按 `<field1>` 排序。然后，具有相同 `<field1>` 值的文档将按 `<field2>` 进一步排序。
     - 2. <sort order> 指定排序规则，1 是升序，-1是降序
 - $sort 是阻塞阶段，这会导致管道等待为阻塞阶段检索到所有输入数据，然后再处理数据。阻塞阶段可能会降低性能，因为它会减少具有多个阶段的管道的并行处理。 对于大型数据集，阻塞阶段还可能使用大量内存。
 - 最多可以对 32 个键进行排序。
@@ -840,12 +878,20 @@ db.orders.aggregate( [
 - 如果需要一致的排序顺序，请在排序中至少纳入一个包含唯一值的字段。最简单方法是在排序查询中纳入 _id 字段。
 
 ### 其它操作符
-
+- 执行系列聚合操作时，参考的合理管道顺序设计：
+    - 1. **$match**用查询条件在第一时间减少文档数量
+    - 2. $project/$addFields添加所需字段/删除所需字段
+    - 3. $sort利用索引加速，避免后期内存排序
+    - 4. $lookup关联外部集合, 关联前确保数据集最小化
+    - 5. $unwind展开数组, 在关联后展开，避免数据爆炸
+    - 6. $group分组聚合计算
+    - 7. **$project**精简字段, **后置避免提前删除索引字段** 
+    - 8. $skip/$limit最终分页
+- **除 `$out`、`$merge`、`$geoNear`、`$changeStream`、`$changeStreamSplitLargeEvent` 外，其他阶段可在管道中多次出现**；
+- 适用方法中未特别标注的阶段，仅支持 `db.collection.aggregate()`；
+- 别名阶段功能完全等价，可互换使用（如 `$addFields` 与 `$set`）；
+- 标有版本限制的阶段，需确保 MongoDB 实例版本满足要求才能使用。
 - 下表列出了常用的聚合阶段操作符：
-    - 1. **除 `$out`、`$merge`、`$geoNear`、`$changeStream`、`$changeStreamSplitLargeEvent` 外，其他阶段可在管道中多次出现**；
-    - 2. 「适用方法」中未特别标注的阶段，仅支持 `db.collection.aggregate()`；
-    - 3. 别名阶段功能完全等价，可互换使用（如 `$addFields` 与 `$set`）；
-    - 4. 标有版本限制的阶段，需确保 MongoDB 实例版本满足要求才能使用。
 
 | 阶段名称               | 别名                 | 核心说明                                                                 | 特殊限制                                                                 | 适用方法                          |
 | ---------------------- | -------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------ | --------------------------------- |
@@ -949,7 +995,7 @@ db.orders.aggregate( [
 # 索引
 - 索引是一种特殊的数据结构，它以易于遍历的形式存储一小部分集合数据集。索引可存储某个特定字段或多个字段的值，并按字段的值进行排序。索引条目的排序支持高效的相等匹配和基于范围的查询操作。此外，MongoDB 还可使用索引中的顺序来返回排序后的结果。
 - MongoDB 使用 **BTree** 结构存储索引。
-- MongoDB 在创建集合时会在 _id 字段上创建一个唯一索引。_id 索引可防止客户端插入两个具有相同 _id 字段值的文档。无法删除此索引。
+- MongoDB 在创建集合时会在 _id 字段上创建一个**唯一索引**。_id 索引可防止客户端插入两个具有相同 _id 字段值的文档。**无法删除此索引**。
 - 索引的默认名称是索引键和索引中每个键的方向（1 或 -1）的连接，使用下划线作为分隔符。
     - 例如，在 { item : 1, quantity: -1 } 上创建的索引的名称item_1_quantity_-1。
 - 索引一旦创建便**无法重命名**。必须删除索引并使用新名称重新创建索引。
@@ -998,18 +1044,19 @@ db.collection.createIndex({
 ```
 - 其中，field1、field2、field3 都是字段；sortOrder 代表了描述该字段的索引类型。对于字段的升序索引，指定值为 1。对于降序索引，请指定值 -1。
 - MongoDB 复合索引最多包含 32 个字段。
-- 复合索引中的**字段顺序**至关重要。如果一个复合索引包含字段 field1、field2，索引首先按照 field1 进行排序，如果 field1 相同，再按照 field2 排序。 ESR 原则通过指导 等值(E) -> 排序(S) -> 范围(R) 的索引字段排列顺序，帮助 MongoDB 最大化利用索引进行高效的数据筛选和有序检索，避免不必要的内存排序
+- 复合索引中的**字段顺序**至关重要。如果一个复合索引包含字段 field1、field2，索引首先按照 field1 进行排序，如果 field1 相同，再按照 field2 排序。 
+- 设计复合索引时，按照ESR 原则： 等值(E) -> 排序(S) -> 范围(R) 的索引字段排列顺序，帮助 MongoDB 最大化利用索引进行高效的数据筛选和有序检索，避免不必要的内存排序
 - 复合索引遵循**最左匹配原则**。例如，一个复合索引包含字段 field1、field2、field3，可以支持以下查询优化： 
     - 1. 基于字段 field1 的匹配 
     - 2. 基于字段 field1 以及 field2 的匹配 
     - 3. 基于字段 field1 以及 field3 的匹配，索引部分命中
-    - 但是，它不支持基于字段 field2 的查询优化，因为不遵循最左匹配。
+    - 4. 但是，它不支持基于字段 field2 的查询优化，因为不遵循最左匹配。
 - 当同时存在复合索引和复合索引中的字段建立的单字段索引时，MongoDB 会**优先使用复合索引**，在此情况下可以删除后者
-- 复合索引可以包含单个哈希索引字段
-- 复合索引的**排序方向需与查询排序一致**，否则排序无法利用索引
+- 复合索引**可以包含单个哈希索引字段**
+- 复合索引的**排序方向需与查询排序一致**，因为索引字段排序方向是索引的一部分，否则排序无法利用索引；同时也必须遵循最左前缀，否则会触发文件排序
     - 如索引 {a:1, b:-1}，查询排序 {a:1, b:-1} 命中，{a:1, b:1} 未命中
-- 复合索引字段排序方向是索引的一部分，如果查询的排序方向与索引的排序方向不一致，会导致**排序阶段无法利用索引**，但查询过滤的最左匹配依然生效。如果查询需要排序，排序的字段也必须遵循最左前缀，否则会触发文件排序
     - 如索引 {a:1,b:1}，查询 db.col.find({a:1}).sort({c:1})，sort 阶段索引失效
+    - 但是如果索引{a:1,b:-1},查询排序{a:-1,b:-1}，**这种完全相反的情况下，可以利用索引**
 
 ### 唯一索引
 - 唯一索引确保文档中**某个字段值的唯一性**，创建唯一索引的方法和普通索引相同，只需要额外指定 {unique: true} 选项：
@@ -1047,7 +1094,7 @@ db.collection.createIndex(
 - 对于复合唯一索引中缺失文档字段，只能存在一个索引条目全都是 null 值的文档。
 
 ### 稀疏索引
-- 稀疏索引**仅包含具有索引字段的文档的条目**，该索引将**跳过缺少索引字段的所有文档**。创建疏索引的方法和普通索引相同，只需要额外指定 {sparse : true} 选项：
+- 稀疏索引**仅包含具有索引字段的文档的条目**，该索引将**跳过缺少索引字段的所有文档**。创建稀疏索引的方法和普通索引相同，只需要额外指定 {sparse : true} 选项：
 ```js
 db.collection.createIndex(
    { <field>: <sortOrder> },
@@ -1058,7 +1105,7 @@ db.collection.createIndex(
 - 既稀疏又唯一的索引可防止集合的文档具有重复的字段值的同时，允许多个省略该键的文档。
 
 ### TTL 索引
-- TTL 索引可在**一定时间后从集合中自动删除文档**。创建TTL索引的方法和普通索引相同，只需要额外指定 expireAfterSeconds 选项为以秒为单位的生存时间：
+- TTL 索引可在**一定时间后从集合中自动删除文档**。TTL 索引字段**必须是日期类型（Date）或包含日期元素的数组**。创建TTL索引的方法和普通索引相同，只需要额外指定 expireAfterSeconds 选项为以秒为单位的生存时间：
 ```js
 db.collection.createIndex(
    { <field>: <sortOrder> },
@@ -1067,8 +1114,9 @@ db.collection.createIndex(
 ```
 - MongoDB 有**后台线程定期检查并删除**TTL索引的字段。
 - TTL 索引是单字段索引。**复合索引不支持 TTL**，并且会忽略 expireAfterSeconds 选项，因为该选项仅针对 TTL索引。
-- _id 字段不支持 TTL 索引。
-- 如果某个字段已存在非 TTL 单字段索引，则无法对同一字段创建 TTL 索引，因为无法创建具有相同键规范且仅选项不同的索引。
+- **_id 字段不支持 TTL 索引**。
+- **固定集合上无法创建 TTL 索引**，因为固定集合的数据被删除的时机取决于循环写入达到上限时覆盖数据
+- **如果某个字段已存在非 TTL 单字段索引，则无法对同一字段创建 TTL 索引**，因为无法创建具有相同键规范且仅选项不同的索引。
 - 要将非 TTL 单字段索引更改为 TTL 索引，使用 collMod 数据库命令
 ```shell
 db.runCommand({
