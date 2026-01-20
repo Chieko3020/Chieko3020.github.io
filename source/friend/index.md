@@ -3,8 +3,8 @@ title: 友情链接
 comments: true
 ---
 ## 网易云链接
-[主页]  (https://music.163.com/#/user/home?id=646644289) 自己的网易云音乐个人主页
-[api]  (https://music-api.chieko3020.xyz/) 自建 api
+[主页](https://music.163.com/#/user/home?id=646644289) 自己的网易云音乐个人主页
+[api](https://music-api.chieko3020.xyz/) 自建 api
 
 ## Live2d 模型原作者
 [三月七](https://www.bilibili.com/video/BV1oP411X77B/)
