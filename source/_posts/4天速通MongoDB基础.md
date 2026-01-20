@@ -48,7 +48,7 @@ categories: "只属于你的小妙招 <br> 看似有用实则没用"
 |类型|含义|说明|
 |---|---|---|
 |int|32位整数|shell不可用 自动转换为64位浮点数 可以使用NumberInt|
-|long|64位整数|shell不可以 自动转换为64位浮点数 可以使用NumberLong|
+|long|64位整数|shell不可用 自动转换为64位浮点数 可以使用NumberLong|
 |double|64位浮点数|shell的默认数值类型|
 |string|字符串|使用UTF-8字符|
 |bool|布尔值|true/false|
@@ -329,7 +329,7 @@ $or:[{expression1}, {expression2},...]
 { field: { $not: { <expression> } } }
 ```
 #### $nor运算符 
-- $nor是一个逻辑查询运算符，可以基于一个或多个表达式执行逻辑NOR运算，返回**不满足所有条件**的文档。 **不是“not or”而是“not and”**
+- $nor是一个逻辑查询运算符，可以基于一个或多个表达式执行逻辑NOR运算，返回**不满足所有条件**的文档。
 - 与$not运算符类似，$nor运算符也会返回指定字段不存在的文档。 
 ```js
 { $nor: [ { <expression1> }, { <expression2> },...] }
@@ -358,7 +358,7 @@ $or:[{expression1}, {expression2},...]
 - 对 $type: "array" 的查询会**返回字段本身为数组**的文档。
 
 ### 数组运算符 
-- MongoDB中查找数组元素相关的运算符包括**$size、$all以及$elemMatch**。
+- MongoDB中查找数组元素相关的运算符**包括$size、$all以及$elemMatch**。
 
 |运算符|用途|
 |---|---|
@@ -442,8 +442,8 @@ db.collection.find(<query>).limit(<documentCount>)
 ```js
 cursor.skip(<offset>) 
 ```
-- skip()意味着 MongoDB服务器需要从结果集中扫描并忽略指定数量的文档，
-然后开始返回结果。因此，随着页数的增加，skip()方法会越来越慢。 例如skip(1000000).limit(10),遍历大量数据并丢弃只取10条，读取性价比太低，执行效率还很慢
+- skip()意味着 MongoDB服务器需要从结果集中扫描并忽略指定数量的文档，然后开始返回结果。因此，随着页数的增加，skip()方法会越来越慢。
+    - 例如skip(1000000).limit(10),遍历大量数据并丢弃只取10条，读取性价比太低，执行效率还很慢
 - 将 skip() 和 limit() 链接在一起时，方法链接顺序不会影响结果。服务器始终会根据排序顺序应用跳过操作，然后再应用对返回文档数量的限制。
 
 ## 更新文档
@@ -468,7 +468,7 @@ db.collection.updateOne(filter, update, options)
 ```js 
 { $set: { <field1>: <value1>, <field2>: <value2>, ...}} 
 ```
-- **如果指定的字段不存在，$set操作符将会为文档增加一个新的字段**，只要新的字段不违法类型约束。 
+- **如果指定的字段不存在，$set操作符将会为文档增加一个新的字段**，只要新的字段不违反类型约束。 
 - 如果指定字段时使用了点符号，例如embededDoc.field，同时字段 field不存在，$set 操作符将会创建一个嵌入式文档。
 - upsert选项：更新插入包含了两个操作，更新文档和插入文档： 
     - 1. 如果存在匹配的文档，更新该文档； 
@@ -535,7 +535,7 @@ db.collection.findOneAndUpdate(filter, replacement, options)
 ```js 
 { $set: { <field1>: <value1>, <field2>: <value2>, ...}} 
 ```
-- 如果指定的字段不存在，**$set操作符将会为文档增加一个新的字段**，只要新的字段不违法类型约束。 
+- 如果指定的字段不存在，**$set操作符将会为文档增加一个新的字段**，只要新的字段不违反类型约束。 
 - 如果$set更新文档为空{}，**则什么也不做**
 - 如果指定字段时使用了点符号，例如embededDoc.field，同时字段 field不存在，$set 操作符将会创建一个嵌入式文档。
 - $unset 是一个字段更新操作符，用于**删除文档中的指定字段**。 $unset 操作符的语法如下： 
