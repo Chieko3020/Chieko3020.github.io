@@ -636,7 +636,6 @@ player:
     # if you want to use meting, please enable aplayer first
     enable: true
     meting_api: https://api.qijieya.cn/meting/?server=netease&type=playlist&id=14424322349 # custom api
-    # meting_api:  https://music-api.chieko3020.xyz/api?server=netease&type=playlist&id=14424322349 # 个人api
     # options:
     #   server: netease
     #   type: playlist
