@@ -1356,4 +1356,557 @@ zskiplistNode* zslGetElementByRank(zskiplist *zsl, unsigned long rank) {
 
 - 压缩列表ziplist本质上就是一个字节数组，是Redis为了节约内存而设计的一种线性数据结构，可以包含多个元素，每个元素可以是一个字节数组或一个整数。
 - Redis的有序集合、哈希表和列表都直接或者间接使用了压缩列表。当有序集合或散列表的元素个数比较少，且元素都是短字符串时，Redis便使用压缩列表作为其底层数据存储结构。列表使用快速链表（quicklist）数据结构存储，而快速链表就是双向链表与压缩列表的组合。
-- 
+
+### ziplist 设计
+
+- Redis使用字节数组表示一个压缩列表，它一种**连续内存**存储的线性数据结构，可以包含多个元素，每个元素可以是字节数组或整数
+  - ziplist 使用宏定义的核心原因是：它本质上是一个**动态变长的字节数组**，而不是固定大小的结构体。
+- ziplist 整体布局如下，其中：
+  - 1. zlbytes：压缩列表的字节长度，占4个字节，因此压缩列表最多有232-1个字节。
+  - 2. zltail：压缩列表尾元素相对于压缩列表起始地址的偏移量，占4个字节。
+  - 3. zllen：压缩列表的元素个数，占2个字节。zllen无法存储元素个数超过65535（216-1）的压缩列表，必须遍历整个压缩列表才能获取到元素个数。
+  - 4. entryX：压缩列表存储的元素，可以是字节数组或者整数，长度不限。entry的编码结构将在后面详细介绍。
+  - 5. zlend：压缩列表的结尾，占1个字节，恒为0xFF。
+
+|字段|zlbytes|zltail|zllen|entry1|...|entryN|zlend
+|---|---|---|---|---|---|---|---
+|字节数|4|4|2|不定长|不定个数|不定长|1
+
+- ziplist存储的元素entry的布局如下, 其中:
+  - previous_entry_length字段表示前一个元素的字节长度，占1个或者5个字节
+    - 当前一个元素的长度小于254字节时，用1个字节表示
+    - 当前一个元素的长度大于或等于254字节时，用5个字节来表示。此时previous_entry_length字段的第1个字节是固定的0xFE，后面4个字节才真正表示前一个元素的长度。
+    - 假设已知当前元素的首地址为p，那么p-previous_entry_length就是前一个元素的首地址，从而实现压缩列表**反向遍历**。
+  - encoding字段表示当前元素的编码，即content字段存储的数据类型，它的前两位决定了存储的类型是字节数组还是整数
+    - 当content存储的是字节数组时，后续字节标识字节数组的实际长度
+    - 当content存储的是整数时，可根据第3、第4位判断整数的具体类型
+    - 而当encoding字段标识当前元素存储的是0～12的立即数时，数据直接存储在encoding字段的最后4位，此时没有content字段
+  - content存储了数据
+
+|字段|previous_entry_length|encoding|content
+|---|---|---|---
+|字节数|1 or 5|1 or 2 or 5|不定长
+
+| 编码类型 | 十六进制 | 二进制 | encoding长度 | data长度 | 总长度 | 适用范围
+| --------- | --------- | -------- | ------------ | --------- | -------- | ---------
+| **ZIP_STR_06B** | 0x00-0x3F | 00pppppp | 1字节 | 0-63字节 | 1+n | 短字符串
+| **ZIP_STR_14B** | 0x40-0x7F | 01pppppp qqqqqqqq | 2字节 | 64-16383字节 | 2+n | 中字符串
+| **ZIP_STR_32B** | 0x80 | 10000000 ... | 5字节 | ≥16384字节 | 5+n | 长字符串
+| **ZIP_INT_16B** | 0xC0 | 11000000 | 1字节 | 2字节 | 3字节 | [-32768, 32767]
+| **ZIP_INT_32B** | 0xD0 | 11010000 | 1字节 | 4字节 | 5字节 | int32范围
+| **ZIP_INT_64B** | 0xE0 | 11100000 | 1字节 | 8字节 | 9字节 | int64范围
+| **ZIP_INT_24B** | 0xF0 | 11110000 | 1字节 | 3字节 | 4字节 | [-8388608, 8388607]
+| **ZIP_INT_8B** | 0xFE | 11111110 | 1字节 | 1字节 | 2字节 | [-128, 127]
+| **ZIP_INT_IMM** | 0xF1-0xFD | 1111xxxx | 1字节 | **0字节** | 1字节 | [0, 12]
+| **ZIP_END** | 0xFF | 11111111 | 1字节 | - | 1字节 | 结束标记
+
+```c
+    #define ZIP_STR_06B (0 << 6) // 1B 00xxxxxx 0~63
+    #define ZIP_STR_14B (1 << 6) // 2B 01xxxxxx xxxxxxxx 64~16383
+    #define ZIP_STR_32B (2 << 6) // 5B 10000000 ... more then 16383
+    #define ZIP_INT_16B (0xc0 | 0<<4) // 1B 11000000 2byte int
+    #define ZIP_INT_32B (0xc0 | 1<<4) // 1B 11010000 4byte int
+    #define ZIP_INT_64B (0xc0 | 2<<4) // 1B 11100000 8byte int
+    #define ZIP_INT_24B (0xc0 | 3<<4) // 1B 11110000 3byte int
+    #define ZIP_INT_8B 0xfe // 1B 11111110 1byte int
+    // 0~12 立即数 1111xxxx 
+    #define ZIP_INT_IMM_MIN 0xf1    /* 11110001 */
+    #define ZIP_INT_IMM_MAX 0xfd    /* 11111101 */
+```
+
+- 如果char * zl指向压缩列表首地址，Redis可通过以下宏定义实现压缩列表各个字段的存取操作：
+
+```c
+// ziplist.c 第 20-35 行
+// <zlbytes> - 4字节 uint32_t: ziplist 占用的总字节数 zl指向zlbytes字段
+// 将指向这32 bits内存区域的指针取值 得到这32bits存储的值 也就是总字节数
+#define ZIPLIST_BYTES(zl) (*((uint32_t*)(zl)))
+
+// <zltail> - 4字节 uint32_t: 最后一个 entry 的偏移量 zl+4指向zltail字段
+#define ZIPLIST_TAIL_OFFSET(zl) (*((uint32_t*)((zl)+sizeof(uint32_t))))
+
+// <zllen> - 2字节 uint16_t: entry 的数量 zl+8指向zllen字段
+// 当元素数超过 2^16-2 时，该值设为 2^16-1，需要遍历整个列表来计算实际数量
+#define ZIPLIST_LENGTH(zl) (*((uint16_t*)((zl)+sizeof(uint32_t)*2)))
+
+// <zlend> - 1字节: 特殊结束标记，值为 255 (0xFF)
+#define ZIP_END 255
+
+#define ZIP_IS_STR(enc) (((enc) & ZIP_STR_MASK) < ZIP_STR_MASK)
+
+
+// ziplist的头部前32位用于表示ziplist的总字节数
+// ziplist的第二个32位用于表示最后一个元素的偏移量
+// ziplist紧接着的16位用于表示元素的个数
+#define ZIPLIST_HEADER_SIZE     (sizeof(uint32_t)*2+sizeof(uint16_t))
+
+// 最后8位用于表示ziplist的结束标识，并且通常塞一个unsigned int8的最大值255
+#define ZIPLIST_END_SIZE        (sizeof(uint8_t))
+
+#define ZIPLIST_ENTRY_HEAD(zl)  ((zl)+ZIPLIST_HEADER_SIZE)
+
+ // zl+zltail指向尾元素首地址；intrev32ifbe使得数据存取统一采用小端法
+// 又是一个改变指针的操作，让指针指向最后一个元素的首地址，怎么做?
+// 由于ziplist已经记录了最后一个元素的偏移量，那么久可以轻松做到了
+#define ZIPLIST_ENTRY_TAIL(zl)  ((zl)+intrev32ifbe(ZIPLIST_TAIL_OFFSET(zl)))
+
+// 压缩列表最后一个字节即为zlend字段
+// 这里指向Entry 尾部的操作的方式是: 通过头指针+总ziplist的全部字节，就指向ziplist最后一个字节了
+// 再-1个字节8位，char *指针就挪到了指向最后一个8位的首部了，也就是末尾
+#define ZIPLIST_ENTRY_END(zl)   ((zl)+intrev32ifbe(ZIPLIST_BYTES(zl))-1)
+```
+
+- 对于压缩列表的任意元素，获取前一个元素的长度、判断存储的数据类型、获取数据内容都需要经过复杂的解码运算。解码后的结果应该被缓存起来，为此定义了结构体zlentry，用于表示解码后的压缩列表元素。
+- zlentry 是用于操作的辅助结构，不是实际存储格式，另外函数zipEntry用来解码压缩列表的元素，存储于zlentry结构体：
+
+```c
+typedef struct zlentry {
+    unsigned int prevrawlensize; // 编码 prevlen 所需字节数
+    unsigned int prevrawlen;     // 前一个节点的长度
+    unsigned int lensize;        // 编码 encoding 所需字节数
+    unsigned int len;            // 数据实际长度
+    unsigned int headersize;     // 头部总大小 = prevrawlensize + lensize
+    unsigned char encoding;      // 编码类型
+    unsigned char *p;            // 指向 entry 起始位置
+} zlentry;
+
+void zipEntry(unsigned char *p, zlentry *e) {
+
+  ZIP_DECODE_PREVLEN(p, e->prevrawlensize, e->prevrawlen);
+  ZIP_DECODE_LENGTH(p + e->prevrawlensize, e->encoding, e->lensize, e->len);
+  e->headersize = e->prevrawlensize + e->lensize;
+  e->p = p;
+}
+
+```
+
+### ziplist 方法
+
+#### 创建
+
+- 使用 ziplistNew函数创建一个压缩列表，它的实现是这样的：
+  - 1. 先为头部和尾部分配内存
+  - 2. 初始化头部字段
+  - 3. 设置尾部结束标记255
+
+```c
+// 初始化一个ziplist结构体，本质上是分配一段连续的内存空间，返回的是ziplist的首地址指针
+unsigned char *ziplistNew(void) {
+    // 分配初始化结构的内存
+    unsigned int bytes = ZIPLIST_HEADER_SIZE+ZIPLIST_END_SIZE; // 10 + 1
+    // 分配这么多个bytes的空间
+    unsigned char *zl = zmalloc(bytes);
+    // 取出将头32个字节存放总长度。具体的做法是将指针转为 u_int32指针，访问它的具体值，修改。
+    ZIPLIST_BYTES(zl) = intrev32ifbe(bytes);
+    // 将元素的offset设置为 整个header的长度，意思是还没有新元素。
+    // 具体的做法是先将指针+u_int32位指到存header的首地址，转为u_int32指针，再访问值修改
+    ZIPLIST_TAIL_OFFSET(zl) = intrev32ifbe(ZIPLIST_HEADER_SIZE);
+    // length同理，初始化为0，还没有新的元素
+    ZIPLIST_LENGTH(zl) = 0;
+    // 最后8位塞个255
+    zl[bytes-1] = ZIP_END;
+    return zl;
+}
+```
+
+#### 插入
+
+- 使用__ziplistInsert()插入一个entry,可以分为3个步骤：
+  - 将元素内容编码，计算previous_entry_length字段、encoding字段和content字段的内容
+    - encoding字段标识的是当前元素存储的数据类型和数据长度。编码时首先尝试将数据内容解析为整数，如果解析成功，则按照压缩列表整数类型编码存储；如果解析失败，则按照压缩列表字节数组类型编码存储
+  - 重新分配空间
+  - 复制数据
+- 它的实现是这样的：
+  - 1. zl就是压缩链表 p表示指向压缩链表位置的指针 s表示塞进去的数据 slen表示数据的长度
+  - 2. 获取前一个节点的长度, 将新元素插入到尾部
+  - 3. 将数据编码为整数，否则按字节数组处理
+  - 4. 计算所需总空间
+  - 5. 重新分配内存（扩容）
+    - 由于重新分配了空间，新元素插入的位置指针P会失效，可以预先计算好指针P相对于压缩列表首地址的偏移量，待分配空间之后再偏移即可
+  - 6. 移动数据为新元素腾出空间
+  - 7. 检查是否需要级联更新
+  - 8. 写入新元素的数据并更新元素计数
+
+```c
+unsigned char *__ziplistInsert(unsigned char *zl, unsigned char *p, unsigned char *s, unsigned int slen) {
+    // curlen表示当前zl的total bytes
+    // reqlen表示当前entry需要多少个字节，它包括了prevlen+encoding+data的字节数目
+    size_t curlen = intrev32ifbe(ZIPLIST_BYTES(zl)), reqlen;
+    // prevlen 表示上一个entry的长度
+    unsigned int prevlensize, prevlen = 0;
+    // offset表示新entry的偏移量
+    size_t offset;
+    int nextdiff = 0;
+    unsigned char encoding = 0;
+    long long value = 123456789; 
+    zlentry tail;
+
+    if (p[0] != ZIP_END) {
+        ZIP_DECODE_PREVLEN(p, prevlensize, prevlen);
+    } else {
+        // 从压缩列表尾部insert 元素
+        // ptail 指针指向最后一个元素的首地址
+        unsigned char *ptail = ZIPLIST_ENTRY_TAIL(zl);
+        if (ptail[0] != ZIP_END) {
+            //拿到上一个元素的prelen，因为它是动态编码的，需要处理是一个字节还是5个字节保存。
+            // 然后将1个或者5个字节保存的字节转成int就是prevlen了。
+            prevlen = zipRawEntryLength(ptail);
+        }
+    }
+
+    if (zipTryEncoding(s,slen,&value,&encoding)) {
+        // int类型所需的字节数
+        reqlen = zipIntSize(encoding);
+    } else {
+        // 直接得到字符串的字节数
+        reqlen = slen;
+    }
+    //计算新增的prevlen的字节数，没有传入指针，只计算，不写入
+    reqlen += zipStorePrevEntryLength(NULL,prevlen);
+    //计算新增的encoding的字节数，没有传入指针，只计算，不写入
+    reqlen += zipStoreEntryEncoding(NULL,encoding,slen);
+
+    int forcelarge = 0;
+    nextdiff = (p[0] != ZIP_END) ? zipPrevLenByteDiff(p,reqlen) : 0;
+    if (nextdiff == -4 && reqlen < 4) {
+        nextdiff = 0;
+        forcelarge = 1;
+    }
+
+    /* Store offset because a realloc may change the address of zl. */
+    // p指向新增元素的地址，zl是压缩列表首地址，p-zl就是offset长度
+    offset = p-zl;
+    //ziplistResize会调用realloc重新分配追加了新的entry字节数的空间，realloc会在原来的连续空间后面追加
+    // 扩容的时候已经把尾部的255写完，所以扩容后多出的字节部分要写新加入的元素
+    zl = ziplistResize(zl,curlen+reqlen+nextdiff);
+    // p重新指向offset处
+    p = zl+offset;
+
+    if (p[0] != ZIP_END) {
+        /* Subtract one because of the ZIP_END bytes */
+        memmove(p+reqlen,p-nextdiff,curlen-offset-1+nextdiff);
+        if (forcelarge)
+            zipStorePrevEntryLengthLarge(p+reqlen,reqlen);
+        else
+            zipStorePrevEntryLength(p+reqlen,reqlen);
+
+        ZIPLIST_TAIL_OFFSET(zl) =
+            intrev32ifbe(intrev32ifbe(ZIPLIST_TAIL_OFFSET(zl))+reqlen);
+
+        zipEntry(p+reqlen, &tail);
+        if (p[reqlen+tail.headersize+tail.len] != ZIP_END) {
+            ZIPLIST_TAIL_OFFSET(zl) =
+                intrev32ifbe(intrev32ifbe(ZIPLIST_TAIL_OFFSET(zl))+nextdiff);
+        }
+    } else {
+        // 往压缩列表尾部添加元素会到这里，修改ziplist的tail offset值
+        ZIPLIST_TAIL_OFFSET(zl) = intrev32ifbe(p-zl);
+    }
+
+    if (nextdiff != 0) {
+        offset = p-zl;
+        zl = __ziplistCascadeUpdate(zl,p+reqlen);
+        p = zl+offset;
+    }
+
+    // 往新分配出来的空间写入元素
+    // 写prev entry lenth到新的空间中，1个字节就写一个255，5个字节就写个255再写剩下的
+    p += zipStorePrevEntryLength(p,prevlen);
+    // 写entry coding
+    p += zipStoreEntryEncoding(p,encoding,slen);
+    // 判断encoding的类型，写真实的data
+    if (ZIP_IS_STR(encoding)) {
+        memcpy(p,s,slen);
+    } else {
+        zipSaveInteger(p,value,encoding);
+    }
+    //写个tail255
+    ZIPLIST_INCR_LENGTH(zl,1);
+    return zl;
+}
+```
+
+#### 删除
+
+- 使用__ziplistDelete来删除一个entry，分为三个步骤：
+  - 1. 计算待删除元素的总长度、
+  - 2. 数据复制
+  - 3. 重新分配空间
+- 它的实现是这样的：
+  - 1. 先获取删除的节点并且计算该entry的字节数
+  - 2. 计算prevlen和tail offset，将后续entry向前移动保证连续性，如果是尾部则不需要
+  - 3. 重新调整内存，删除元素时，压缩列表所需空间减小
+  - 4. 检查是否需要级联更新
+
+```c
+unsigned char *__ziplistDelete(unsigned char *zl, unsigned char *p, unsigned int num) {
+    unsigned int i, totlen, deleted = 0;
+    zlentry first, tail;
+    
+    // 步骤1: 解析第一个要删除的节点
+    zipEntry(p, &first);
+    
+    // 步骤2: 计算要删除的总字节数
+    for (i = 0; p[0] != ZIP_END && i < num; i++) {
+        p += zipRawEntryLength(p);
+        deleted++;
+    }
+    totlen = p - first.p;  // 被删除元素占用的总字节数
+    
+    if (totlen > 0) {
+        if (p[0] != ZIP_END) {
+            // 步骤3: 计算prevlen字段的变化
+            int nextdiff = zipPrevLenByteDiff(p, first.prevrawlen);
+            p -= nextdiff;
+            zipStorePrevEntryLength(p, first.prevrawlen);
+            
+            // 步骤4: 更新 tail offset
+            ZIPLIST_TAIL_OFFSET(zl) =
+                intrev32ifbe(intrev32ifbe(ZIPLIST_TAIL_OFFSET(zl)) - totlen);
+            
+            // 步骤5: 移动后续数据覆盖被删除的部分
+            memmove(first.p, p, 
+                    intrev32ifbe(ZIPLIST_BYTES(zl)) - (p - zl) - 1);
+        } else {
+            // 删除的是尾部所有元素
+            ZIPLIST_TAIL_OFFSET(zl) =
+                intrev32ifbe((first.p - zl) - first.prevrawlen);
+        }
+        
+        // 步骤6: 缩减内存
+        size_t offset = first.p - zl;
+        zl = ziplistResize(zl, intrev32ifbe(ZIPLIST_BYTES(zl)) - totlen + nextdiff);
+        ZIPLIST_INCR_LENGTH(zl, -deleted);
+        p = zl + offset;
+        
+        // 步骤7: 级联更新
+        if (nextdiff != 0) {
+            zl = __ziplistCascadeUpdate(zl, p);
+        }
+    }
+    
+    return zl;
+}
+```
+
+#### 查找元素
+
+- 使用ziplistFind来查找指定元素，它的实现是这样的：
+  - 1. 遍历所有entry直到末尾，除非传入skip参数指定间隔
+  - 2. 先解析当前entry的结构，得到编码类型和数据长度
+  - 3. 根据字符数组/整数分别比较
+  - 4. 返回结果，如果没找到返回null
+  
+- 使用ziplistIndex指定一个索引来查找元素，它的实现是这样的：
+  - 1. 针对传入的索引的符号，正数从头开始找，负数从尾开始
+  - 2. 每次移动一个节点就更改index值
+  - 3. 当index归零并且指针有效时返回，否则返回空
+
+```c
+unsigned char *ziplistFind(unsigned char *p, unsigned char *vstr, 
+                          unsigned int vlen, unsigned int skip) {
+    int skipcnt = 0;
+    unsigned char vencoding = 0;
+    long long vll = 0;
+    
+    while (p[0] != ZIP_END) {
+        unsigned int prevlensize, encoding, lensize, len;
+        unsigned char *q;
+        
+        // 解析当前节点
+        ZIP_DECODE_PREVLENSIZE(p, prevlensize);
+        ZIP_DECODE_LENGTH(p + prevlensize, encoding, lensize, len);
+        q = p + prevlensize + lensize;  // 指向数据部分
+        
+        if (skipcnt == 0) {
+            // 比较当前节点
+            if (ZIP_IS_STR(encoding)) {
+                // 字符串比较
+                if (len == vlen && memcmp(q, vstr, vlen) == 0) {
+                    return p;
+                }
+            } else {
+                // 整数比较
+                if (vencoding == 0) {
+                    zipTryEncoding(vstr, vlen, &vll, &vencoding);
+                }
+                if (vencoding != UCHAR_MAX) {
+                    long long ll = zipLoadInteger(q, encoding);
+                    if (ll == vll) {
+                        return p;
+                    }
+                }
+            }
+            
+            skipcnt = skip;  // 重置跳过计数
+        } else {
+            skipcnt--;
+        }
+        
+        // 移动到下一个节点
+        p = q + len;
+    }
+    
+    return NULL;
+}
+unsigned char *ziplistIndex(unsigned char *zl, int index) {
+    unsigned char *p;
+    unsigned int prevlensize, prevlen = 0;
+    
+    if (index < 0) {
+        // 负索引：从尾部向前遍历
+        index = (-index) - 1;
+        p = ZIPLIST_ENTRY_TAIL(zl);
+        if (p[0] != ZIP_END) {
+            ZIP_DECODE_PREVLEN(p, prevlensize, prevlen);
+            while (prevlen > 0 && index--) {
+                p -= prevlen;  // 利用prevlen反向移动
+                ZIP_DECODE_PREVLEN(p, prevlensize, prevlen);
+            }
+        }
+    } else {
+        // 正索引：从头部向后遍历
+        p = ZIPLIST_ENTRY_HEAD(zl);
+        while (p[0] != ZIP_END && index--) {
+            p += zipRawEntryLength(p);  // 前向移动
+        }
+    }
+    
+    return (p[0] == ZIP_END || index > 0) ? NULL : p;
+}
+```
+
+#### 遍历操作
+
+- 使用 ziplistNext/ziplistPrev 进行正向/反向遍历操作，它的实现是这样的：
+  - 1. 根据传入的p指针，逐个遍历
+  - 2. 如果遍历到尾部返回
+
+```c
+unsigned char *ziplistNext(unsigned char *zl, unsigned char *p) {
+    ((void) zl);  // zl参数未使用（保留用于API一致性）
+    
+    // 情况1: 当前已经是END
+    if (p[0] == ZIP_END) {
+        return NULL;
+    }
+    
+    // 情况2: 移动到下一个entry
+    p += zipRawEntryLength(p);  // 跳过当前整个entry
+    
+    // 情况3: 检查下一个是否是END
+    if (p[0] == ZIP_END) {
+        return NULL;
+    }
+    
+    return p;
+}
+unsigned char *ziplistPrev(unsigned char *zl, unsigned char *p) {
+    unsigned int prevlensize, prevlen = 0;
+    
+    if (p[0] == ZIP_END) {
+        p = ZIPLIST_ENTRY_TAIL(zl);
+        return (p[0] == ZIP_END) ? NULL : p;
+    } else if (p == ZIPLIST_ENTRY_HEAD(zl)) {
+        return NULL;
+    } else {
+        ZIP_DECODE_PREVLEN(p, prevlensize, prevlen);
+        return p - prevlen;  // 利用prevlen反向移动
+    }
+}
+```
+
+#### 级联更新
+
+- 当插入或删除元素时，如果导致某个节点的 prevlen 动态改变大小，会影响后续节点的 prevlen长度，导致后续节点也要更新，引发连锁反应。
+- 级联更新会导致多次重新分配内存及数据复制，效率很低。但是出现这种情况的概率是很低的，因此对于删除元素和插入元素操作，Redis并没有为了避免连锁更新而采取措施。Redis只是在删除元素和插入元素操作的末尾，检查是否需要更新后续元素的previous_entry_length字段，其实现函数为_ziplistCascadeUpdate：
+  - 1. 先解析出当前entry长度和存储rawlen所需空间大小
+  - 2. 检查是否有下一个节点，没有就不要级联更新
+  - 3. 解析下一个节点并判断是否需要更新，比较rawlen长度
+  - 4. 根据比较结果对下一个节点进行扩容或缩容，如果扩容还需要继续检查，直到没有出现扩容返回
+
+```c
+unsigned char *__ziplistCascadeUpdate(unsigned char *zl, unsigned char *p) {
+    size_t curlen = intrev32ifbe(ZIPLIST_BYTES(zl));  // 当前ziplist总长度
+    size_t rawlen, rawlensize;
+    size_t offset, noffset, extra;
+    unsigned char *np;
+    zlentry cur, next;
+
+    // ===== 主循环：检查每个entry，直到不需要更新 =====
+    while (p[0] != ZIP_END) {
+        // 步骤1: 解析当前entry
+        zipEntry(p, &cur);
+        rawlen = cur.headersize + cur.len;  // 当前entry的总长度
+        
+        // 计算存储rawlen需要多少字节（1或5）
+        rawlensize = zipStorePrevEntryLength(NULL, rawlen);
+
+        // 步骤2: 检查是否有下一个entry
+        if (p[rawlen] == ZIP_END) 
+            break;  // 没有下一个，结束
+        
+        // 步骤3: 解析下一个entry
+        zipEntry(p + rawlen, &next);
+
+        // 步骤4: 检查是否需要更新
+        // 如果下一个entry记录的prevlen就是当前的rawlen，不需要更新
+        if (next.prevrawlen == rawlen) 
+            break;  // ✓ 完成，不需要继续
+
+        // ===== 需要更新：分两种情况 =====
+        
+        if (next.prevrawlensize < rawlensize) {
+            // 情况A: 需要扩展（1字节→5字节）
+            // ────────────────────────────────
+            
+            offset = p - zl;
+            extra = rawlensize - next.prevrawlensize;  // 增加4字节
+            
+            // A1. 重新分配内存（扩大ziplist）
+            zl = ziplistResize(zl, curlen + extra);
+            p = zl + offset;  // 更新指针
+            
+            np = p + rawlen;   // 指向下一个entry
+            noffset = np - zl;
+            
+            // A2. 更新zltail（如果下一个entry不是tail）
+            if ((zl + intrev32ifbe(ZIPLIST_TAIL_OFFSET(zl))) != np) {
+                ZIPLIST_TAIL_OFFSET(zl) =
+                    intrev32ifbe(intrev32ifbe(ZIPLIST_TAIL_OFFSET(zl)) + extra);
+            }
+            
+            // A3. 移动后续数据，为新的prevlen字段腾出空间
+            memmove(np + rawlensize,              // 目标位置：新prevlen之后
+                    np + next.prevrawlensize,     // 源位置：旧prevlen之后
+                    curlen - noffset - next.prevrawlensize - 1);
+            
+            // A4. 写入新的prevlen
+            zipStorePrevEntryLength(np, rawlen);
+            
+            // A5. 继续检查下一个entry
+            p += rawlen;
+            curlen += extra;
+            
+        } else {
+            // 情况B: prevlen字段大小不变 或 需要缩减
+            // ────────────────────────────────
+            
+            if (next.prevrawlensize > rawlensize) {
+                // B1. 需要缩减（5字节→1字节）
+                // Redis策略：故意不缩减，避免"抖动"
+                // 使用Large格式存储小值
+                zipStorePrevEntryLengthLarge(p + rawlen, rawlen);
+            } else {
+                // B2. 大小不变，直接更新值
+                zipStorePrevEntryLength(p + rawlen, rawlen);
+            }
+            
+            // 不需要继续检查后续entry
+            break;
+        }
+    }
+    
+    return zl;
+}
+```
