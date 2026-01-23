@@ -61,7 +61,7 @@ categories:
   - 配置文件 redis.conf & sentinel.conf
 - 这里只对数据结构，内存管理，网络通信三大模块相关的部分源码分析
 
-## Redis 的数据结构
+# Redis 的数据结构
 
 ## 设计理念
 
