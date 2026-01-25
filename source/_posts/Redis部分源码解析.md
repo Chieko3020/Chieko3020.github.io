@@ -4644,11 +4644,31 @@ lazyfree-lazy-eviction no
 
 ### LRU 实现
 
-- Redis 使用近似 LRU 算法，通过采样和淘汰池（Eviction Pool）来实现，避免维护完整的 LRU 链表。
+- LRU 算法就是指最近最少使用（Least Recently Used，LRU）算法，这是一个经典的缓存算法。从基本原理上来说，LRU 算法会使用一个链表来维护缓存中每一个数据的访问情况，并根据数据的实时访问，调整数据在链表中的位置，然后通过数据在链表中的位置，来表示数据是最近刚访问的，还是已经有一段时间没有访问了。具体来说，LRU 算法会把链表的头部和尾部分别设置为 MRU 端和 LRU 端。其中，MRU 是 Most Recently Used 的缩写，MRU 端表示这里的数据是刚被访问的。而 LRU 端则表示，这里的数据是最近最少访问的数据。
+- LRU 算法的执行，可以分成三种情况：
+    - 1. 当有新数据插入时，LRU 算法会把该数据插入到链表头部，同时把原来链表头部的数据及其之后的数据，都向尾部移动一位。
+    - 2. 当有数据刚被访问了一次之后，LRU 算法就会把该数据从它在链表中的当前位置，移动到链表头部。同时，把从链表头部到它当前位置的其他数据，都向尾部移动一位。
+    - 3. 当链表长度无法再容纳更多数据时，若再有新数据插入，LRU 算法就会去除链表尾部的数据，这也相当于将数据从缓存中淘汰掉。
 
-#### LRU 时钟
+- 如果要严格按照 LRU 算法的基本原理来实现的话，要为 Redis 使用最大内存时，可容纳的所有数据维护一个链表；每当有新数据插入或是现有数据被再次访问时，需要执行多次链表操作。既需要额外的内存空间来保存链表，还会在访问数据的过程中，让 Redis 受到数据移动和链表操作的开销影响，从而就会降低 Redis 访问性能
+    - 因此Redis 使用近似 LRU 算法，通过采样和淘汰池（Eviction Pool）来实现
+    - 近似 LRU 算法并没有使用耗时耗空间的链表，而是使用了固定大小的待淘汰数据集合，每次随机选择一些 key 加入待淘汰数据集合中。最后，再按照待淘汰集合中 key 的空闲时间长度，删除空闲时间最长的 key。避免维护完整的 LRU 链表。
+    
+- 为了实现近似 LRU 算法，Redis 首先是设置了全局 LRU 时钟，并在键值对创建时获取全局 LRU 时钟值作为访问时间戳，以及在每次访问时获取全局 LRU 时钟值，更新访问时间戳。然后，当 Redis 每处理一个命令时，都会调用 freeMemoryIfNeeded 函数来判断是否需要释放内存。如果已使用内存超出了 maxmemory，那么，近似 LRU 算法就会随机选择一些键值对，组成待淘汰候选集合，并根据它们的访问时间戳，选出最旧的数据，将其淘汰。
 
+#### 全局 LRU 时钟值的计算
+
+- Redis 使用全局 LRU 时钟来统一记录时间，避免为每个对象单独调用系统时间函数，提升性能。
+
+##### LRU 时钟
+
+- Redis 使用了近似 LRU 算法，但是，这个算法仍然需要区分不同数据的访问时效性，也就是说，Redis 需要知道数据的最近一次访问时间。因此，Redis 就设计了 LRU 时钟来记录数据每次访问的时间戳。
 - Redis 使用 24 位的 LRU 时钟来记录对象的最后访问时间，存储在 `redisObject->lru` 字段中。
+- LRU 时钟的设计：
+  - 分辨率：1000 毫秒（1 秒），即每秒更新一次
+    - 如果一个数据前后两次访问的时间间隔小于 1 秒，那么这两次访问的时间戳就是一样的
+  - 范围：0 到 2^24-1（约 194 天）
+  - 回绕处理：使用按位与操作，自动处理时钟回绕
 
 ```c
 // server.h 第 611-612 行
@@ -4664,15 +4684,34 @@ unsigned int getLRUClock(void) {
     return (mstime()/LRU_CLOCK_RESOLUTION) & LRU_CLOCK_MAX;
 }
 ```
+##### serverCron 更新全局 LRU 时钟
 
-- **LRU 时钟的设计**：
-  - 分辨率：1000 毫秒（1 秒），即每秒更新一次
-  - 范围：0 到 2^24-1（约 194 天）
-  - 回绕处理：使用按位与操作，自动处理时钟回绕
+- `serverCron()` 是 Redis 的定时任务函数，每秒执行 `server.hz` 次（默认 10 次）。
+- 在每次执行时，它会调用 `getLRUClock()` 计算当前的 LRU 时钟值，并使用原子操作更新 `server.lruclock`。
+- 这样设计的好处：
+  - 避免频繁的系统调用（`mstime()`）
+  - 使用原子操作保证线程安全
+  - 所有对象共享同一个时钟值，保证时间一致性
+- 它是这样实现的：
+  - 1. 调用 `getLRUClock()` 计算当前 LRU 时钟值
+    - `getLRUClock()` 获取当前毫秒时间，除以分辨率（1000 毫秒），然后与 `LRU_CLOCK_MAX` 做按位与，保留低 24 位
+  - 2. 使用 `atomicSet()` 原子性地更新 `server.lruclock`
+    - 这样多个线程可以安全地读取这个值，无需加锁
 
-#### LRU_CLOCK
+```c
+// server.c 第 1148-1160 行
+unsigned long lruclock = getLRUClock();  // 1. 计算当前 LRU 时钟值
+atomicSet(server.lruclock,lruclock);     // 2. 使用原子操作更新全局 LRU 时钟
+```
 
-- `LRU_CLOCK()` 用于获取当前 LRU 时钟值，如果更新频率足够高，使用缓存的时钟值。
+##### LRU_CLOCK 获取全局 LRU 时钟
+
+- `LRU_CLOCK()` 用于获取当前的全局 LRU 时钟值，它会根据更新频率决定使用缓存值还是实时计算。
+- 性能优化：
+  - 如果 `server.hz >= 10`（默认值），则 `1000/server.hz <= 100` 毫秒
+  - 此时 `serverCron()` 的调用间隔（100ms）小于 LRU 时钟分辨率（1000ms）
+  - 可以使用缓存的 `server.lruclock` 值，避免频繁的系统调用
+  - 如果 `server.hz < 10`，则实时计算 LRU 时钟值
 - 它是这样实现的：
   - 1. 判断更新频率：如果 `1000/server.hz <= LRU_CLOCK_RESOLUTION`，使用缓存值
   - 2. 使用缓存值：从 `server.lruclock` 原子读取（在 `serverCron()` 中更新）
@@ -4700,9 +4739,448 @@ unsigned int LRU_CLOCK(void) {
 }
 ```
 
+#### 键值对 LRU 时钟值的初始化与更新
 
+- 每个 `redisObject` 都有一个 `lru` 字段（24 位），用于存储该对象的最后访问时间戳。
 
-#### estimateObjectIdleTime
+##### createObject 初始化 LRU 时钟
+
+- `createObject()` 是创建 Redis 对象的通用函数，在创建对象时会初始化 LRU 时钟值。
+- 它是这样实现的：
+  - 1. 分配 `robj` 结构体内存
+  - 2. 设置对象类型、编码、指针、引用计数等基本属性
+  - 3. 根据内存淘汰策略初始化 `lru` 字段：
+    - 如果使用 LFU 策略：`lru = (LFUGetTimeInMinutes()<<8) | LFU_INIT_VAL`
+    - 如果使用 LRU 策略：`lru = LRU_CLOCK()`（获取当前全局 LRU 时钟值）
+
+```c
+// object.c 第 41-58 行
+robj *createObject(int type, void *ptr) {
+    // 1. 分配 robj 结构体内存
+    robj *o = zmalloc(sizeof(*o));
+    
+    // 2. 设置对象基本属性
+    o->type = type;
+    o->encoding = OBJ_ENCODING_RAW;
+    o->ptr = ptr;
+    o->refcount = 1;
+
+    /* Set the LRU to the current lruclock (minutes resolution), or
+     * alternatively the LFU counter. */
+    // 3. 根据内存淘汰策略初始化 LRU 时钟值
+    if (server.maxmemory_policy & MAXMEMORY_FLAG_LFU) {
+        // 3.1 LFU 策略：使用 LFU 计数器初始化
+        //     - 高 16 位：当前时间（分钟）
+        //     - 低 8 位：初始计数器值（LFU_INIT_VAL = 5）
+        o->lru = (LFUGetTimeInMinutes()<<8) | LFU_INIT_VAL;
+    } else {
+        // 3.2 LRU 策略：使用当前全局 LRU 时钟值初始化
+        //     - 获取当前全局 LRU 时钟值作为对象的初始访问时间戳
+        o->lru = LRU_CLOCK();
+    }
+    return o;
+}
+```
+
+- 类似的，`createEmbeddedStringObject()` 在创建嵌入式字符串对象时也会初始化 LRU 时钟值。
+
+##### lookupKey 更新 LRU 时钟
+
+- `lookupKey()` 是查找键值对的底层函数，在访问键时会更新其 LRU 时钟值。
+- 它是这样实现的：
+  - 1. 在字典中查找键对应的 `dictEntry`
+  - 2. 如果找到键值对，检查是否需要更新 LRU 时钟：
+    - 如果正在执行 RDB 保存或 AOF 重写（`server.rdb_child_pid != -1 || server.aof_child_pid != -1`），不更新 LRU 时钟
+      - 原因：避免触发写时复制（Copy-On-Write），导致内存使用翻倍
+    - 如果设置了 `LOOKUP_NOTOUCH` 标志，不更新 LRU 时钟
+      - 原因：某些操作（如 `OBJECT IDLETIME`）需要查看原始访问时间
+  - 3. 根据内存淘汰策略更新 `lru` 字段：
+    - 如果使用 LFU 策略：调用 `updateLFU(val)` 更新 LFU 计数器
+    - 如果使用 LRU 策略：`val->lru = LRU_CLOCK()`（更新为当前全局 LRU 时钟值）
+
+```c
+// db.c 第 55-77 行
+robj *lookupKey(redisDb *db, robj *key, int flags) {
+    // 1. 在字典中查找键
+    dictEntry *de = dictFind(db->dict,key->ptr);
+    if (de) {
+        robj *val = dictGetVal(de);
+
+        /* Update the access time for the ageing algorithm.
+         * Don't do it if we have a saving child, as this will trigger
+         * a copy on write madness. */
+        // 2. 检查是否需要更新 LRU 时钟
+        //    - 如果正在执行 RDB 保存或 AOF 重写，不更新（避免触发写时复制）
+        //    - 如果设置了 LOOKUP_NOTOUCH 标志，不更新（某些操作需要查看原始访问时间）
+        if (server.rdb_child_pid == -1 &&
+            server.aof_child_pid == -1 &&
+            !(flags & LOOKUP_NOTOUCH))
+        {
+            // 3. 根据内存淘汰策略更新 LRU 时钟值
+            if (server.maxmemory_policy & MAXMEMORY_FLAG_LFU) {
+                // 3.1 LFU 策略：更新 LFU 计数器（时间衰减 + 对数递增）
+                updateLFU(val);
+            } else {
+                // 3.2 LRU 策略：更新为当前全局 LRU 时钟值
+                //     - 每次访问键时，将其 lru 字段更新为当前时间戳
+                val->lru = LRU_CLOCK();
+            }
+        }
+        return val;
+    } else {
+        return NULL;
+    }
+}
+```
+
+#### 近似 LRU 算法的实际执行
+
+- 当 Redis 处理命令时，会调用 `freeMemoryIfNeeded()` 检查内存使用情况，如果超过 `maxmemory` 限制，则执行内存淘汰。
+- 为了淘汰数据，Redis 定义了一个数组 EvictionPoolLRU，用来保存待淘汰的候选键值对。这个数组的元素类型是 evictionPoolEntry 结构体，该结构体保存了待淘汰键值对的空闲时间 idle、对应的 key 等信息。
+
+```c
+static struct evictionPoolEntry *EvictionPoolLRU;
+struct evictionPoolEntry {
+    unsigned long long idle;    //待淘汰的键值对的空闲时间
+    sds key;                    //待淘汰的键值对的key
+    sds cached;                 //缓存的SDS对象
+    int dbid;                   //待淘汰键值对的key所在的数据库ID
+};
+```
+
+##### freeMemoryIfNeeded 触发内存淘汰
+
+- `freeMemoryIfNeeded()` 是内存淘汰的入口函数，在每次处理命令前被调用。
+- 它是这样实现的：
+  - 1. 检查内存状态：调用 `getMaxmemoryState()` 判断是否超过 `maxmemory` 限制
+  - 2. 如果超过限制，根据淘汰策略选择键进行淘汰：
+    - **LRU/LFU/TTL 策略**：使用淘汰池机制
+      - 调用 `evictionPoolPopulate()` 从所有数据库中采样键并填充淘汰池
+      - 从淘汰池右侧选择最佳键（`idle` 值最大，即最久未访问的键）
+      - 处理幽灵键（在填充淘汰池后可能已被删除的键）
+    - **Random 策略**：随机选择键
+      - 轮询所有数据库，从字典中随机获取一个键
+  - 3. 删除选中的键：调用 `dbSyncDelete()` 或 `dbAsyncDelete()` 删除键
+  - 4. 循环释放内存：如果释放的内存不足，继续循环直到释放足够内存或无法继续释放
+
+```c
+// evict.c 第 446-623 行
+int freeMemoryIfNeeded(void) {
+    // 1. 检查从节点是否忽略 maxmemory
+    //    - 如果当前实例是从节点，并且配置了 repl-slave-ignore-maxmemory 为 yes，则从节点不执行内存淘汰。
+    //    - 从节点通常只复制主节点的数据，不应自行淘汰键。
+    if (server.masterhost && server.repl_slave_ignore_maxmemory) return C_OK;
+
+    size_t mem_reported, mem_tofree, mem_freed; // 报告内存、需要释放内存、已释放内存
+    mstime_t latency, eviction_latency;         // 延迟监控变量
+    long long delta;                            // 内存变化量
+    int slaves = listLength(server.slaves);     // 连接的从节点数量
+
+    // 2. 检查客户端是否被暂停
+    //    - 如果客户端被暂停 (例如在 RDB/AOF 持久化期间)，不执行内存淘汰，直接返回 C_OK。
+    if (clientsArePaused()) return C_OK;
+    
+    // 3. 获取当前内存状态
+    //    - 调用 getMaxmemoryState 检查是否超过 maxmemory 限制。
+    //    - 如果未超过限制 (返回 C_OK)，则无需释放内存，直接返回 C_OK。
+    //    - 如果超过限制 (返回 C_ERR)，则 mem_reported 会被赋值为总内存，mem_tofree 会被赋值为需要释放的内存量。
+    if (getMaxmemoryState(&mem_reported,NULL,&mem_tofree,NULL) == C_OK)
+        return C_OK;
+
+    mem_freed = 0; // 初始化已释放内存为 0
+
+    // 4. 检查淘汰策略
+    //    - 如果 maxmemory-policy 设置为 MAXMEMORY_NO_EVICTION，表示不允许淘汰键。
+    //    - 此时直接跳转到 cant_free 标签，返回 C_ERR，表示无法释放内存。
+    if (server.maxmemory_policy == MAXMEMORY_NO_EVICTION)
+        goto cant_free; /* We need to free memory, but policy forbids. */
+
+    latencyStartMonitor(latency); // 开始监控内存淘汰操作的延迟
+
+    // 5. 内存淘汰循环：持续释放内存直到达到目标 (mem_freed >= mem_tofree)
+    while (mem_freed < mem_tofree) {
+        int j, k, i, keys_freed = 0; // j, k, i: 循环变量; keys_freed: 本次循环释放的键数量
+        static unsigned int next_db = 0; // 静态变量，用于在不同数据库间轮询
+        sds bestkey = NULL; // 最佳淘汰键的键名
+        int bestdbid;       // 最佳淘汰键所在的数据库 ID
+        redisDb *db;        // 数据库指针
+        dict *dict;         // 字典指针 (主字典或过期字典)
+        dictEntry *de;      // 字典项指针
+
+        // 5.1 LRU/LFU/TTL 策略：使用淘汰池 (Eviction Pool) 机制
+        if (server.maxmemory_policy & (MAXMEMORY_FLAG_LRU|MAXMEMORY_FLAG_LFU) ||
+            server.maxmemory_policy == MAXMEMORY_VOLATILE_TTL)
+        {
+            struct evictionPoolEntry *pool = EvictionPoolLRU; // 获取全局淘汰池
+
+            // 循环直到找到一个最佳淘汰键
+            while(bestkey == NULL) {
+                unsigned long total_keys = 0, keys; // total_keys: 所有数据库中可淘汰键的总数
+
+                // 5.1.1 填充淘汰池：从所有数据库中采样键，填充淘汰池
+                //       - 遍历所有数据库，根据淘汰策略选择 db->dict 或 db->expires 作为采样字典
+                //       - evictionPoolPopulate 会将采样到的最佳候选键添加到淘汰池中
+                for (i = 0; i < server.dbnum; i++) {
+                    db = server.db+i;
+                    dict = (server.maxmemory_policy & MAXMEMORY_FLAG_ALLKEYS) ?
+                            db->dict : db->expires; // 根据策略选择主字典或过期字典
+                    if ((keys = dictSize(dict)) != 0) { // 如果字典不为空
+                        evictionPoolPopulate(i, dict, db->dict, pool); // 填充淘汰池
+                        total_keys += keys; // 累加可淘汰键总数
+                    }
+                }
+                if (!total_keys) break; /* No keys to evict. */ // 如果所有数据库都没有可淘汰的键，跳出循环
+
+                // 5.1.2 从淘汰池中选择最佳淘汰键
+                //       - 淘汰池按 idle 值升序排列，所以从右向左遍历 (从 idle 值最大的开始)
+                for (k = EVPOOL_SIZE-1; k >= 0; k--) {
+                    if (pool[k].key == NULL) continue; // 跳过空条目
+                    bestdbid = pool[k].dbid; // 获取最佳键所在的数据库 ID
+
+                    // 再次查找键，确保键仍然存在于数据库中 (因为在填充淘汰池后，键可能已被删除)
+                    if (server.maxmemory_policy & MAXMEMORY_FLAG_ALLKEYS) {
+                        de = dictFind(server.db[pool[k].dbid].dict,
+                            pool[k].key);
+                    } else {
+                        de = dictFind(server.db[pool[k].dbid].expires,
+                            pool[k].key);
+                    }
+
+                    // 5.1.3 从淘汰池中移除当前条目
+                    if (pool[k].key != pool[k].cached)
+                        sdsfree(pool[k].key); // 如果键名是独立分配的 SDS，则释放它
+                    pool[k].key = NULL; // 将条目标记为空
+                    pool[k].idle = 0;   // 重置 idle 值
+
+                    // 5.1.4 如果键仍然存在于数据库中，则选中它作为最佳淘汰键，并跳出循环
+                    if (de) {
+                        bestkey = dictGetKey(de);
+                        break;
+                    } else {
+                        /* Ghost... Iterate again. */ // 键已不存在 (幽灵键)，继续尝试下一个
+                    }
+                }
+            }
+        }
+
+        // 5.2 Random 策略：随机选择键进行淘汰
+        else if (server.maxmemory_policy == MAXMEMORY_ALLKEYS_RANDOM ||
+                 server.maxmemory_policy == MAXMEMORY_VOLATILE_RANDOM)
+        {
+            // 5.2.1 遍历所有数据库，随机选择一个键
+            //       - 使用静态变量 next_db 轮询数据库，确保公平性
+            for (i = 0; i < server.dbnum; i++) {
+                j = (++next_db) % server.dbnum; // 轮询下一个数据库
+                db = server.db+j;
+                dict = (server.maxmemory_policy == MAXMEMORY_ALLKEYS_RANDOM) ?
+                        db->dict : db->expires; // 根据策略选择主字典或过期字典
+                if (dictSize(dict) != 0) { // 如果字典不为空
+                    de = dictGetRandomKey(dict); // 从字典中随机获取一个键
+                    bestkey = dictGetKey(de);    // 获取键名
+                    bestdbid = j;                // 获取数据库 ID
+                    break; // 找到键，跳出循环
+                }
+            }
+        }
+
+        // 5.3 删除选定的键
+        if (bestkey) {
+            db = server.db+bestdbid; // 获取键所在的数据库
+            // 创建一个临时的 robj 键对象，用于删除操作和事件传播
+            robj *keyobj = createStringObject(bestkey,sdslen(bestkey));
+            
+            // 5.3.1 传播删除操作到 AOF 和从节点
+            //       - 根据 server.lazyfree_lazy_eviction 配置决定传播 DEL 还是 UNLINK
+            propagateExpire(db,keyobj,server.lazyfree_lazy_eviction);
+            
+            // 5.3.2 计算本次删除操作释放的内存量
+            delta = (long long) zmalloc_used_memory(); // 记录删除前的内存使用量
+            latencyStartMonitor(eviction_latency); // 开始监控删除操作延迟
+            
+            // 5.3.3 执行删除操作：根据配置选择同步或异步删除
+            if (server.lazyfree_lazy_eviction)
+                dbAsyncDelete(db,keyobj); // 异步删除
+            else
+                dbSyncDelete(db,keyobj); // 同步删除
+            
+            latencyEndMonitor(eviction_latency); // 结束监控删除操作延迟
+            latencyAddSampleIfNeeded("eviction-del",eviction_latency); // 记录延迟样本
+            latencyRemoveNestedEvent(latency,eviction_latency); // 移除嵌套事件
+            
+            delta -= (long long) zmalloc_used_memory(); // 计算删除后内存减少量
+            mem_freed += delta; // 累加已释放内存总量
+            server.stat_evictedkeys++; // 更新淘汰键统计
+            
+            // 5.3.4 发送键空间通知
+            notifyKeyspaceEvent(NOTIFY_EVICTED, "evicted",
+                keyobj, db->id);
+            decrRefCount(keyobj); // 释放临时键对象的引用计数
+            keys_freed++; // 增加本次循环释放的键数量
+
+            // 5.3.5 如果有从节点连接，强制刷新从节点输出缓冲区
+            //       - 避免从节点输出缓冲区过大，导致内存问题或复制延迟
+            if (slaves) flushSlavesOutputBuffers();
+
+            // 5.3.6 如果启用了惰性淘汰，并且每 16 个键被释放，检查是否已达到内存目标
+            //       - 异步删除的内存释放是后台进行的，mem_freed 只能反映主线程同步释放的部分。
+            //       - 周期性检查实际内存使用量，如果已低于 maxmemory，则可以提前结束淘汰循环。
+            if (server.lazyfree_lazy_eviction && !(keys_freed % 16)) {
+                if (getMaxmemoryState(NULL,NULL,NULL,NULL) == C_OK) {
+                    /* Let's satisfy our stop condition. */
+                    mem_freed = mem_tofree; // 强制设置已释放内存达到目标，结束循环
+                }
+            }
+        }
+
+        // 5.4 如果本次循环没有释放任何键，则无法继续释放内存
+        if (!keys_freed) {
+            latencyEndMonitor(latency); // 结束监控
+            latencyAddSampleIfNeeded("eviction-cycle",latency); // 记录延迟
+            goto cant_free; /* nothing to free... */ // 跳转到 cant_free 标签
+        }
+    }
+    latencyEndMonitor(latency); // 结束监控
+    latencyAddSampleIfNeeded("eviction-cycle",latency); // 记录延迟
+    return C_OK; // 成功释放足够内存，返回 C_OK
+
+cant_free:
+    // 6. 无法释放足够内存时的处理
+    //    - 如果无法通过淘汰键释放足够内存，检查后台惰性删除线程是否有待处理任务。
+    //    - 如果有，则等待一段时间，让后台线程有机会释放内存。
+    while(bioPendingJobsOfType(BIO_LAZY_FREE)) {
+        // 检查是否已通过后台线程释放了足够内存
+        if (((mem_reported - zmalloc_used_memory()) + mem_freed) >= mem_tofree)
+            break; // 如果达到目标，跳出等待
+        usleep(1000); // 等待 1 毫秒
+    }
+    return C_ERR; // 最终仍无法释放足够内存，返回 C_ERR
+}
+```
+
+##### evictionPoolPopulate 填充淘汰池
+
+- `evictionPoolPopulate()` 从字典中随机采样键，计算它们的 `idle` 值（空闲时间），并填充到淘汰池中。
+- 它是这样实现的：
+  - 1. 从字典中随机采样键（默认 5 个，由 `server.maxmemory_samples` 配置）
+  - 2. 遍历采样的键，对每个键：
+    - 获取值对象（`robj`）
+    - 根据淘汰策略计算 `idle` 值：
+      - **LRU 策略**：`idle = estimateObjectIdleTime(o)`（空闲时间，毫秒）
+      - **LFU 策略**：`idle = 255 - LFUDecrAndReturn(o)`（逆频率，频率越低 `idle` 越大）
+      - **TTL 策略**：`idle = ULLONG_MAX - 过期时间`（逆 TTL，TTL 越小 `idle` 越大）
+    - 在淘汰池中查找插入位置（按 `idle` 值升序排列）
+    - 如果可以插入（淘汰池未满或当前键的 `idle` 值大于淘汰池中最小的 `idle` 值），则插入
+  - 3. 淘汰池维护了 16 个候选键，按 `idle` 值升序排列（左侧空闲时间短，右侧空闲时间长）
+
+```c
+// evict.c 第 162-257 行
+void evictionPoolPopulate(int dbid, dict *sampledict, dict *keydict, struct evictionPoolEntry *pool) {
+    int j, k, count;
+    dictEntry *samples[server.maxmemory_samples];  // 采样数组，存储从字典中随机获取的 dictEntry 指针
+    
+    // 1. 从指定的字典 (sampledict) 中随机采样键
+    //    - server.maxmemory_samples：配置的采样数量（默认 5 个）
+    //    - dictGetSomeKeys：从字典中随机获取指定数量的键，并将其 dictEntry 存储到 samples 数组中
+    count = dictGetSomeKeys(sampledict, samples, server.maxmemory_samples);
+    
+    // 2. 遍历采样的键，对每个键进行处理
+    for (j = 0; j < count; j++) {
+        unsigned long long idle;  // 评估值：空闲时间 (LRU) 或逆频率 (LFU) 或逆 TTL (TTL)
+        sds key;                   // 键名 (SDS 字符串)
+        robj *o;                   // 值对象 (redisObject)
+        dictEntry *de;             // 字典项
+        
+        de = samples[j]; // 获取当前采样的字典项
+        key = dictGetKey(de);  // 获取字典项的键名 (SDS)
+        
+        // 3. 获取值对象
+        //    - 如果采样字典 (sampledict) 不是主字典 (keydict)，例如当策略是 volatile-* 且 sampledict 是 db->expires 时，
+        //      需要从主字典 (db->dict) 中再次查找键以获取其值对象 (robj)。
+        //    - 这是因为 db->expires 字典的值是过期时间，而不是 robj。
+        if (server.maxmemory_policy != MAXMEMORY_VOLATILE_TTL) {
+            if (sampledict != keydict) 
+                de = dictFind(keydict, key);  // 从主字典查找对应的 dictEntry
+            o = dictGetVal(de);  // 获取值对象
+        }
+        
+        // 4. 根据当前配置的淘汰策略计算键的"idle"值 (评估分数)
+        //    - idle 值越大，表示该键越适合被淘汰
+        if (server.maxmemory_policy & MAXMEMORY_FLAG_LRU) {
+            // 4.1 LRU 策略：计算对象的空闲时间 (毫秒)
+            //     - estimateObjectIdleTime 会根据对象的 lru 字段和当前 LRU 时钟计算
+            idle = estimateObjectIdleTime(o);
+        } else if (server.maxmemory_policy & MAXMEMORY_FLAG_LFU) {
+            // 4.2 LFU 策略：计算对象的逆频率
+            //     - LFUDecrAndReturn 会根据对象的 lru 字段 (包含 LDT 和 LOG_C) 计算当前频率
+            //     - 使用 255 - 频率，使得频率低的键 (即访问次数少) 具有更大的 idle 值，优先被淘汰
+            idle = 255 - LFUDecrAndReturn(o);
+        } else if (server.maxmemory_policy == MAXMEMORY_VOLATILE_TTL) {
+            // 4.3 TTL 策略：计算对象的逆 TTL (Time To Live)
+            //     - dictGetVal(de) 在 volatile-ttl 策略下返回的是键的过期时间戳
+            //     - 使用 ULLONG_MAX - 过期时间戳，使得 TTL 越小 (越早过期) 的键具有更大的 idle 值，优先被淘汰
+            idle = ULLONG_MAX - (long)dictGetVal(de);
+        } else {
+            // 未知淘汰策略：触发程序崩溃，表示配置错误
+            serverPanic("Unknown eviction policy in evictionPoolPopulate()");
+        }
+        
+        // 5. 在淘汰池 (pool) 中查找当前键的插入位置
+        //    - 淘汰池是一个固定大小 (EVPOOL_SIZE=16) 的数组，按 idle 值升序排列。
+        //    - 目标是找到第一个空闲条目，或者第一个 idle 值大于等于当前键 idle 值的条目。
+        k = 0;
+        while (k < EVPOOL_SIZE && // 确保索引不越界
+               pool[k].key &&     // 确保当前条目不是空的
+               pool[k].idle < idle) k++; // 查找比当前键 idle 值小的条目
+        
+        // 6. 判断是否可以插入当前键到淘汰池
+        if (k == 0 && pool[EVPOOL_SIZE-1].key != NULL) {
+            // 6.1 如果当前键的 idle 值比淘汰池中所有键的 idle 值都小，
+            //     并且淘汰池已满 (最后一个条目不为空)，则当前键不适合进入淘汰池，跳过。
+            continue;
+        } else if (k < EVPOOL_SIZE && pool[k].key == NULL) {
+            // 6.2 如果找到一个空闲位置 (pool[k].key == NULL)，直接在此位置插入。
+            //     - 无需移动其他元素。
+        } else {
+            // 6.3 如果需要在中间位置插入，需要移动现有元素
+            if (pool[EVPOOL_SIZE-1].key == NULL) {
+                // 6.3.1 如果淘汰池右侧有空闲位置 (最后一个条目为空)，则将从 k 位置开始的元素向右移动一位
+                //       为当前键腾出位置，同时保留最右侧的 cached SDS。
+                sds cached = pool[EVPOOL_SIZE-1].cached; // 保存最右侧条目的 cached SDS
+                memmove(pool+k+1, pool+k, sizeof(pool[0])*(EVPOOL_SIZE-k-1)); // 移动元素
+                pool[k].cached = cached; // 将保存的 cached SDS 赋值给新腾出的位置
+            } else {
+                // 6.3.2 如果淘汰池已满且右侧没有空闲位置，则需要丢弃淘汰池中 idle 值最小的元素 (最左侧的元素)
+                //       然后将从 1 位置开始的元素向左移动一位，为当前键腾出位置。
+                k--; // 插入到 k-1 位置 (即当前找到的第一个比它大的元素的前一个位置)
+                sds cached = pool[0].cached; // 保存最左侧条目的 cached SDS
+                if (pool[0].key != pool[0].cached) 
+                    sdsfree(pool[0].key);  // 如果最左侧键名是独立分配的 SDS，则释放它
+                memmove(pool, pool+1, sizeof(pool[0])*k); // 向左移动元素
+                pool[k].cached = cached; // 将保存的 cached SDS 赋值给新腾出的位置
+            }
+        }
+        
+        // 7. 设置键名 (key) 到淘汰池条目中
+        //    - 尝试复用预分配的 cached SDS，如果键名太长则分配新的 SDS。
+        int klen = sdslen(key); // 获取键名长度
+        if (klen > EVPOOL_CACHED_SDS_SIZE) {
+            // 7.1 如果键名太长，超过缓存大小，则复制键名并分配新的 SDS
+            pool[k].key = sdsdup(key);
+        } else {
+            // 7.2 如果键名较短，可以复用 cached SDS
+            memcpy(pool[k].cached, key, klen+1); // 复制键名到 cached SDS
+            sdssetlen(pool[k].cached, klen);     // 设置 cached SDS 的长度
+            pool[k].key = pool[k].cached;        // 将 key 指针指向 cached SDS
+        }
+        
+        // 8. 设置 idle 值和数据库 ID
+        pool[k].idle = idle;
+        pool[k].dbid = dbid;
+    }
+}
+```
+
+##### estimateObjectIdleTime 计算空闲时间
 
 - `estimateObjectIdleTime()` 用于估算对象的空闲时间（未访问时间），用于 LRU 淘汰。
 - 它是这样实现的：
@@ -4745,15 +5223,24 @@ unsigned long long estimateObjectIdleTime(robj *o) {
 }
 ```
 
-
-
 ### LFU 实现
+
+-  LFU 算法是根据数据访问的频率来选择被淘汰数据的，所以 LFU 算法会记录每个数据的访问次数。当一个数据被再次访问时，就会增加该数据的访问次数。不过，访问次数和访问频率还不能完全等同。访问频率是指在一定时间内的访问次数，也就是说，在计算访问频率时，我们不仅需要记录访问次数，还要记录这些访问是在多长时间内执行的。要实现 LFU 算法时，我们需要能统计到数据的访问频率，而不是简单地记录数据访问次数
+- LFU 算法的实现可以分成三部分内容，分别是键值对访问频率记录、键值对访问频率初始化和更新，以及 LFU 算法淘汰数据。
 
 - Redis 使用 LFU（Least Frequently Used）算法，通过访问频率计数器来选择淘汰对象。LFU 复用 `redisObject->lru` 字段，将其分为两部分：
   - **高 16 位**：最后递减时间（Last Decrement Time, LDT），以分钟为单位
   - **低 8 位**：对数计数器（Logarithmic Counter, LOG_C），表示访问频率
+  - Redis server 每次运行时，只能将 maxmemory-policy 配置项设置为使用一种淘汰策略，所以，LRU 算法和 LFU 算法并不会同时使用。而为了节省内存开销，Redis 源码就复用了 lru 变量来记录 LFU 算法所需的访问频率信息。
 
-#### LFU 字段布局
+- LFU 算法的实现可以分成三部分内容：
+  1. **键值对访问频率记录**：在 `redisObject->lru` 字段中同时记录访问次数（LOG_C）和访问时间戳（LDT）
+  2. **键值对访问频率初始化和更新**：在创建对象时初始化 LFU 信息，在访问键时先执行时间衰减，再执行对数递增
+  3. **LFU 算法淘汰数据**：使用与近似 LRU 算法相同的淘汰池机制，但按照访问频率大小来排序和选择淘汰数据 
+  
+#### 键值对访问频率记录
+
+##### LFU 字段布局
 
 ```c
 // redisObject->lru 字段（24 位）的布局：
@@ -4763,15 +5250,155 @@ unsigned long long estimateObjectIdleTime(robj *o) {
 // +----------------+--------+
 ```
 
-- **LDT（Last Decrement Time）**：
+- LDT（Last Decrement Time）：
   - 存储最后递减时间，以分钟为单位（16 位，约 45 天）
   - 用于判断是否需要递减计数器
-- **LOG_C（Logarithmic Counter）**：
+  - 当键被访问时，LDT 会被更新为当前时间（分钟）
+- LOG_C（Logarithmic Counter）：
   - 对数计数器，表示访问频率（8 位，0-255）
   - 值越大，访问频率越高
   - 使用对数增长，避免频繁访问的键计数器增长过快
+  - **访问次数限制问题**：
+    - 键值对的访问次数只能用 `lru` 变量中有限的 8 bits 来记录，最大值就是 255
+    - 如果每访问一次键值对，访问次数就加 1，那么访问次数很容易就达到最大值
+    - 这样就无法区分不同的访问频率了（例如，访问 100 次和访问 1000 次的键，计数器都是 255）
+  - **概率递增解决方案**：
+    - 为了区分不同的访问频率，LFU 算法在实现时采用了按概率增加访问次数的方法
+    - 已有访问次数越大的键值对，它的访问次数就越难再增加
+    - 这样可以让计数器值更好地反映访问频率的差异
 
-#### LFUGetTimeInMinutes
+
+#### 键值对访问频率初始化和更新
+
+- LFU 算法在实现时，在键值对的 `redisObject` 结构体中的 `lru` 变量里，会同时记录访问次数和访问时间戳。当键值对被再次访问时，`lru` 变量中的访问次数，会先根据上一次访问距离当前的时长，执行衰减操作，然后才会执行增加操作。
+
+##### createObject 初始化 LFU 信息
+
+- `createObject()` 在创建对象时，会根据内存淘汰策略初始化 `lru` 字段。
+- 如果使用 LFU 策略，`lru` 字段会被初始化为：
+  - **高 16 位**：当前时间（分钟），通过 `LFUGetTimeInMinutes()` 获取
+  - **低 8 位**：初始计数器值 `LFU_INIT_VAL`（默认 5）
+- 初始计数器值不为 0 的原因：
+  - 新键需要收集一些访问后才能被淘汰，避免新键立即被淘汰
+  - 初始值 5 使得新键有很高的递增概率（接近 100%），能够快速积累访问次数
+
+```c
+// object.c 第 41-58 行
+robj *createObject(int type, void *ptr) {
+    // 1. 分配 robj 结构体内存
+    robj *o = zmalloc(sizeof(*o));
+    
+    // 2. 设置对象基本属性
+    o->type = type;
+    o->encoding = OBJ_ENCODING_RAW;
+    o->ptr = ptr;
+    o->refcount = 1;
+
+    /* Set the LRU to the current lruclock (minutes resolution), or
+     * alternatively the LFU counter. */
+    // 3. 根据内存淘汰策略初始化 lru 字段
+    if (server.maxmemory_policy & MAXMEMORY_FLAG_LFU) {
+        // 3.1 LFU 策略：初始化 LFU 信息
+        //     - 高 16 位：当前时间（分钟），通过 LFUGetTimeInMinutes() 获取
+        //     - 低 8 位：初始计数器值 LFU_INIT_VAL（默认 5）
+        //     - 初始值 5 使得新键有很高的递增概率，能够快速积累访问次数
+        o->lru = (LFUGetTimeInMinutes()<<8) | LFU_INIT_VAL;
+    } else {
+        // 3.2 LRU 策略：使用当前全局 LRU 时钟值初始化
+        o->lru = LRU_CLOCK();
+    }
+    return o;
+}
+```
+
+- 类似的，`createEmbeddedStringObject()` 在创建嵌入式字符串对象时也会初始化 LFU 信息。
+
+##### updateLFU 更新 LFU 信息
+
+- `updateLFU()` 在访问键时更新 LFU 信息，实现了"先衰减后递增"的逻辑。
+- 它是这样实现的：
+  - 1. **时间衰减**：调用 `LFUDecrAndReturn()` 递减计数器
+    - 根据自上次访问以来经过的时间，按周期递减计数器
+    - 如果经过的时间 >= `lfu_decay_time`（默认 1 分钟），递减计数器
+    - 这样可以让过去频繁访问但现在不访问的键的计数器逐渐降低
+  - 2. **对数递增**：调用 `LFULogIncr()` 递增计数器
+    - 使用概率递增，已有访问次数越大的键，递增概率越低
+    - 避免频繁访问的键计数器增长过快，无法区分不同访问频率
+  - 3. **更新字段**：将当前时间（LDT）和递增后的计数器值（LOG_C）组合后更新到 `lru` 字段
+
+```c
+// db.c 第 43-50 行
+/* Update LFU when an object is accessed.
+ * Firstly, decrement the counter if the decrement time is reached.
+ * Then logarithmically increment the counter, and update the access time. */
+void updateLFU(robj *val) {
+    // 1. 先递减计数器（根据时间衰减）
+    //    - LFUDecrAndReturn 会根据自上次访问以来经过的时间，按周期递减计数器
+    //    - 如果经过的时间 >= lfu_decay_time（默认 1 分钟），递减计数器
+    //    - 这样可以让过去频繁访问但现在不访问的键的计数器逐渐降低
+    unsigned long counter = LFUDecrAndReturn(val);
+    
+    // 2. 对数递增计数器（根据概率递增）
+    //    - LFULogIncr 使用概率递增，已有访问次数越大的键，递增概率越低
+    //    - 避免频繁访问的键计数器增长过快，无法区分不同访问频率
+    counter = LFULogIncr(counter);
+    
+    // 3. 更新 lru 字段
+    //    - 高 16 位：当前时间（分钟），通过 LFUGetTimeInMinutes() 获取
+    //    - 低 8 位：递增后的计数器值（0-255）
+    //    - 这样同时记录了访问时间戳和访问频率
+    val->lru = (LFUGetTimeInMinutes()<<8) | counter;
+}
+```
+
+##### lookupKey 调用 updateLFU
+
+- `lookupKey()` 在访问键时，会根据内存淘汰策略更新 LFU 或 LRU 信息。
+- 它是这样实现的：
+  - 1. 在字典中查找键对应的 `dictEntry`
+  - 2. 如果找到键值对，检查是否需要更新 LFU 信息：
+    - 如果正在执行 RDB 保存或 AOF 重写，不更新（避免触发写时复制）
+    - 如果设置了 `LOOKUP_NOTOUCH` 标志，不更新（某些操作需要查看原始访问频率）
+  - 3. 根据内存淘汰策略更新：
+    - 如果使用 LFU 策略：调用 `updateLFU(val)` 更新 LFU 信息（时间衰减 + 对数递增）
+    - 如果使用 LRU 策略：`val->lru = LRU_CLOCK()`（更新为当前全局 LRU 时钟值）
+
+```c
+// db.c 第 55-77 行
+robj *lookupKey(redisDb *db, robj *key, int flags) {
+    // 1. 在字典中查找键
+    dictEntry *de = dictFind(db->dict,key->ptr);
+    if (de) {
+        robj *val = dictGetVal(de);
+
+        /* Update the access time for the ageing algorithm.
+         * Don't do it if we have a saving child, as this will trigger
+         * a copy on write madness. */
+        // 2. 检查是否需要更新 LFU/LRU 信息
+        //    - 如果正在执行 RDB 保存或 AOF 重写，不更新（避免触发写时复制）
+        //    - 如果设置了 LOOKUP_NOTOUCH 标志，不更新（某些操作需要查看原始访问频率）
+        if (server.rdb_child_pid == -1 &&
+            server.aof_child_pid == -1 &&
+            !(flags & LOOKUP_NOTOUCH))
+        {
+            // 3. 根据内存淘汰策略更新 LFU/LRU 信息
+            if (server.maxmemory_policy & MAXMEMORY_FLAG_LFU) {
+                // 3.1 LFU 策略：更新 LFU 信息（时间衰减 + 对数递增）
+                //     - updateLFU 会先根据时间衰减递减计数器，再根据概率递增计数器
+                updateLFU(val);
+            } else {
+                // 3.2 LRU 策略：更新为当前全局 LRU 时钟值
+                val->lru = LRU_CLOCK();
+            }
+        }
+        return val;
+    } else {
+        return NULL;
+    }
+}
+```
+
+##### LFUGetTimeInMinutes
 
 - `LFUGetTimeInMinutes()` 获取当前时间（分钟），只保留低 16 位。
 
@@ -4786,7 +5413,7 @@ unsigned long LFUGetTimeInMinutes(void) {
 }
 ```
 
-#### LFUTimeElapsed
+##### LFUTimeElapsed
 
 - `LFUTimeElapsed()` 计算自上次递减时间以来经过的分钟数，处理时间回绕。
 - 它是这样实现的：
@@ -4812,7 +5439,7 @@ unsigned long LFUTimeElapsed(unsigned long ldt) {
 }
 ```
 
-#### LFULogIncr
+##### LFULogIncr
 
 - `LFULogIncr()` 对数递增计数器，值越大递增概率越低。使用概率递增，避免计数器增长过快。
 - 它是这样实现的：
@@ -4869,9 +5496,7 @@ uint8_t LFULogIncr(uint8_t counter) {
 }
 ```
 
-
-
-#### LFUDecrAndReturn
+##### LFUDecrAndReturn
 
 - `LFUDecrAndReturn()` 根据时间衰减递减计数器，并返回当前计数器值。用于扫描数据集时递减计数器。
 - 它是这样实现的：
@@ -4929,32 +5554,63 @@ unsigned long LFUDecrAndReturn(robj *o) {
 }
 ```
 
+#### LFU 算法淘汰数据
 
+- 对于 LFU 算法的执行流程来说，它和 LRU 算法的基本执行流程是相同的，这包括入口函数、待释放内存空间计算、更新待淘汰候选键值对集合，以及选择实际被淘汰数据这几个关键步骤。
+- 在实现使用 LFU 算法淘汰数据时，Redis 是采用了和实现近似 LRU 算法相同的方法：
+  - 使用全局数组 `EvictionPoolLRU` 来保存待淘汰候选键值对集合
+  - 在 `processCommand` 函数处理每个命令时，调用 `freeMemoryIfNeededAndSafe` 函数和 `freeMemoryIfNeeded` 函数来执行具体的数据淘汰流程
+  - 不同的是，LFU 算法在待淘汰键值对集合中，是按照键值对的访问频率大小来排序和选择淘汰数据的
 
-#### updateLFU
+##### evictionPoolPopulate 中的 LFU 计算
 
-- `updateLFU()` 在访问键时更新 LFU 信息。
+- 在 `evictionPoolPopulate()` 中，当使用 LFU 策略时，会计算键的逆频率作为 `idle` 值。
 - 它是这样实现的：
-  - 1. 调用 `LFUDecrAndReturn()` 递减计数器（时间衰减）
-  - 2. 调用 `LFULogIncr()` 递增计数器（访问增加）
-  - 3. 更新 `lru` 字段：LDT（当前时间）| LOG_C（计数器值）
+  - 1. 调用 `LFUDecrAndReturn(o)` 获取当前访问频率（考虑时间衰减后的计数器值）
+  - 2. 计算逆频率：`idle = 255 - 频率`
+    - 频率越低（访问次数少），`idle` 值越大，优先被淘汰
+    - 频率越高（访问次数多），`idle` 值越小，越不容易被淘汰
+  - 3. 将键插入淘汰池（按 `idle` 值升序排列）
+    - 淘汰池左侧：频率高（`idle` 值小），不容易被淘汰
+    - 淘汰池右侧：频率低（`idle` 值大），优先被淘汰
 
 ```c
-// db.c 第 46-50 行
-void updateLFU(robj *val) {
-    // 1. 先递减计数器（根据时间衰减）
-    //    - 如果经过的时间 >= lfu_decay_time，递减计数器
-    unsigned long counter = LFUDecrAndReturn(val);
-    
-    // 2. 对数递增计数器（根据概率递增）
-    counter = LFULogIncr(counter);
-    
-    // 3. 更新 lru 字段
-    //    - 高 16 位：当前时间（分钟）
-    //    - 低 8 位：递增后的计数器值
-    val->lru = (LFUGetTimeInMinutes()<<8) | counter;
+// evict.c 第 187-197 行（evictionPoolPopulate 函数中）
+if (server.maxmemory_policy & MAXMEMORY_FLAG_LRU) {
+    // LRU 策略：计算空闲时间
+    idle = estimateObjectIdleTime(o);
+} else if (server.maxmemory_policy & MAXMEMORY_FLAG_LFU) {
+
+    // LFU 策略：计算逆频率
+    // - LFUDecrAndReturn 会根据对象的 lru 字段计算当前频率（考虑时间衰减）
+    // - 使用 255 - 频率，使得频率低的键具有更大的 idle 值，优先被淘汰
+    idle = 255 - LFUDecrAndReturn(o);
+} else if (server.maxmemory_policy == MAXMEMORY_VOLATILE_TTL) {
+    // TTL 策略：计算逆 TTL
+    idle = ULLONG_MAX - (long)dictGetVal(de);
 }
 ```
+
+##### LFU 与 LRU 淘汰流程的相同点
+
+- LFU 算法和 LRU 算法使用相同的淘汰流程：
+  1. **入口函数**：`freeMemoryIfNeededAndSafe()` → `freeMemoryIfNeeded()`
+  2. **内存检查**：调用 `getMaxmemoryState()` 计算需要释放的内存大小
+  3. **填充淘汰池**：调用 `evictionPoolPopulate()` 从所有数据库中采样键并填充淘汰池
+  4. **选择淘汰键**：从淘汰池右侧选择最佳键（`idle` 值最大）
+  5. **删除键**：调用 `dbSyncDelete()` 或 `dbAsyncDelete()` 删除键
+  6. **循环释放**：如果释放的内存不足，继续循环直到释放足够内存
+
+##### LFU 与 LRU 淘汰流程的不同点
+
+- LFU 算法和 LRU 算法的唯一不同在于 `idle` 值的计算方式：
+  - **LRU 策略**：`idle = estimateObjectIdleTime(o)`（空闲时间，毫秒）
+    - 值越大，表示越久未访问，优先被淘汰
+  - **LFU 策略**：`idle = 255 - LFUDecrAndReturn(o)`（逆频率）
+    - 值越大，表示访问频率越低，优先被淘汰
+- 淘汰池的排序方式相同（按 `idle` 值升序排列），但 `idle` 值的含义不同：
+  - LRU：`idle` 表示空闲时间
+  - LFU：`idle` 表示逆频率（频率越低，`idle` 越大）
 
 
 
@@ -5515,5 +6171,2154 @@ int freeMemoryIfNeededAndSafe(void) {
     return freeMemoryIfNeeded();
 }
 ```
+
+# Redis 的网络通信
+
+## main 函数
+
+- 我们知道，main 函数是 Redis 整个运行程序的入口，并且 Redis 实例在运行时，也会从这个 main 函数开始执行。同时，由于 Redis 是典型的 Client-Server 架构，一旦 Redis 实例开始运行，Redis server 也就会启动，而 main 函数其实也会负责 Redis server 的启动运行。
+- main 函数的主要工作可以分为五个阶段：
+  1. **基本初始化**：设置时区、OOM 处理、随机种子、哈希种子等
+  2. **检查哨兵模式，并检查是否要执行 RDB 检测或 AOF 检测**：判断运行模式
+  3. **运行参数解析**：解析命令行参数和配置文件
+  4. **初始化 server**：初始化服务器数据结构、数据库、网络框架等
+  5. **执行事件驱动框架**：进入事件循环，处理客户端请求
+
+### 基本初始化
+
+- **目的**：设置运行环境的基础参数，在这个阶段，main 函数主要是完成一些基本的初始化工作，包括设置 server 运行的时区、设置哈希函数的随机种子等
+
+- **主要操作**：
+  - 设置时区和本地化（`setlocale`、`tzset`）
+  - 设置 OOM 处理函数（`zmalloc_set_oom_handler`）
+  - 设置随机种子（`srand`）
+  - 设置哈希种子（`dictSetHashFunctionSeed`），防止哈希碰撞攻击
+  - 检查哨兵模式（`checkForSentinelMode`）
+  - 初始化服务器配置（`initServerConfig`），设置默认值
+  - 初始化模块系统（`moduleInitModulesSystem`）
+  - 保存可执行文件路径和命令行参数（用于后续重启）
+- 在 main 函数的开始部分，有一段宏定义覆盖的代码。这部分代码的作用是，如果定义了 REDIS_TEST 宏定义，并且 Redis server 启动时的参数符合测试参数，那么 main 函数就会执行相应的测试程序。
+
+### 检查哨兵模式，并检查是否要执行 RDB 检测或 AOF 检测
+
+- Redis server 启动后，可能是以哨兵模式运行的，而哨兵模式运行的 server 在参数初始化、参数设置，以及 server 启动过程中要执行的操作等方面，与普通模式 server 有所差别。所以，main 函数在执行过程中需要根据 Redis 配置的参数，检查是否设置了哨兵模式。如果有设置哨兵模式的话，main 函数会调用 initSentinelConfig 函数，对哨兵模式的参数进行初始化设置，以及调用 initSentinel 函数，初始化设置哨兵模式运行的 server。
+
+- **目的**：确定运行模式，处理特殊启动模式
+- **主要操作**：
+  - 如果是哨兵模式，初始化哨兵配置和工作（`initSentinelConfig`、`initSentinel`）
+  - 检查是否是 RDB 或 AOF 检测模式（`redis-check-rdb`、`redis-check-aof`），如果是则执行检测并退出
+
+### 运行参数解析
+
+- 在这一阶段，main 函数会对命令行传入的参数进行解析，并且调用 loadServerConfig 函数，对命令行参数和配置文件中的参数进行合并处理，然后为 Redis 各功能模块的关键参数设置合适的取值，以便 server 能高效地运行。
+- 首先，Redis 在 main 函数中会先调用 initServerConfig 函数，为各种参数设置默认值。接下来，main 函数就会对 Redis 程序启动时的命令行参数进行逐一解析。main 函数会把解析后的参数及参数值保存成字符串，接着，main 函数会调用 loadServerConfig 函数进行第二和第三轮的赋值。
+    - loadServerConfig 函数是在config.c文件中实现的，该函数是以 Redis 配置文件和命令行参数的解析字符串为参数，将配置文件中的所有配置项读取出来，形成字符串。紧接着，loadServerConfig 函数会把解析后的命令行参数，追加到配置文件形成的配置项字符串。那么配置项字符串就同时包含了配置文件中设置的参数，以及命令行设置的参数。
+- 最后，loadServerConfig 函数会进一步调用 loadServerConfigFromString 函数，对配置项字符串中的每一个配置项进行匹配。一旦匹配成功，loadServerConfigFromString 函数就会按照配置项的值设置 server 的参数。
+
+- **目的**：解析命令行参数和配置文件，设置服务器配置
+- **主要操作**：
+  - 处理特殊选项（`--help`、`--version`、`--test-memory`）
+  - 解析配置文件路径（第一个非 `--` 开头的参数）
+  - 解析命令行选项（如 `--port 6380`），转换为配置字符串格式
+  - 加载配置文件并合并命令行参数（`loadServerConfig`）
+  - 检查是否需要后台运行（守护进程模式），如果是则调用 `daemonize()`
+
+### 初始化 server
+
+- 在完成对运行参数的解析和设置后，main 函数会调用 initServer 函数，对 server 运行时的各种资源进行初始化工作。这主要包括了 server 资源管理所需的数据结构初始化、键值对数据库初始化、server 网络框架初始化等。而在调用完 initServer 后，main 函数还会再次判断当前 server 是否为哨兵模式。如果是哨兵模式，main 函数会调用 sentinelIsRunning 函数，设置启动哨兵模式。否则的话，main 函数会调用 loadDataFromDisk 函数，从磁盘上加载 AOF 或者是 RDB 文件，以便恢复之前的数据。
+    - 可以从 loadDataFromDisk 函数中看到，Redis server 会先读取 AOF；而如果没有 AOF，则再读取 RDB。
+- 初始化server的大致流程：
+    - Redis server 运行时需要对多种资源进行管理
+        - 比如说，和 server 连接的客户端、从库等，Redis 用作缓存时的替换候选集，以及 server 运行时的状态信息，这些资源的管理信息都会在 initServer 函数中进行初始化。
+    - 在完成资源管理信息的初始化后，initServer 函数会对 Redis 数据库进行初始化。因为一个 Redis 实例可以同时运行多个数据库，所以 initServer 函数会使用一个循环，依次为每个数据库创建相应的数据结构。
+        - 这个代码逻辑是实现在 initServer 函数中，它会为每个数据库执行初始化操作，包括创建全局哈希表，为过期 key、被 BLPOP 阻塞的 key、将被 PUSH 的 key 和被监听的 key 创建相应的信息表。
+    - initServer 函数会为运行的 Redis server 创建事件驱动框架，并开始启动端口监听，用于接收外部请求。
+        - 为了高效处理高并发的外部请求，initServer 在创建的事件框架中，针对每个监听 IP 上可能发生的客户端连接，都创建了监听事件，用来监听客户端连接请求。同时，initServer 为监听事件设置了相应的处理函数 acceptTcpHandler，只要有客户端连接到 server 监听的 IP 和端口，事件驱动框架就会检测到有连接事件发生，然后调用 acceptTcpHandler 函数来处理具体的连接
+- **目的**：初始化服务器的所有组件，准备接受客户端连接
+- **主要操作**：
+  - **`initServer()`**：核心初始化函数
+    - 初始化服务器数据结构
+    - 初始化键值对数据库（创建数据库数组、设置哈希函数等）
+    - 初始化网络框架（创建事件循环、创建监听套接字等）
+  - 创建 PID 文件（如果配置了）
+  - 设置进程标题
+  - 打印 ASCII 艺术字
+  - 检查 TCP backlog 设置
+  - 非哨兵模式：
+    - 加载模块队列（`moduleLoadFromQueue`）
+    - 最后初始化步骤（`InitServerLast`）
+    - **加载持久化数据**（`loadDataFromDisk`）：从 AOF 或 RDB 文件恢复数据
+    - 集群模式验证（如果启用）
+    - 打印就绪信息
+  - 哨兵模式：
+    - 最后初始化步骤（`InitServerLast`）
+    - 启动哨兵（`sentinelIsRunning`）
+
+### 执行事件驱动框架
+
+- 为了能高效处理高并发的客户端连接请求，Redis 采用了事件驱动框架，来并发处理不同客户端的连接和读写请求。所以，main 函数执行到最后时，会调用 aeMain 函数进入事件驱动框架，开始循环处理各种触发的事件。
+- 在进入事件驱动循环前，main 函数会分别调用 aeSetBeforeSleepProc 和 aeSetAfterSleepProc 两个函数，来设置每次进入事件循环前 server 需要执行的操作，以及每次事件循环结束后 server 需要执行的操作
+
+- **目的**：进入事件循环，开始处理客户端请求
+- **主要操作**：
+  - 设置事件循环的前置和后置回调函数（`beforeSleep`、`afterSleep`）
+  - **`aeMain(server.el)`**：进入事件循环主循环
+    - 这是 Redis 服务器的主循环，会一直运行直到服务器关闭
+    - 不断调用 `aeProcessEvents` 处理文件事件（客户端连接、数据读写）和时间事件（定时任务）
+  - 清理事件循环（正常情况下不会执行到这里）
+
+```c
+// server.c 第 4095-4331 行
+int main(int argc, char **argv) {
+    struct timeval tv;
+    int j;
+
+    // 测试模式：如果定义了 REDIS_TEST 宏，可以执行各种测试
+#ifdef REDIS_TEST
+    if (argc == 3 && !strcasecmp(argv[1], "test")) {
+        // 支持 ziplist、quicklist、intset 等数据结构的测试
+        if (!strcasecmp(argv[2], "ziplist")) {
+            return ziplistTest(argc, argv);
+        }
+        // ... 其他测试
+    }
+#endif
+
+    // ========== 阶段一：基本初始化 ==========
+    // 1.1 初始化进程标题设置（如果支持）
+#ifdef INIT_SETPROCTITLE_REPLACEMENT
+    spt_init(argc, argv);
+#endif
+
+    // 1.2 设置时区和本地化
+    setlocale(LC_COLLATE,"");  // 设置字符串排序规则
+    tzset();                   // 设置时区，填充 'timezone' 全局变量
+
+    // 1.3 设置 OOM 处理函数
+    //     - 当内存分配失败时，调用 redisOutOfMemoryHandler 处理
+    zmalloc_set_oom_handler(redisOutOfMemoryHandler);
+
+    // 1.4 设置随机种子
+    //     - 使用当前时间和进程 ID 的异或值作为随机种子
+    //     - 确保每次启动的随机序列不同
+    srand(time(NULL)^getpid());
+    gettimeofday(&tv,NULL);
+
+    // 1.5 设置哈希种子
+    //     - 生成 16 字节的随机哈希种子
+    //     - 用于字典的哈希函数，防止哈希碰撞攻击
+    char hashseed[16];
+    getRandomHexChars(hashseed,sizeof(hashseed));
+    dictSetHashFunctionSeed((uint8_t*)hashseed);
+
+    // 1.6 检查是否启动哨兵模式
+    //     - 通过启动命令或命令参数检查
+    server.sentinel_mode = checkForSentinelMode(argc,argv);
+
+    // 1.7 初始化服务器配置（设置默认值）
+    initServerConfig();
+
+    // 1.8 初始化模块系统
+    moduleInitModulesSystem();
+
+    // 1.9 保存可执行文件路径和命令行参数
+    //     - 用于后续服务器重启
+    server.executable = getAbsolutePath(argv[0]);
+    server.exec_argv = zmalloc(sizeof(char*)*(argc+1));
+    server.exec_argv[argc] = NULL;
+    for (j = 0; j < argc; j++) {
+        server.exec_argv[j] = zstrdup(argv[j]);
+    }
+
+    // ========== 阶段二：检查哨兵模式，并检查是否要执行 RDB 检测或 AOF 检测 ==========
+    // 2.1 如果是哨兵模式，初始化哨兵配置和工作
+    if (server.sentinel_mode) {
+        initSentinelConfig();  // 初始化哨兵配置
+        initSentinel();        // 初始化哨兵工作
+    }
+
+    // 2.2 检查是否需要执行 RDB 或 AOF 检测
+    //     - 如果启动命令是 redis-check-rdb 或 redis-check-aof，执行相应的检测
+    if (strstr(argv[0],"redis-check-rdb") != NULL)
+        redis_check_rdb_main(argc,argv,NULL);
+    else if (strstr(argv[0],"redis-check-aof") != NULL)
+        redis_check_aof_main(argc,argv);
+
+    // ========== 阶段三：运行参数解析 ==========
+    if (argc >= 2) {
+        j = 1; /* First option to parse in argv[] */
+        sds options = sdsempty();
+        char *configfile = NULL;
+
+        // 3.1 处理特殊选项：--help、--version、--test-memory
+        if (strcmp(argv[1], "-v") == 0 ||
+            strcmp(argv[1], "--version") == 0) version();
+        if (strcmp(argv[1], "--help") == 0 ||
+            strcmp(argv[1], "-h") == 0) usage();
+        if (strcmp(argv[1], "--test-memory") == 0) {
+            // 内存测试模式
+            if (argc == 3) {
+                memtest(atoi(argv[2]),50);
+                exit(0);
+            }
+        }
+
+        // 3.2 解析配置文件路径
+        //     - 如果第一个参数不是以 "--" 开头，则认为是配置文件路径
+        if (argv[j][0] != '-' || argv[j][1] != '-') {
+            configfile = argv[j];
+            server.configfile = getAbsolutePath(configfile);
+            // 替换文件名为绝对路径
+            zfree(server.exec_argv[j]);
+            server.exec_argv[j] = zstrdup(server.configfile);
+            j++;
+        }
+
+        // 3.3 解析命令行选项（如 --port 6380）
+        //     - 将所有选项转换为配置字符串格式
+        while(j != argc) {
+            if (argv[j][0] == '-' && argv[j][1] == '-') {
+                /* Option name */
+                if (!strcmp(argv[j], "--check-rdb")) {
+                    j++;
+                    continue;
+                }
+                if (sdslen(options)){
+                    options = sdscat(options,"\n");
+                }
+                options = sdscat(options,argv[j]+2);  // 去掉 "--" 前缀
+                options = sdscat(options," ");
+            } else {
+                /* Option argument */
+                options = sdscatrepr(options,argv[j],strlen(argv[j]));
+                options = sdscat(options," ");
+            }
+            j++;
+        }
+
+        // 3.4 哨兵模式不允许从 STDIN 读取配置
+        if (server.sentinel_mode && configfile && *configfile == '-') {
+            serverLog(LL_WARNING,
+                "Sentinel config from STDIN not allowed.");
+            exit(1);
+        }
+
+        // 3.5 重置服务器保存参数
+        resetServerSaveParams();
+
+        // 3.6 加载配置文件并合并命令行参数
+        //     - loadServerConfig 会解析配置文件，并将命令行参数覆盖配置文件中的设置
+        //     - Redis 为各功能模块的关键参数设置合适的取值，以便 server 能高效运行
+        loadServerConfig(configfile,options);
+        sdsfree(options);
+    }
+
+    // 3.7 打印启动信息
+    serverLog(LL_WARNING, "oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo");
+    serverLog(LL_WARNING,
+        "Redis version=%s, bits=%d, commit=%s, modified=%d, pid=%d, just started",
+            REDIS_VERSION,
+            (sizeof(long) == 8) ? 64 : 32,
+            redisGitSHA1(),
+            strtol(redisGitDirty(),NULL,10) > 0,
+            (int)getpid());
+
+    if (argc == 1) {
+        serverLog(LL_WARNING, "Warning: no config file specified, using the default config.");
+    } else {
+        serverLog(LL_WARNING, "Configuration loaded");
+    }
+
+    // 3.8 检查是否需要后台运行（守护进程模式）
+    server.supervised = redisIsSupervised(server.supervised_mode);
+    int background = server.daemonize && !server.supervised;
+    if (background) daemonize();  // 将进程转为守护进程
+
+    // ========== 阶段四：初始化 server ==========
+    /*
+     * 真实初始化 server 的地方:
+     * 1. server 相关资源管理所需数据结构初始化
+     * 2. 键值对数据库初始化（例如全局 key-value 映射的 hash 结构的哈希函数）
+     * 3. server 网络框架初始化（事件循环、监听套接字等）
+     */
+    initServer();
+
+    // 4.1 创建 PID 文件（如果配置了后台运行或指定了 PID 文件）
+    if (background || server.pidfile) createPidFile();
+
+    // 4.2 设置进程标题
+    redisSetProcTitle(argv[0]);
+
+    // 4.3 打印 ASCII 艺术字
+    redisAsciiArt();
+
+    // 4.4 检查 TCP backlog 设置
+    checkTcpBacklogSettings();
+
+    // 4.5 非哨兵模式的初始化
+    if (!server.sentinel_mode) {
+        serverLog(LL_WARNING,"Server initialized");
+#ifdef __linux__
+        linuxMemoryWarnings();  // Linux 内存警告
+#endif
+        moduleLoadFromQueue();  // 加载模块队列
+        InitServerLast();       // 最后初始化步骤
+
+        // 4.5.1 加载 AOF 和 RDB 文件，恢复 Redis 内存中的数据
+        loadDataFromDisk();
+
+        // 4.5.2 集群模式验证
+        if (server.cluster_enabled) {
+            if (verifyClusterConfigWithData() == C_ERR) {
+                serverLog(LL_WARNING,
+                    "You can't have keys in a DB different than DB 0 when in "
+                    "Cluster mode. Exiting.");
+                exit(1);
+            }
+        }
+
+        // 4.5.3 打印就绪信息
+        if (server.ipfd_count > 0)
+            serverLog(LL_NOTICE,"Ready to accept connections");
+        if (server.sofd > 0)
+            serverLog(LL_NOTICE,"The server is now ready to accept connections at %s", server.unixsocket);
+    } else {
+        // 4.6 哨兵模式的初始化
+        InitServerLast();
+        sentinelIsRunning();
+    }
+
+    // 4.7 警告可疑的 maxmemory 设置
+    if (server.maxmemory > 0 && server.maxmemory < 1024*1024) {
+        serverLog(LL_WARNING,"WARNING: You specified a maxmemory value that is less than 1MB.");
+    }
+
+    // ========== 阶段五：执行事件驱动框架 ==========
+    // 5.1 设置事件循环的前置和后置回调函数
+    //     - beforeSleep：在每次事件循环前执行（处理客户端输入、执行命令等）
+    //     - afterSleep：在每次事件循环后执行（处理输出缓冲区等）
+    aeSetBeforeSleepProc(server.el,beforeSleep);
+    aeSetAfterSleepProc(server.el,afterSleep);
+
+    // 5.2 开启事件驱动框架，进入事件循环
+    //     - aeMain 会不断调用 aeProcessEvents 处理文件事件和时间事件
+    //     - 这是 Redis 服务器的主循环，会一直运行直到服务器关闭
+    //     - 类似自研网络框架的 event loop run 方法所做的事
+    aeMain(server.el);
+
+    // 5.3 清理事件循环（正常情况下不会执行到这里，除非服务器关闭）
+    aeDeleteEventLoop(server.el);
+    return 0;
+}
+```
+
+## IO 多路复用基础
+
+### 为什么需要 IO 多路复用？
+
+- Redis 作为一个 Client-Server 架构的数据库，其源码中少不了用来实现网络通信的部分。通常系统实现网络通信的基本方法是使用 Socket 编程模型，包括创建 Socket、监听端口、处理连接请求和读写请求。但是，由于基本的 Socket 编程模型一次只能处理一个客户端连接上的请求，所以当要处理高并发请求时，一种方案就是使用多线程，让每个线程负责处理一个客户端的请求。而 Redis 负责客户端请求解析和处理的线程只有一个，那么如果直接采用基本 Socket 模型，就会影响 Redis 支持高并发的客户端访问。
+- 因此，为了实现高并发的网络通信，Redis 采用了 **IO 多路复用（IO Multiplexing）** 技术，在 Linux 上通常使用 **epoll** 模型来进行网络通信。
+
+### IO 多路复用的基本概念
+
+- **IO 多路复用**：一种同步 IO 模型，允许单个进程/线程同时监视多个文件描述符（fd），当某个文件描述符就绪（可读或可写）时，通知程序进行相应的读写操作。
+- **核心优势**：
+  - 单线程/进程可以同时处理多个客户端连接
+  - 避免了多线程/多进程的上下文切换开销
+  - 适合高并发、低延迟的场景
+
+### select、poll、epoll 详解
+
+#### select
+
+- **定义**：`select()` 是最早的 IO 多路复用接口，在 POSIX 标准中定义。
+    - select 函数使用三个集合，表示监听的三类事件，分别是读数据事件（对应readfds集合）、写数据事件（对应writefds集合）和异常事件（对应__exceptfds集合）
+    - fd_set 结构体的定义，其实就是一个 long int 类型的数组，该数组中一共有 32 个元素，每个元素是 32 位，每一位可以用来表示一个文件描述符的状态。select 函数对每一个描述符集合，都可以监听 1024 个描述符。
+    - 1. 在调用 select 函数前，可以先创建好传递给 select 函数的描述符集合，然后再创建监听套接字。而为了让创建的监听套接字能被 select 函数监控，需要把这个套接字的描述符加入到创建好的描述符集合中。
+    - 2. 然后可以调用 select 函数，并把创建好的描述符集合作为参数传递给 select 函数。程序在调用 select 函数后，会发生阻塞。而当 select 函数检测到有描述符就绪后，就会结束阻塞，并返回就绪的文件描述符个数。
+    - 3. 可以使用一个循环流程, 在描述符集合中查找哪些描述符就绪了,依次对就绪描述符对应的套接字进行读写或异常处理操作
+
+- **函数签名**：
+```c
+#include <sys/select.h>
+int select(int nfds, fd_set *readfds, fd_set *writefds, 
+           fd_set *exceptfds, struct timeval *timeout);
+```
+- **参数说明**：
+  - `nfds`：需要监视的文件描述符的最大值 + 1
+  - `readfds`：可读文件描述符集合
+  - `writefds`：可写文件描述符集合
+  - `exceptfds`：异常文件描述符集合
+  - `timeout`：超时时间（NULL 表示阻塞等待，0 表示非阻塞）
+- **返回值**：
+  - 成功：返回就绪的文件描述符数量
+  - 超时：返回 0
+  - 错误：返回 -1
+- **使用示例**：
+```c
+fd_set readfds;
+FD_ZERO(&readfds);           // 清空集合
+FD_SET(sockfd, &readfds);    // 添加文件描述符
+int ret = select(sockfd + 1, &readfds, NULL, NULL, NULL);
+if (ret > 0 && FD_ISSET(sockfd, &readfds)) {
+    // sockfd 可读
+}
+```
+- **特点**：
+  - **优点**：跨平台，几乎所有操作系统都支持
+  - **缺点**：
+    - 文件描述符数量限制：`FD_SETSIZE`（通常为 1024）
+    - 每次调用都需要将文件描述符集合从用户态拷贝到内核态
+    - 返回后需要遍历所有文件描述符找出就绪的（O(n) 复杂度）
+    - 每次调用都需要重新设置文件描述符集合
+
+#### poll
+
+- **定义**：`poll()` 是 `select()` 的改进版本，解决了文件描述符数量限制的问题。
+- 与select类似，创建 pollfd 数组和监听套接字，并进行绑定，将监听套接字加入 pollfd 数组，并设置其监听读事件，也就是客户端的连接请求，循环调用 poll 函数，检测 pollfd 数组中是否有就绪的文件描述符。和 select 函数相比，poll 函数的改进之处主要就在于允许一次监听超过 1024 个文件描述符。但是当调用了 poll 函数后仍然需要遍历每个文件描述符，检测该描述符是否就绪，然后再进行处理
+    - 如果是连接套接字就绪，这表明是有客户端连接，可以调用 accept 接受连接，并创建已连接套接字，并将其加入 pollfd 数组，并监听读事件
+    - 如果是已连接套接字就绪，这表明客户端有读写请求，调用 recv/send 函数处理读写请求
+
+- **函数签名**：
+```c
+#include <poll.h>
+int poll(struct pollfd *fds, nfds_t nfds, int timeout);
+```
+- **参数说明**：
+  - `fds`：`pollfd` 结构体数组，每个元素包含文件描述符和关注的事件
+  - `nfds`：数组元素个数
+  - `timeout`：超时时间（毫秒，-1 表示阻塞等待，0 表示非阻塞）
+- **pollfd 结构体**：
+- pollfd 结构体里包含了要监听的描述符，以及该描述符上要监听的事件类型。pollfd 结构体中包含了三个成员变量 fd、events 和 revents，分别表示要监听的文件描述符、要监听的事件类型和实际发生的事件类型。
+- pollfd 结构体中要监听和实际发生的事件类型，是通过以下三个宏定义来表示的，分别是 POLLRDNORM、POLLWRNORM 和 POLLERR，它们分别表示可读、可写和错误事件
+
+```c
+struct pollfd {
+    int fd;         // 文件描述符
+    short events;   // 关注的事件（POLLIN、POLLOUT 等）
+    short revents;  // 返回的事件（由内核填充）
+};
+```
+- **使用示例**：
+```c
+struct pollfd fds[1];
+fds[0].fd = sockfd;
+fds[0].events = POLLIN;
+int ret = poll(fds, 1, -1);
+if (ret > 0 && (fds[0].revents & POLLIN)) {
+    // sockfd 可读
+}
+```
+- **特点**：
+  - **优点**：
+    - 没有文件描述符数量限制（理论上只受系统资源限制）
+    - 使用 `pollfd` 数组，接口更灵活
+  - **缺点**：
+    - 每次调用仍然需要将文件描述符数组从用户态拷贝到内核态
+    - 返回后仍然需要遍历所有文件描述符找出就绪的（O(n) 复杂度）
+    - 性能与 `select()` 类似，在大量文件描述符时效率低
+
+#### epoll
+
+- **定义**：`epoll()` 是 Linux 特有的 IO 多路复用接口，是 `select()` 和 `poll()` 的高效替代方案。、
+- 对于 epoll 机制来说，需要先调用 epoll_create 函数，创建一个 epoll 实例。
+    - 这个 epoll 实例内部维护了两个结构，分别是记录要监听的文件描述符和已经就绪的文件描述符，而对于已经就绪的文件描述符来说，它们会被返回给用户程序进行处理。
+- 在创建了 epoll 实例后，需要再使用 epoll_ctl 函数，给被监听的文件描述符添加监听事件类型，以及使用 epoll_wait 函数获取就绪的文件描述符。
+- 最后根据 epoll_wait 函数返回的已就绪描述符进行对应的事件处理，不用像使用 select 和 poll 一样，遍历查询哪些文件描述符已经就绪了。
+
+- **核心函数**：
+  - `epoll_create()`：创建一个 epoll 实例，返回文件描述符
+  - `epoll_ctl()`：向 epoll 实例中添加、修改或删除文件描述符
+  - `epoll_wait()`：等待文件描述符就绪
+- **函数签名**：
+```c
+#include <sys/epoll.h>
+int epoll_create(int size);  // size 是提示值，Linux 2.6.8 后忽略
+int epoll_ctl(int epfd, int op, int fd, struct epoll_event *event);
+int epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout);
+```
+- **epoll_event 结构体**：
+- 使用 epoll_event 结构体，来记录待监听的文件描述符及其监听的事件类型，其中包含了 epoll_data_t 联合体变量，以及整数类型的 events 变量。epoll_data_t 联合体中有记录文件描述符的成员变量 fd，而 events 变量会取值使用不同的宏定义值，来表示 epoll_data_t 变量中的文件描述符所关注的事件类型：
+    - EPOLLIN：读事件，表示文件描述符对应套接字有数据可读。
+    - EPOLLOUT：写事件，表示文件描述符对应套接字有数据要写。
+    - EPOLLERR：错误事件，表示文件描述符对于套接字出错。
+
+```c
+struct epoll_event {
+    uint32_t events;      // 关注的事件（EPOLLIN、EPOLLOUT 等）
+    epoll_data_t data;    // 用户数据
+};
+typedef union epoll_data {
+    void *ptr;
+    int fd;
+    uint32_t u32;
+    uint64_t u64;
+} epoll_data_t;
+```
+- **使用示例**：
+```c
+int epfd = epoll_create(1024);
+struct epoll_event event;
+event.events = EPOLLIN;
+event.data.fd = sockfd;
+epoll_ctl(epfd, EPOLL_CTL_ADD, sockfd, &event);
+
+struct epoll_event events[10];
+int ret = epoll_wait(epfd, events, 10, -1);
+for (int i = 0; i < ret; i++) {
+    if (events[i].events & EPOLLIN) {
+        // events[i].data.fd 可读
+    }
+}
+```
+- **特点**：
+  - **优点**：
+    - 没有文件描述符数量限制
+    - **高效**：使用红黑树和就绪链表，时间复杂度 O(1)
+    - **事件驱动**：只返回就绪的文件描述符，不需要遍历
+    - **边缘触发（ET）模式**：可以进一步减少系统调用次数
+  - **缺点**：
+    - 只在 Linux 上可用（其他系统有类似的 kqueue、IOCP 等）
+
+### Reactor 和 Proactor 模式
+
+#### Reactor 模式
+
+- **定义**：Reactor 模式是一种事件驱动的设计模式，用于处理并发服务请求。
+- Reactor 模型的基本工作机制：客户端的不同类请求会在服务器端触发连接、读、写三类事件，这三类事件的监听、分发和处理又是由 reactor、acceptor、handler 三类角色来完成的，然后这三类角色会通过事件驱动框架来实现交互和事件处理。
+- **核心思想**：
+  - 应用程序向 Reactor 注册事件处理器（Handler）
+  - Reactor 负责监听和分发事件
+  - 当事件就绪时，Reactor 调用相应的事件处理器
+- **工作流程**：
+  1. 应用程序注册事件处理器到 Reactor
+  2. Reactor 调用 IO 多路复用函数（select/poll/epoll）等待事件
+  3. 当事件就绪时，Reactor 分发事件给相应的事件处理器
+  4. 事件处理器执行实际的 IO 操作（读/写）
+- **特点**：
+  - **同步 IO**：事件处理器需要自己执行 IO 操作
+  - **单线程/多线程**：可以在单线程中处理所有事件，也可以使用线程池
+  - **适合场景**：高并发、低延迟的网络服务
+- **Redis 使用 Reactor 模式**：
+  - Redis 的事件循环是典型的 Reactor 模式
+  - 使用 epoll 作为 IO 多路复用机制
+  - 单线程处理所有事件（主线程）
+
+#### Proactor 模式
+
+- **定义**：Proactor 模式是异步 IO 模式，IO 操作由操作系统异步完成。
+- **核心思想**：
+  - 应用程序发起异步 IO 操作
+  - 操作系统完成 IO 操作后，通过回调通知应用程序
+  - 应用程序处理完成事件
+- **工作流程**：
+  1. 应用程序发起异步 IO 操作（如 `aio_read`）
+  2. 操作系统在后台执行 IO 操作
+  3. IO 操作完成后，操作系统通过回调通知应用程序
+  4. 应用程序处理完成事件
+- **特点**：
+  - **异步 IO**：IO 操作由操作系统异步完成
+  - **适合场景**：大量 IO 操作、CPU 密集型任务
+- **Linux 异步 IO**：
+  - Linux 的异步 IO（AIO）支持不完善
+  - Windows 的 IOCP（I/O Completion Port）是典型的 Proactor 实现
+
+### 为什么 Redis 不使用 poll？
+
+- 1. **性能优势不明显**：`poll()` 虽然解决了 `select()` 的文件描述符数量限制，但性能与 `select()` 类似，都是 O(n) 复杂度
+- 2. **epoll 更优**：在 Linux 上，`epoll()` 的性能远优于 `poll()`，特别是在大量文件描述符时
+- 3. **代码简洁性**：`select()` 作为最后的备选方案，已经足够处理少量连接的情况
+- 4. **跨平台考虑**：`select()` 的跨平台支持更好，作为备选方案更合适
+
+### 为什么 Redis 不使用 Proactor？
+
+- 1. **平台支持限制**：
+   - **Linux 异步 IO 支持不完善**：Linux 的异步 IO（AIO）实现存在诸多问题
+     - `aio_read()` 和 `aio_write()` 只对直接 IO（O_DIRECT）有效，对普通文件描述符支持不佳
+     - 网络套接字的异步 IO 支持不完整，很多情况下会退化为同步 IO
+     - AIO 的实现存在性能问题和 bug
+   - **跨平台兼容性**：Proactor 模式主要依赖操作系统的异步 IO 支持
+     - Windows 的 IOCP（I/O Completion Port）是典型的 Proactor 实现，但 Redis 主要运行在 Linux 上
+     - 不同平台的异步 IO API 差异很大，难以统一封装
+
+- 2. **Reactor 模式已足够高效**：
+   - **epoll 性能优异**：在 Linux 上，`epoll()` 配合 Reactor 模式已经能够实现非常高的性能
+     - `epoll()` 是 O(1) 复杂度，只返回就绪的文件描述符
+     - 单线程事件驱动可以处理数万并发连接
+   - **实现简单**：Reactor 模式使用同步 IO，代码逻辑清晰，易于理解和维护
+     - 事件处理函数直接调用 `read()`/`write()`，流程直观
+     - 错误处理简单，不需要处理异步 IO 的复杂状态
+
+- 3. **Redis 的业务特点**：
+   - **内存操作为主**：Redis 的主要操作都在内存中完成，IO 操作相对较少
+     - 命令执行速度很快，IO 不是主要瓶颈
+     - 网络 IO 的延迟对整体性能影响较小
+   - **单线程模型**：Redis 采用单线程事件驱动模型，Reactor 模式更符合这种设计
+     - 避免了异步 IO 带来的复杂状态管理
+     - 避免了多线程环境下的同步问题
+
+- 4. **代码复杂度和维护成本**：
+   - **异步 IO 的复杂性**：Proactor 模式需要处理异步 IO 的复杂状态
+     - 需要管理 IO 操作的上下文信息
+     - 错误处理更加复杂（异步错误通知）
+     - 调试和问题排查更困难
+   - **统一接口困难**：不同平台的异步 IO API 差异很大
+     - Windows 的 IOCP、Linux 的 AIO、BSD 的 kqueue 异步模式，API 完全不同
+     - 难以像 Reactor 模式那样提供统一的封装接口
+
+- 5. **实际性能考虑**：
+   - **网络 IO 的特点**：对于网络 IO，Reactor 模式已经能够充分利用系统资源
+     - 非阻塞 IO + epoll 已经能够实现高效的并发处理
+     - 异步 IO 的优势主要体现在磁盘 IO 上，对网络 IO 的提升有限
+   - **Redis 的使用场景**：Redis 主要用于缓存和消息队列，网络 IO 延迟要求不是极端严格
+     - 不需要为了微小的性能提升而引入复杂的异步 IO 实现
+
+
+## Redis ae 事件驱动框架
+
+- Redis 的 ae（An Event-driven programming library）框架是一个简单的事件驱动编程库，封装了不同平台的 IO 多路复用机制，提供了统一的事件处理接口。为了适配不同的操作系统，Redis 对不同操作系统实现的网络 IO 多路复用函数，都进行了统一的封装，封装后的代码分别通过以下四个文件中实现：
+    - ae_epoll.c，对应 Linux 上的 IO 复用函数 epoll；
+    - ae_evport.c，对应 Solaris 上的 IO 复用函数 evport；
+    - ae_kqueue.c，对应 macOS 或 FreeBSD 上的 IO 复用函数 kqueue；
+    - ae_select.c，对应 Linux（或 Windows）的 IO 复用函数 select。
+
+### ae 框架的设计思想
+
+- **统一接口**：通过函数指针和统一的数据结构，屏蔽不同平台的 IO 多路复用差异
+- **自动选择**：根据编译时的宏定义，自动选择最优的 IO 多路复用机制
+- **事件抽象**：将 IO 事件抽象为文件事件（File Event）和时间事件（Time Event）
+
+### ae 框架的核心数据结构
+
+#### aeEventLoop 事件循环
+
+- `aeEventLoop` 是事件循环的核心数据结构，包含了所有事件处理所需的信息。
+
+```c
+// ae.h 第 97-109 行
+typedef struct aeEventLoop {
+    int maxfd;   /* highest file descriptor currently registered */
+    int setsize; /* max number of file descriptors tracked */
+    long long timeEventNextId;
+    time_t lastTime;     /* Used to detect system clock skew */
+    aeFileEvent *events; /* Registered events */
+    aeFiredEvent *fired; /* Fired events */
+    aeTimeEvent *timeEventHead; // 时间事件链表头
+    int stop; // 停止标识
+    void *apidata; /* This is used for polling API specific data */
+    aeBeforeSleepProc *beforesleep; // 进入事件循环前执行的函数
+    aeBeforeSleepProc *aftersleep;  // 退出事件循环后执行的函数
+} aeEventLoop;
+```
+
+- **字段说明**：
+  - `maxfd`：当前注册的最大文件描述符（用于 select）
+  - `setsize`：最大文件描述符数量
+  - aeFileEvent 类型的指针 *events，表示 IO 事件。之所以类型名称为 aeFileEvent，是因为所有的 IO 事件都会用文件描述符进行标识；
+  - aeTimeEvent 类型的指针 *timeEventHead，表示时间事件，即按一定时间周期触发的事件。
+  - `fired`：已触发的事件数组
+  - `apidata`：平台相关的数据（epoll 的 epfd、select 的 fd_set 等）
+  - `beforesleep`、`aftersleep`：事件循环的前置和后置回调
+
+#### aeCreateEventLoop 初始化事件循环
+
+- `aeCreateEventLoop()` 是创建和初始化事件循环的函数，负责分配内存、初始化数据结构，并创建平台相关的 IO 多路复用实例。
+- 参数 setsize 的大小，其实是由 server 结构的 maxclients 变量和宏定义 CONFIG_FDSET_INCR 共同决定的。其中，maxclients 变量的值大小，可以在 Redis 的配置文件 redis.conf 中进行定义，默认值是 1000。而宏定义 CONFIG_FDSET_INCR 的大小，等于宏定义 CONFIG_MIN_RESERVED_FDS 的值再加上 96
+    - 事件驱动框架监听的 IO 事件数组大小就等于参数 setsize，这样决定了和 Redis server 连接的客户端数量
+
+- 1. aeCreateEventLoop 函数会创建一个 aeEventLoop 结构体类型的变量 eventLoop。然后，该函数会给 eventLoop 的成员变量分配内存空间，比如，按照传入的参数 setsize，给 IO 事件数组和已触发事件数组分配相应的内存空间。此外，该函数还会给 eventLoop 的成员变量赋初始值。
+- 2. aeCreateEventLoop 函数会调用 aeApiCreate 函数。aeApiCreate 函数就会调用 epoll_create 创建 epoll 实例，同时会创建 epoll_event 结构的数组，数组大小等于参数 setsize。
+    - aeApiCreate 函数是把创建的 epoll 实例描述符和 epoll_event 数组，保存在了 aeApiState 结构体类型的变量 state，紧接着，aeApiCreate 函数把 state 变量赋值给 eventLoop 中的 apidata。这样一来，eventLoop 结构体中就有了 epoll 实例和 epoll_event 数组的信息，这样就可以用来基于 epoll 创建和处理事件了
+- 3. aeCreateEventLoop 函数会把所有网络 IO 事件对应文件描述符的掩码，初始化为 AE_NONE，表示暂时不对任何事件进行监听
+
+- 它是这样实现的：
+  - 1. **分配事件循环结构体**：使用 `zmalloc` 分配 `aeEventLoop` 结构体内存
+  - 2. **分配文件事件数组**：分配大小为 `setsize` 的 `aeFileEvent` 数组，索引为文件描述符
+  - 3. **分配已触发事件数组**：分配 `aeFiredEvent` 数组，用于存储就绪的事件
+  - 4. **初始化基本字段**：
+     - `setsize`：最大文件描述符数量
+     - `lastTime`：当前时间（用于检测系统时钟偏移）
+     - `timeEventHead`：时间事件链表头（初始化为 NULL）
+     - `timeEventNextId`：时间事件 ID 计数器（从 0 开始）
+     - `stop`：停止标志（初始化为 0，表示不停止）
+     - `maxfd`：最大文件描述符（初始化为 -1）
+     - `beforesleep`、`aftersleep`：前置和后置回调（初始化为 NULL）
+  - 5. **创建 IO 多路复用实例**：调用 `aeApiCreate()` 创建平台相关的 IO 多路复用实例（epoll/select/kqueue）
+  - 6. **初始化文件事件掩码**：将所有文件事件的掩码初始化为 `AE_NONE`，表示未注册任何事件
+  - 7. **错误处理**：如果初始化失败，释放已分配的内存
+
+```c
+#define CONFIG_MIN_RESERVED_FDS 32
+#define CONFIG_FDSET_INCR (CONFIG_MIN_RESERVED_FDS+96)
+// ae.c 第 63-97 行
+aeEventLoop *aeCreateEventLoop(int setsize) {
+    aeEventLoop *eventLoop;
+    int i;
+
+    // 1. 分配事件循环结构体内存
+    if ((eventLoop = zmalloc(sizeof(*eventLoop))) == NULL) goto err;
+
+    // 2. 分配文件事件数组
+    //    - events 数组大小为 setsize，索引为文件描述符
+    eventLoop->events = zmalloc(sizeof(aeFileEvent)*setsize);
+    // 3. 分配已触发事件数组
+    //    - fired 数组用于存储就绪的事件
+    eventLoop->fired = zmalloc(sizeof(aeFiredEvent)*setsize);
+    if (eventLoop->events == NULL || eventLoop->fired == NULL) goto err;
+    
+    // 4. 初始化事件循环的基本字段
+    eventLoop->setsize = setsize;              // 设置最大文件描述符数量
+    eventLoop->lastTime = time(NULL);          // 记录当前时间（用于检测系统时钟偏移）
+    eventLoop->timeEventHead = NULL;           // 时间事件链表头初始化为 NULL
+    eventLoop->timeEventNextId = 0;            // 时间事件 ID 从 0 开始
+    eventLoop->stop = 0;                       // 停止标志初始化为 0（不停止）
+    eventLoop->maxfd = -1;                    // 最大文件描述符初始化为 -1
+    eventLoop->beforesleep = NULL;            // 前置回调初始化为 NULL
+    eventLoop->aftersleep = NULL;             // 后置回调初始化为 NULL
+    
+    // 5. 创建平台相关的 IO 多路复用实例
+    //    - aeApiCreate 封装了 epoll_create/select/kqueue 的调用
+    //    - 在 Linux 上会创建 epoll 实例，在其他系统上会初始化相应的机制
+    if (aeApiCreate(eventLoop) == -1) goto err;
+    
+    /* Events with mask == AE_NONE are not set. So let's initialize the
+     * vector with it. */
+    // 6. 初始化所有文件事件的掩码为 AE_NONE
+    //    - 表示所有文件描述符都未注册事件
+    for (i = 0; i < setsize; i++)
+        eventLoop->events[i].mask = AE_NONE;
+    
+    return eventLoop;
+
+err:
+    // 7. 初始化失败的处理
+    //    - 如果 eventLoop 已经分配了空间，则释放掉
+    if (eventLoop) {
+        zfree(eventLoop->events);
+        zfree(eventLoop->fired);
+        zfree(eventLoop);
+    }
+    return NULL;
+}
+```
+
+#### aeFileEvent 文件事件
+
+- `aeFileEvent` 表示一个文件事件，包含事件类型和处理函数。
+    - mask 是用来表示事件类型的掩码。对于网络通信的事件来说，主要有 AE_READABLE、AE_WRITABLE 和 AE_BARRIER 三种类型事件。框架在分发事件时，依赖的就是结构体中的事件类型；
+    - rfileProc 和 wfileProce 分别是指向 AE_READABLE 和 AE_WRITABLE 这两类事件的处理函数，也就是 Reactor 模型中的 handler。框架在分发事件后，就需要调用结构体中定义的函数进行事件处理；
+    - clientData 是用来指向客户端私有数据的指针。
+```c
+// ae.h 第 71-76 行
+typedef struct aeFileEvent {
+    int mask; /* one of AE_(READABLE|WRITABLE|BARRIER) */
+    aeFileProc *rfileProc;  // 读事件处理函数
+    aeFileProc *wfileProc;  // 写事件处理函数
+    void *clientData;        // 客户端数据
+} aeFileEvent;
+```
+
+- **事件类型**：
+  - `AE_READABLE`：可读事件
+  - `AE_WRITABLE`：可写事件
+  - `AE_BARRIER`：屏障事件（与 WRITABLE 一起使用，确保在 READABLE 之后触发）
+
+#### 文件事件的处理函数
+
+##### aeCreateFileEvent 事件注册
+
+- `aeCreateFileEvent()` 是事件注册函数，用于注册要监听的事件以及相应的事件处理函数。
+- 这个函数的参数有 5 个，分别是循环流程结构体 `*eventLoop`、IO 事件对应的文件描述符 `fd`、事件类型掩码 `mask`、事件处理回调函数`*proc`，以及事件私有数据`*clientData`。因为循环流程结构体*eventLoop中有 IO 事件数组，这个数组的元素是 aeFileEvent 类型，所以，每个数组元素都对应记录了一个文件描述符（比如一个套接字）相关联的监听事件类型和回调函数。
+- 1. aeCreateFileEvent 函数会先根据传入的文件描述符 fd，在 eventLoop 的 IO 事件数组中，获取该描述符关联的 IO 事件指针变量*fe
+- 2. 调用 aeApiAddEvent 函数，添加要监听的事件,实际上会调用调用 epoll_ctl 函数，添加要监听的事件
+- **调用时机**：
+  - 当 Redis 启动后，服务器程序的 `main` 函数会调用 `initServer` 函数来进行初始化
+  - 而在初始化的过程中，`aeCreateFileEvent` 就会被 `initServer` 函数调用，用于注册要监听的事件，以及相应的事件处理函数
+
+- **封装关系**：
+  - Linux 提供了 `epoll_ctl` API，用于增加新的观察事件
+  - Redis 在此基础上，封装了 `aeApiAddEvent` 函数，对 `epoll_ctl` 进行调用
+  - 所以这样一来，`aeCreateFileEvent` 就会调用 `aeApiAddEvent`，然后 `aeApiAddEvent` 再通过调用 `epoll_ctl`，来注册希望监听的事件和相应的处理函数
+  - 等到 `aeProcessEvents` 函数捕获到实际事件时，它就会调用注册的函数对事件进行处理了
+- **它是这样实现的**：
+  - 1. **检查文件描述符范围**：确保文件描述符不超过 `setsize` 限制
+  - 2. **获取事件结构体**：从 `events` 数组中获取对应文件描述符的事件结构体
+  - 3. **调用平台 API**：调用 `aeApiAddEvent()` 将文件描述符添加到 IO 多路复用机制
+     - 在 Linux 上：`aeApiAddEvent()` → `epoll_ctl(EPOLL_CTL_ADD/MOD)`
+     - 在 BSD/macOS 上：`aeApiAddEvent()` → `kevent()`
+     - 在其他系统上：`aeApiAddEvent()` → `FD_SET()`
+  - 4. **更新事件掩码**：将新的事件类型合并到现有掩码中
+  - 5. **设置处理函数**：根据事件类型（可读/可写）设置相应的处理函数
+  - 6. **保存客户端数据**：保存客户端数据指针（通常指向 `client` 结构体）
+  - 7. **更新最大文件描述符**：更新 `maxfd`（用于 `select` 优化）
+
+```c
+// ae.c 第 140-159 行
+int aeCreateFileEvent(aeEventLoop *eventLoop, int fd, int mask,
+        aeFileProc *proc, void *clientData)
+{
+    // 1. 检查文件描述符是否超出限制
+    //    - eventLoop->setsize 是最大文件描述符数量
+    if (fd >= eventLoop->setsize) {
+        errno = ERANGE;
+        return AE_ERR;
+    }
+    
+    // 2. 获取文件描述符对应的事件结构体
+    //    - events 数组的索引就是文件描述符
+    aeFileEvent *fe = &eventLoop->events[fd];
+
+    // 3. 调用平台相关的 API 添加事件到 IO 多路复用机制
+    //    - aeApiAddEvent 封装了 epoll_ctl(EPOLL_CTL_ADD/MOD) 的调用
+    //    - 在 Linux 上，这会调用 epoll_ctl 将文件描述符添加到 epoll 实例中
+    //    - 在 BSD/macOS 上，这会调用 kevent 将文件描述符添加到 kqueue 中
+    //    - 在其他系统上，这会调用 FD_SET 将文件描述符添加到 fd_set 中
+    if (aeApiAddEvent(eventLoop, fd, mask) == -1)
+        return AE_ERR;
+    
+    // 4. 更新文件事件的掩码（合并新的事件）
+    fe->mask |= mask;
+    
+    // 5. 设置事件处理函数
+    //    - 如果注册了可读事件，设置读事件处理函数
+    if (mask & AE_READABLE) fe->rfileProc = proc;
+    //    - 如果注册了可写事件，设置写事件处理函数
+    if (mask & AE_WRITABLE) fe->wfileProc = proc;
+    
+    // 6. 保存客户端数据
+    //    - clientData 通常是指向 client 结构体的指针
+    fe->clientData = clientData;
+    
+    // 7. 更新最大文件描述符（用于 select）
+    //    - select 需要知道最大文件描述符的值
+    if (fd > eventLoop->maxfd)
+        eventLoop->maxfd = fd;
+    
+    return AE_OK;
+}
+```
+
+##### aeDeleteFileEvent 删除文件事件
+
+- `aeDeleteFileEvent()` 用于从事件循环中删除文件事件，取消对文件描述符的监听。
+- **它是这样实现的**：
+  - 1. **检查文件描述符范围**：确保文件描述符不超过 `setsize` 限制
+  - 2. **获取文件事件结构体**：从 `events` 数组中获取对应文件描述符的事件结构体
+  - 3. **检查是否已注册**：如果文件描述符未注册任何事件，直接返回
+  - 4. **处理 AE_BARRIER 标志**：如果删除可写事件，同时删除 `AE_BARRIER` 标志
+  - 5. **调用平台 API**：调用 `aeApiDelEvent()` 从 IO 多路复用机制中删除事件
+  - 6. **更新事件掩码**：从现有掩码中移除要删除的事件类型
+  - 7. **更新最大文件描述符**：如果删除的是最大文件描述符的事件，需要重新查找并更新 `maxfd`
+
+```c
+// ae.c 第 161-181 行
+void aeDeleteFileEvent(aeEventLoop *eventLoop, int fd, int mask)
+{
+    // 1. 检查文件描述符范围
+    if (fd >= eventLoop->setsize) return;
+    
+    // 2. 获取文件事件结构体
+    aeFileEvent *fe = &eventLoop->events[fd];
+    
+    // 3. 如果文件描述符未注册任何事件，直接返回
+    if (fe->mask == AE_NONE) return;
+
+    /* We want to always remove AE_BARRIER if set when AE_WRITABLE
+     * is removed. */
+    // 4. 如果删除可写事件，同时删除 AE_BARRIER 标志
+    //    - AE_BARRIER 只与 AE_WRITABLE 一起使用才有意义
+    if (mask & AE_WRITABLE) mask |= AE_BARRIER;
+
+    // 5. 调用平台相关的 API 删除事件
+    //    - aeApiDelEvent 封装了 epoll_ctl(EPOLL_CTL_DEL/MOD) 的调用
+    aeApiDelEvent(eventLoop, fd, mask);
+    
+    // 6. 更新文件事件的掩码（移除要删除的事件）
+    fe->mask = fe->mask & (~mask);
+    
+    // 7. 更新最大文件描述符（如果删除的是最大文件描述符的事件）
+    if (fd == eventLoop->maxfd && fe->mask == AE_NONE) {
+        /* Update the max fd */
+        int j;
+        // 7.1 从后往前查找最大的已注册文件描述符
+        for (j = eventLoop->maxfd-1; j >= 0; j--)
+            if (eventLoop->events[j].mask != AE_NONE) break;
+        // 7.2 更新 maxfd
+        eventLoop->maxfd = j;
+    }
+}
+```
+
+
+
+##### aeGetFileEvents 获取文件事件
+
+- `aeGetFileEvents()` 用于获取文件描述符已注册的事件类型。
+
+```c
+// ae.c 第 183-188 行
+int aeGetFileEvents(aeEventLoop *eventLoop, int fd) {
+    // 1. 检查文件描述符范围
+    if (fd >= eventLoop->setsize) return 0;
+    
+    // 2. 获取文件事件结构体
+    aeFileEvent *fe = &eventLoop->events[fd];
+
+    // 3. 返回事件掩码（AE_READABLE、AE_WRITABLE 等）
+    return fe->mask;
+}
+```
+
+#### Redis 中的 IO 事件处理函数
+
+- Redis 在实际使用中，为不同的 IO 事件注册了不同的处理函数：
+  - **监听套接字的读事件**：`acceptTcpHandler`（TCP）和 `acceptUnixHandler`（Unix Socket）
+  - **客户端连接的读事件**：`readQueryFromClient`
+  - **客户端连接的写事件**：`sendReplyToClient`
+
+##### acceptTcpHandler 连接事件
+
+- `acceptTcpHandler()` 是监听套接字的读事件处理函数，用于接受客户端的 TCP 连接请求。
+- **它是这样实现的**：
+  - 1. **循环接受连接**：每次最多接受 `MAX_ACCEPTS_PER_CALL` 个连接，避免阻塞事件循环
+  - 2. **接受 TCP 连接**：调用 `anetTcpAccept()` 接受连接，获取客户端文件描述符、IP 地址和端口
+  - 3. **错误处理**：如果接受失败且不是 `EWOULDBLOCK`（非阻塞模式下的正常情况），记录警告日志
+  - 4. **记录连接信息**：记录接受的客户端 IP 和端口
+  - 5. **处理连接**：调用 `acceptCommonHandler()` 进行通用处理
+     - 创建客户端结构体（`createClient()`）
+     - 设置非阻塞模式
+     - 注册读事件（`aeCreateFileEvent(fd, AE_READABLE, readQueryFromClient, client)`）
+
+- **调用时机**：
+  - 在 `initServer()` 中，为每个监听 IP 的套接字注册了 `AE_READABLE` 事件，处理函数为 `acceptTcpHandler`
+  - 当有客户端连接到服务器监听的 IP 和端口时，事件驱动框架会检测到连接事件，然后调用 `acceptTcpHandler` 函数
+
+```c
+// networking.c 第 752-772 行
+// 真正处理redis client连接的回调函数！！
+// 也就是接收TCP连接请求。
+void acceptTcpHandler(aeEventLoop *el, int fd, void *privdata, int mask) {
+    int cport, cfd, max = MAX_ACCEPTS_PER_CALL;
+    char cip[NET_IP_STR_LEN];
+    UNUSED(el);
+    UNUSED(mask);
+    UNUSED(privdata);
+
+    // 1. 循环接受连接，每次最多接受 MAX_ACCEPTS_PER_CALL 个连接
+    //    - 这样可以避免在大量连接请求时阻塞事件循环
+    while(max--) {
+        // 2. 调用底层库接受 TCP 连接
+        //    - anetTcpAccept 封装了 accept() 系统调用
+        //    - 返回客户端文件描述符、IP 地址和端口
+        cfd = anetTcpAccept(server.neterr, fd, cip, sizeof(cip), &cport);
+        
+        // 3. 检查接受连接是否成功
+        if (cfd == ANET_ERR) {
+            // 3.1 如果错误不是 EWOULDBLOCK（非阻塞模式下的正常情况），记录警告
+            if (errno != EWOULDBLOCK)
+                serverLog(LL_WARNING,
+                    "Accepting client connection: %s", server.neterr);
+            return;
+        }
+        
+        // 4. 记录接受的连接信息
+        serverLog(LL_VERBOSE,"Accepted %s:%d", cip, cport);
+        
+        // 5. 调用通用连接处理函数
+        //    - acceptCommonHandler 会创建客户端、设置非阻塞、注册读事件等
+        acceptCommonHandler(cfd, 0, cip);
+    }
+}
+```
+
+##### readQueryFromClient 读事件
+
+- `readQueryFromClient()` 是客户端连接的读事件处理函数，用于从客户端读取命令数据。
+
+- **调用时机**：
+  - 在 `createClient()` 中，为新创建的客户端注册了 `AE_READABLE` 事件，处理函数为 `readQueryFromClient`
+  - 当客户端发送数据时，事件驱动框架会检测到读事件，然后调用 `readQueryFromClient` 函数
+
+```c
+// networking.c 第 1550-1623 行
+void readQueryFromClient(aeEventLoop *el, int fd, void *privdata, int mask) {
+    client *c = (client*) privdata;
+    int nread, readlen;
+    size_t qblen;
+    UNUSED(el);
+    UNUSED(mask);
+
+    // 1. 设置读取长度（默认值）
+    readlen = PROTO_IOBUF_LEN;
+    
+    /* If this is a multi bulk request, and we are processing a bulk reply
+     * that is large enough, try to maximize the probability that the query
+     * buffer contains exactly the SDS string representing the object, even
+     * at the risk of requiring more read(2) calls. This way the function
+     * processMultiBulkBuffer() can avoid copying buffers to create the
+     * Redis Object representing the argument. */
+    // 2. 如果是多批量请求且正在处理大参数，优化读取长度
+    //    - 尽量让查询缓冲区包含完整的对象字符串，避免复制缓冲区
+    if (c->reqtype == PROTO_REQ_MULTIBULK && c->multibulklen && c->bulklen != -1
+        && c->bulklen >= PROTO_MBULK_BIG_ARG)
+    {
+        ssize_t remaining = (size_t)(c->bulklen+2)-sdslen(c->querybuf);
+        if (remaining > 0 && remaining < readlen) readlen = remaining;
+    }
+
+    // 3. 获取当前查询缓冲区长度
+    qblen = sdslen(c->querybuf);
+    
+    // 4. 更新查询缓冲区峰值
+    if (c->querybuf_peak < qblen) c->querybuf_peak = qblen;
+    
+    // 5. 为查询缓冲区预分配空间
+    c->querybuf = sdsMakeRoomFor(c->querybuf, readlen);
+    
+    // 6. 从套接字读取数据到查询缓冲区
+    //    - 操作系统底层从 socket 中读取数据到客户端输入缓冲区
+    nread = read(fd, c->querybuf+qblen, readlen);
+    
+    // 7. 处理读取结果
+    if (nread == -1) {
+        // 7.1 读取错误
+        if (errno == EAGAIN) {
+            // EAGAIN 表示暂时没有数据可读（非阻塞模式），直接返回
+            return;
+        } else {
+            // 其他错误，记录日志并释放客户端
+            serverLog(LL_VERBOSE, "Reading from client: %s",strerror(errno));
+            freeClient(c);
+            return;
+        }
+    } else if (nread == 0) {
+        // 7.2 客户端关闭连接（EOF）
+        serverLog(LL_VERBOSE, "Client closed connection");
+        freeClient(c);
+        return;
+    } else if (c->flags & CLIENT_MASTER) {
+        // 7.3 如果是主节点连接，追加到待处理缓冲区
+        /* Append the query buffer to the pending (not applied) buffer
+         * of the master. We'll use this buffer later in order to have a
+         * copy of the string applied by the last command executed. */
+        c->pending_querybuf = sdscatlen(c->pending_querybuf,
+                                        c->querybuf+qblen,nread);
+    }
+
+    // 8. 更新 SDS 结构体的长度
+    sdsIncrLen(c->querybuf,nread);
+    
+    // 9. 记录最后交互时间戳
+    c->lastinteraction = server.unixtime;
+    
+    // 10. 如果是主节点连接，更新复制偏移量
+    if (c->flags & CLIENT_MASTER) c->read_reploff += nread;
+    
+    // 11. 更新网络输入字节统计
+    server.stat_net_input_bytes += nread;
+    
+    // 12. 检查查询缓冲区是否超过最大长度限制
+    if (sdslen(c->querybuf) > server.client_max_querybuf_len) {
+        sds ci = catClientInfoString(sdsempty(),c), bytes = sdsempty();
+        bytes = sdscatrepr(bytes,c->querybuf,64);
+        serverLog(LL_WARNING,"Closing client that reached max query buffer length: %s (qbuf initial bytes: %s)", ci, bytes);
+        sdsfree(ci);
+        sdsfree(bytes);
+        freeClient(c);
+        return;
+    }
+
+    /* Time to process the buffer. If the client is a master we need to
+     * compute the difference between the applied offset before and after
+     * processing the buffer, to understand how much of the replication stream
+     * was actually applied to the master state: this quantity, and its
+     * corresponding part of the replication stream, will be propagated to
+     * the sub-slaves and to the replication backlog. */
+    // 13. 处理输入缓冲区
+    //    - processInputBufferAndReplicate 会解析命令、执行命令、处理复制等
+    processInputBufferAndReplicate(c);
+}
+```
+
+- **它是这样实现的**：
+  - 1. **设置读取长度**：默认使用 `PROTO_IOBUF_LEN`，对于大参数会优化读取长度
+  - 2. **优化读取长度**：如果是多批量请求且正在处理大参数，尽量读取完整对象
+  - 3. **预分配缓冲区空间**：使用 `sdsMakeRoomFor()` 为查询缓冲区预分配空间
+  - 4. **读取数据**：调用 `read()` 从套接字读取数据到查询缓冲区
+  - 5. **处理读取结果**：
+     - 错误（`nread == -1`）：如果是 `EAGAIN` 直接返回，其他错误释放客户端
+     - 连接关闭（`nread == 0`）：释放客户端
+     - 主节点连接：追加到待处理缓冲区
+  - 6. **更新状态**：更新 SDS 长度、最后交互时间、复制偏移量、统计信息
+  - 7. **检查缓冲区限制**：如果超过最大长度，释放客户端
+  - 8. **处理输入缓冲区**：调用 `processInputBufferAndReplicate()` 解析和执行命令
+
+##### sendReplyToClient 发送回复给客户端
+
+- `sendReplyToClient()` 是客户端连接的写事件处理函数，用于向客户端发送命令执行结果。
+
+- **调用时机**：
+  - 当命令执行完成后，如果需要发送回复但输出缓冲区已满，会注册 `AE_WRITABLE` 事件，处理函数为 `sendReplyToClient`
+  - 当套接字可写时，事件驱动框架会检测到写事件，然后调用 `sendReplyToClient` 函数
+
+```c
+// networking.c 第 1091-1097 行
+/* Write event handler. Just send data to the client. */
+// 这个函数事件的回调用于给客户端直接发送数据
+void sendReplyToClient(aeEventLoop *el, int fd, void *privdata, int mask) {
+    UNUSED(el);
+    UNUSED(mask);
+    // 1. 调用 writeToClient 发送数据
+    //    - handler_installed 参数为 1，表示事件处理器已安装
+    writeToClient(fd, privdata, 1);
+}
+```
+
+- **它是这样实现的**：
+  - 1. **调用底层发送函数**：调用 `writeToClient()` 实际发送数据
+  - 2. **参数说明**：`handler_installed` 参数为 1，表示写事件处理器已安装，发送完成后会删除写事件
+
+##### writeToClient 实际发送数据
+
+- `writeToClient()` 是实际向客户端发送数据的函数，处理输出缓冲区的发送逻辑。
+
+```c
+// networking.c 第 999-1089 行
+int writeToClient(int fd, client *c, int handler_installed) {
+    ssize_t nwritten = 0, totwritten = 0;
+    size_t objlen;
+    clientReplyBlock *o;
+
+    // 1. 循环发送，直到没有待发送的数据
+    while(clientHasPendingReplies(c)) {
+        // 2. 如果固定缓冲区有数据，先发送固定缓冲区
+        if (c->bufpos > 0) {
+            // 2.1 发送固定缓冲区中未发送的数据
+            nwritten = write(fd, c->buf+c->sentlen, c->bufpos-c->sentlen);
+            if (nwritten <= 0) break;
+            
+            // 2.2 更新已发送长度
+            c->sentlen += nwritten;
+            totwritten += nwritten;
+
+            /* If the buffer was sent, set bufpos to zero to continue with
+             * the remainder of the reply. */
+            // 2.3 如果固定缓冲区发送完毕，重置状态
+            if ((int)c->sentlen == c->bufpos) {
+                c->bufpos = 0;
+                c->sentlen = 0;
+            }
+        } else {
+            // 3. 如果固定缓冲区为空，发送回复链表中的数据
+            o = listNodeValue(listFirst(c->reply));
+            objlen = o->used;
+
+            // 3.1 如果对象长度为 0，删除空节点
+            if (objlen == 0) {
+                c->reply_bytes -= o->size;
+                listDelNode(c->reply, listFirst(c->reply));
+                continue;
+            }
+
+            // 3.2 发送回复对象中未发送的数据
+            nwritten = write(fd, o->buf + c->sentlen, objlen - c->sentlen);
+            if (nwritten <= 0) break;
+            
+            // 3.3 更新已发送长度
+            c->sentlen += nwritten;
+            totwritten += nwritten;
+
+            /* If we fully sent the object on head go to the next one */
+            // 3.4 如果对象发送完毕，删除节点并重置状态
+            if (c->sentlen == objlen) {
+                c->reply_bytes -= o->size;
+                listDelNode(c->reply, listFirst(c->reply));
+                c->sentlen = 0;
+                /* If there are no longer objects in the list, we expect
+                 * the count of reply bytes to be exactly zero. */
+                if (listLength(c->reply) == 0)
+                    serverAssert(c->reply_bytes == 0);
+            }
+        }
+        /* Note that we avoid to send more than NET_MAX_WRITES_PER_EVENT
+         * bytes, in a single threaded server it's a good idea to serve
+         * other clients as well, even if a very large request comes from
+         * super fast link that is always able to accept data (in real world
+         * scenario think about 'KEYS *' against the loopback interface).
+         *
+         * However if we are over the maxmemory limit we ignore that and
+         * just deliver as much data as it is possible to deliver.
+         *
+         * Moreover, we also send as much as possible if the client is
+         * a slave or a monitor (otherwise, on high-speed traffic, the
+         * replication/output buffer will grow indefinitely) */
+        // 4. 限制每次事件发送的数据量
+        //    - 避免单个客户端占用过多时间，影响其他客户端
+        //    - 如果超过内存限制，或者是从节点/监控客户端，则不受限制
+        if (totwritten > NET_MAX_WRITES_PER_EVENT &&
+            (server.maxmemory == 0 ||
+             zmalloc_used_memory() < server.maxmemory) &&
+            !(c->flags & CLIENT_SLAVE)) break;
+    }
+    
+    // 5. 更新网络输出字节统计
+    server.stat_net_output_bytes += totwritten;
+    
+    // 6. 处理写入错误
+    if (nwritten == -1) {
+        if (errno == EAGAIN) {
+            // 6.1 EAGAIN 表示暂时无法写入（非阻塞模式），正常情况
+            nwritten = 0;
+        } else {
+            // 6.2 其他错误，记录日志并释放客户端
+            serverLog(LL_VERBOSE,
+                "Error writing to client: %s", strerror(errno));
+            freeClient(c);
+            return C_ERR;
+        }
+    }
+    
+    // 7. 更新最后交互时间（非主节点客户端）
+    if (totwritten > 0) {
+        /* For clients representing masters we don't count sending data
+         * as an interaction, since we always send REPLCONF ACK commands
+         * that take some time to just fill the socket output buffer.
+         * We just rely on data / pings received for timeout detection. */
+        if (!(c->flags & CLIENT_MASTER)) c->lastinteraction = server.unixtime;
+    }
+    
+    // 8. 如果没有待发送的数据，删除写事件
+    if (!clientHasPendingReplies(c)) {
+        c->sentlen = 0;
+        // 8.1 如果事件处理器已安装，删除写事件
+        if (handler_installed) aeDeleteFileEvent(server.el, c->fd, AE_WRITABLE);
+
+        /* Close connection after entire reply has been sent. */
+        // 8.2 如果设置了关闭标志，释放客户端
+        if (c->flags & CLIENT_CLOSE_AFTER_REPLY) {
+            freeClient(c);
+            return C_ERR;
+        }
+    }
+    return C_OK;
+}
+```
+
+- **它是这样实现的**：
+  - 1. **循环发送数据**：只要客户端有待发送的回复，就继续发送
+  - 2. **发送固定缓冲区**：如果固定缓冲区（`c->buf`）有数据，先发送固定缓冲区
+  - 3. **发送回复链表**：如果固定缓冲区为空，发送回复链表（`c->reply`）中的数据
+  - 4. **限制发送量**：每次事件最多发送 `NET_MAX_WRITES_PER_EVENT` 字节，避免单个客户端占用过多时间
+  - 5. **处理写入错误**：
+     - `EAGAIN`：暂时无法写入（非阻塞模式），正常情况
+     - 其他错误：记录日志并释放客户端
+  - 6. **更新状态**：更新最后交互时间、统计信息
+  - 7. **清理工作**：
+     - 如果没有待发送的数据，删除写事件（`aeDeleteFileEvent`）
+     - 如果设置了关闭标志，释放客户端
+
+#### aeTimeEvent 时间事件
+
+- `aeTimeEvent` 表示一个时间事件，包含触发时间、处理函数等信息。
+
+```c
+// ae.h 第 79-88 行
+typedef struct aeTimeEvent {
+    long long id; /* time event identifier. */
+    long when_sec; /* 事件到达的秒级时间戳 seconds */
+    long when_ms; /* 事件到达的毫秒级时间戳 milliseconds */
+    aeTimeProc *timeProc; // 时间事件触发后的处理函数
+    aeEventFinalizerProc *finalizerProc; // 事件结束后的回调函数
+    void *clientData; // 事件相关的私有数据
+    struct aeTimeEvent *prev; // 时间事件链表的前向指针
+    struct aeTimeEvent *next; // 时间事件链表的后向指针
+} aeTimeEvent;
+```
+
+- **字段说明**：
+  - `id`：时间事件的唯一标识符
+  - `when_sec`、`when_ms`：事件触发的时间戳（秒和毫秒）
+  - `timeProc`：时间事件触发后的处理函数
+  - `finalizerProc`：事件结束后的回调函数（用于清理资源）
+  - `clientData`：事件相关的私有数据
+  - `prev`、`next`：时间事件链表的前向和后向指针（双向链表）
+
+#### 时间事件的处理函数
+
+##### aeCreateTimeEvent 创建时间事件
+
+- `aeCreateTimeEvent()` 用于创建并注册一个时间事件，将事件添加到时间事件链表中。
+- milliseconds是所创建时间事件的触发时间距离当前时间的时长，是用毫秒表示的。*proc是所创建时间事件触发后的回调函数。
+- aeCreateTimeEvent 函数的执行逻辑不复杂，主要就是创建一个时间事件的变量 te，对它进行初始化，并把它插入到框架循环流程结构体 eventLoop 中的时间事件链表中。在这个过程中，aeCreateTimeEvent 函数会调用 aeAddMillisecondsToNow 函数，根据传入的 milliseconds 参数，计算所创建时间事件具体的触发时间戳，并赋值给 te。
+- 实际上，Redis server 在初始化时，除了创建监听的 IO 事件外，也会调用 aeCreateTimeEvent 函数创建时间事件
+
+- **它是这样实现的**：
+  - 1. **生成时间事件 ID**：使用 `timeEventNextId` 作为唯一标识符，并递增
+  - 2. **分配内存**：使用 `zmalloc` 分配 `aeTimeEvent` 结构体内存
+  - 3. **初始化字段**：
+     - `id`：时间事件 ID
+     - `when_sec`、`when_ms`：计算触发时间（当前时间 + 延迟时间）
+     - `timeProc`：设置处理函数
+     - `finalizerProc`：设置结束回调函数
+     - `clientData`：设置私有数据
+  - 4. **插入链表**：将时间事件插入到双向链表的头部
+  - 5. **返回 ID**：返回时间事件 ID，用于后续删除
+
+```c
+// ae.c 第 213-233 行
+long long aeCreateTimeEvent(aeEventLoop *eventLoop, long long milliseconds,
+        aeTimeProc *proc, void *clientData,
+        aeEventFinalizerProc *finalizerProc)
+{
+    // 1. 生成时间事件 ID
+    //    - 使用 timeEventNextId 作为唯一标识符，并递增
+    long long id = eventLoop->timeEventNextId++;
+    aeTimeEvent *te;
+
+    // 2. 分配时间事件结构体内存
+    te = zmalloc(sizeof(*te));
+    if (te == NULL) return AE_ERR;
+    
+    // 3. 初始化时间事件字段
+    te->id = id;
+    // 3.1 计算触发时间（当前时间 + 延迟时间）
+    aeAddMillisecondsToNow(milliseconds, &te->when_sec, &te->when_ms);
+    te->timeProc = proc;                    // 设置处理函数
+    te->finalizerProc = finalizerProc;      // 设置结束回调函数
+    te->clientData = clientData;            // 设置私有数据
+    
+    // 4. 将时间事件插入到链表头部
+    //    - 使用双向链表，新事件插入到头部
+    te->prev = NULL;
+    te->next = eventLoop->timeEventHead;
+    if (te->next)
+        te->next->prev = te;
+    eventLoop->timeEventHead = te;
+    
+    // 5. 返回时间事件 ID（用于后续删除）
+    return id;
+}
+```
+
+##### aeDeleteTimeEvent 删除时间事件
+
+- `aeDeleteTimeEvent()` 用于删除时间事件，采用延迟删除策略（标记为删除，在 `processTimeEvents` 中实际删除）。
+- **它是这样实现的**：
+  - 1. **遍历链表**：从 `timeEventHead` 开始遍历时间事件链表
+  - 2. **查找匹配 ID**：查找 `id` 匹配的时间事件
+  - 3. **标记删除**：将时间事件的 `id` 设置为 `AE_DELETED_EVENT_ID`（延迟删除策略）
+     - 不立即删除节点，而是在 `processTimeEvents` 中实际删除
+     - 这样可以避免在遍历链表时删除节点导致的问题
+  - 4. **返回结果**：找到并标记成功返回 `AE_OK`，未找到返回 `AE_ERR`
+
+```c
+// ae.c 第 235-246 行
+int aeDeleteTimeEvent(aeEventLoop *eventLoop, long long id)
+{
+    // 1. 遍历时间事件链表
+    aeTimeEvent *te = eventLoop->timeEventHead;
+    while(te) {
+        // 2. 查找匹配的时间事件 ID
+        if (te->id == id) {
+            // 3. 标记为删除（延迟删除策略）
+            //    - 不立即删除，而是在 processTimeEvents 中实际删除
+            //    - 这样可以避免在遍历链表时删除节点导致的问题
+            te->id = AE_DELETED_EVENT_ID;
+            return AE_OK;
+        }
+        te = te->next;
+    }
+    // 4. 如果未找到，返回错误
+    return AE_ERR; /* NO event with the specified ID found */
+}
+```
+
+##### processTimeEvents 处理时间事件
+
+- `processTimeEvents()` 是处理时间事件的核心函数，遍历时间事件链表，处理到期的事件，并删除标记为删除的事件。
+- 它的基本流程就是从时间事件链表上逐一取出每一个事件，然后根据当前时间判断该事件的触发时间戳是否已满足。如果已满足，那么就调用该事件对应的回调函数进行处理。这样一来，周期性任务就能在不断循环执行的 aeProcessEvents 函数中，得到执行了
+
+- **它是这样实现的**：
+  - 1. **检测系统时钟偏移**：如果系统时钟被调回到过去，强制所有时间事件立即处理
+  - 2. **遍历时间事件链表**：从 `timeEventHead` 开始遍历所有时间事件
+  - 3. **删除标记为删除的事件**：
+     - 如果事件的 `id` 为 `AE_DELETED_EVENT_ID`，从链表中移除
+     - 调用 `finalizerProc` 结束回调函数（如果设置了）
+     - 释放内存
+  - 4. **跳过新创建的事件**：跳过在当前迭代中创建的时间事件（避免重复处理）
+  - 5. **获取当前时间**：调用 `aeGetTime()` 获取当前时间
+  - 6. **检查事件是否到期**：如果当前时间 >= 触发时间，则事件到期
+  - 7. **执行处理函数**：调用 `timeProc` 处理函数
+  - 8. **根据返回值决定后续操作**：
+     - 如果返回值不是 `AE_NOMORE`：表示需要继续执行，返回值表示下次执行的延迟时间（毫秒），更新触发时间
+     - 如果返回值是 `AE_NOMORE`：表示事件执行完毕，标记为删除
+
+```c
+// ae.c 第 274-352 行
+/* Process time events */
+static int processTimeEvents(aeEventLoop *eventLoop) {
+    int processed = 0;
+    aeTimeEvent *te;
+    long long maxId;
+    time_t now = time(NULL);
+
+    //    - 如果系统时钟被调回到过去，会导致时间事件延迟
+    //    - 检测到时钟偏移时，强制所有时间事件立即处理
+    if (now < eventLoop->lastTime) {
+        te = eventLoop->timeEventHead;
+        while(te) {
+            te->when_sec = 0;  // 设置为 0，表示立即触发
+            te = te->next;
+        }
+    }
+    eventLoop->lastTime = now;
+
+    // 2. 遍历时间事件链表
+    te = eventLoop->timeEventHead;
+    maxId = eventLoop->timeEventNextId-1;
+    while(te) {
+        long now_sec, now_ms;
+        long long id;
+
+        /* Remove events scheduled for deletion. */
+        // 3. 删除标记为删除的时间事件
+        if (te->id == AE_DELETED_EVENT_ID) {
+            aeTimeEvent *next = te->next;
+            // 3.1 从链表中移除节点
+            if (te->prev)
+                te->prev->next = te->next;
+            else
+                eventLoop->timeEventHead = te->next;
+            if (te->next)
+                te->next->prev = te->prev;
+            // 3.2 调用结束回调函数（如果设置了）
+            if (te->finalizerProc)
+                te->finalizerProc(eventLoop, te->clientData);
+            // 3.3 释放内存
+            zfree(te);
+            te = next;
+            continue;
+        }
+
+        // 4. 跳过在当前迭代中创建的时间事件
+        //    - 避免处理在本次迭代中刚创建的事件
+        if (te->id > maxId) {
+            te = te->next;
+            continue;
+        }
+        
+        // 5. 获取当前时间
+        aeGetTime(&now_sec, &now_ms);
+        
+        // 6. 检查时间事件是否到期
+        //    - 如果当前时间 >= 触发时间，则事件到期
+        if (now_sec > te->when_sec ||
+            (now_sec == te->when_sec && now_ms >= te->when_ms))
+        {
+            int retval;
+
+            id = te->id;
+            // 7. 执行时间事件处理函数
+            retval = te->timeProc(eventLoop, id, te->clientData);
+            processed++;
+            
+            // 8. 根据返回值决定是否继续执行
+            if (retval != AE_NOMORE) {
+                // 8.1 如果返回值不是 AE_NOMORE，表示需要继续执行
+                //     - 返回值表示下次执行的延迟时间（毫秒）
+                aeAddMillisecondsToNow(retval, &te->when_sec, &te->when_ms);
+            } else {
+                // 8.2 如果返回值是 AE_NOMORE，表示事件执行完毕，标记为删除
+                te->id = AE_DELETED_EVENT_ID;
+            }
+        }
+        te = te->next;
+    }
+    return processed;  // 返回处理的事件数量
+}
+```
+
+### aeMain 主循环
+
+- `aeMain()` 是事件驱动框架的主循环函数，负责不断判断事件循环的停止标记，并调用 `aeProcessEvents()` 处理事件。
+
+- 工作流程：
+  - 如果事件循环的停止标记被设置为 `true`（`eventLoop->stop == 1`），那么针对事件捕获、分发和处理的整个主循环就停止了
+  - 否则，主循环会一直执行，不断调用 `aeProcessEvents()` 处理事件
+- 它是这样实现的：
+  - 1. 初始化停止标志：将 `eventLoop->stop` 设置为 0（表示不停止）
+  - 2. 进入主循环：不断判断 `eventLoop->stop` 标志
+  - 3. 执行前置回调：如果设置了 `beforesleep` 回调，在每次循环前执行
+  - 4. 处理事件：调用 `aeProcessEvents()` 处理所有类型的事件
+  - 5. 循环继续：如果 `stop` 标志为 0，继续下一轮循环
+```c
+// ae.c 第 521-530 行
+/**
+ * 事件驱动框架入口
+ * @param eventLoop 事件循环结构体指针
+ */
+void aeMain(aeEventLoop *eventLoop) {
+    // 1. 将事件循环的 stop 标志设置为 0（表示不停止）
+    //    - stop 标志用于控制事件循环的退出
+    //    - 当需要关闭服务器时，会将 stop 设置为 1，循环退出
+    eventLoop->stop = 0;
+    
+    // 2. 主循环：不断处理事件，直到 stop 标志被设置为 1
+    while (!eventLoop->stop) {
+        // 2.1 如果设置了 beforesleep 回调，在每次循环前执行
+        //     - beforesleep 回调用于处理客户端输入、执行命令等
+        //     - 这是 Redis 处理客户端请求的关键步骤
+        if (eventLoop->beforesleep != NULL) {
+            eventLoop->beforesleep(eventLoop);
+        }
+        
+        // 2.2 处理所有类型的事件
+        //     - AE_ALL_EVENTS：处理所有类型的事件（文件事件和时间事件）
+        //     - AE_CALL_AFTER_SLEEP：在休眠后调用 aftersleep 回调
+        //     - aeProcessEvents 会：
+        //       * 调用 IO 多路复用函数（epoll_wait/select）等待事件
+        //       * 处理就绪的文件事件（客户端连接、数据读写）
+        //       * 处理到期的时间事件（定时任务）
+        //       * 调用 aftersleep 回调（处理输出缓冲区等）
+        aeProcessEvents(eventLoop, AE_ALL_EVENTS|AE_CALL_AFTER_SLEEP);
+    }
+}
+```
+
+### beforeSleep 事件循环前置回调
+
+- `beforeSleep()` 是事件循环的前置回调函数，在每次进入事件循环主循环前（在调用 IO 多路复用函数等待事件之前）执行。
+
+- **调用时机**：
+  - 在 `aeMain()` 的主循环中，每次调用 `aeProcessEvents()` 之前，会先调用 `beforeSleep()` 回调
+  - 在 `initServer()` 中，通过 `aeSetBeforeSleepProc(server.el, beforeSleep)` 设置
+
+- **主要功能**：
+  - 处理集群相关操作
+  - 快速过期键清理
+  - 处理复制相关操作
+  - 处理被阻塞的客户端
+  - 刷新 AOF 缓冲区
+  - **处理待写入的客户端**（调用 `handleClientsWithPendingWrites()`）
+
+- **它是这样实现的**：
+  - 1. **处理集群操作**：如果启用了集群模式，调用 `clusterBeforeSleep()` 处理集群相关操作
+  - 2. **快速过期键清理**：运行快速过期周期，清理过期键（只在主节点上执行）
+  - 3. **处理复制操作**：如果有客户端被阻塞，向所有从节点发送 ACK 请求
+  - 4. **处理同步复制客户端**：解除因同步复制（WAIT 命令）而阻塞的客户端
+  - 5. **处理模块阻塞客户端**：检查是否有被模块实现的阻塞命令解除阻塞的客户端
+  - 6. **处理解除阻塞的客户端**：尝试处理刚解除阻塞的客户端的待处理命令
+  - 7. **刷新 AOF 缓冲区**：将 AOF 缓冲区中的数据写入磁盘
+  - 8. **处理待写入的客户端**：调用 `handleClientsWithPendingWrites()` 处理有待发送输出缓冲区的客户端
+  - 9. **释放模块 GIL**：在进入休眠前，释放模块的全局解释器锁
+
+```c
+// server.c 第 1392-1444 行
+/* This function gets called every time Redis is entering the
+ * main loop of the event driven library, that is, before to sleep
+ * for ready file descriptors. */
+void beforeSleep(struct aeEventLoop *eventLoop) {
+    UNUSED(eventLoop);
+
+    /* Call the Redis Cluster before sleep function. Note that this function
+     * may change the state of Redis Cluster (from ok to fail or vice versa),
+     * so it's a good idea to call it before serving the unblocked clients
+     * later in this function. */
+    // 1. 处理集群相关操作
+    //    - 处理故障转移、更新集群状态、保存配置等
+    if (server.cluster_enabled) clusterBeforeSleep();
+
+    /* Run a fast expire cycle (the called function will return
+     * ASAP if a fast cycle is not needed). */
+    // 2. 快速过期键清理
+    //    - 运行快速过期周期，清理过期键
+    //    - 只在主节点上执行（server.masterhost == NULL）
+    if (server.active_expire_enabled && server.masterhost == NULL)
+        activeExpireCycle(ACTIVE_EXPIRE_CYCLE_FAST);
+
+    /* Send all the slaves an ACK request if at least one client blocked
+     * during the previous event loop iteration. */
+    // 3. 处理复制相关操作
+    //    - 如果在上一次事件循环迭代中有客户端被阻塞，向所有从节点发送 ACK 请求
+    if (server.get_ack_from_slaves) {
+        robj *argv[3];
+        argv[0] = createStringObject("REPLCONF",8);
+        argv[1] = createStringObject("GETACK",6);
+        argv[2] = createStringObject("*",1); /* Not used argument. */
+        replicationFeedSlaves(server.slaves, server.slaveseldb, argv, 3);
+        decrRefCount(argv[0]);
+        decrRefCount(argv[1]);
+        decrRefCount(argv[2]);
+        server.get_ack_from_slaves = 0;
+    }
+
+    /* Unblock all the clients blocked for synchronous replication
+     * in WAIT. */
+    // 4. 处理同步复制的客户端
+    //    - 解除所有因同步复制（WAIT 命令）而阻塞的客户端
+    if (listLength(server.clients_waiting_acks))
+        processClientsWaitingReplicas();
+
+    /* Check if there are clients unblocked by modules that implement
+     * blocking commands. */
+    // 5. 处理模块阻塞的客户端
+    //    - 检查是否有被模块实现的阻塞命令解除阻塞的客户端
+    moduleHandleBlockedClients();
+
+    /* Try to process pending commands for clients that were just unblocked. */
+    // 6. 处理刚解除阻塞的客户端
+    //    - 尝试处理刚解除阻塞的客户端的待处理命令
+    if (listLength(server.unblocked_clients))
+        processUnblockedClients();
+
+    /* Write the AOF buffer on disk */
+    // 7. 刷新 AOF 缓冲区到磁盘
+    //    - 将 AOF 缓冲区中的数据写入磁盘
+    flushAppendOnlyFile(0);
+
+    /* Handle writes with pending output buffers. */
+    // 8. 处理待写入的客户端
+    //    - 处理有待发送输出缓冲区的客户端
+    //    - 这是 beforeSleep 中最重要的操作之一
+    handleClientsWithPendingWrites();
+
+    /* Before we are going to sleep, let the threads access the dataset by
+     * releasing the GIL. Redis main thread will not touch anything at this
+     * time. */
+    // 9. 释放模块的 GIL（Global Interpreter Lock）
+    //    - 在进入休眠前，让模块线程访问数据集
+    if (moduleCount()) moduleReleaseGIL();
+}
+```
+
+### handleClientsWithPendingWrites 处理待写入客户端
+
+- `handleClientsWithPendingWrites()` 用于处理有待发送输出缓冲区的客户端，尝试在进入事件循环前先发送数据，避免注册写事件。
+
+- **调用时机**：
+  - 在 `beforeSleep()` 中被调用
+  - 在进入事件循环前，尝试先同步发送数据，如果发送不完再注册写事件
+
+- **设计目的**：
+  - **优化性能**：在进入事件循环前先尝试发送数据，避免不必要的系统调用
+  - **减少事件注册**：如果数据能够一次性发送完，就不需要注册写事件
+  - **提高响应速度**：减少延迟，提高客户端的响应速度
+
+  - **设计优势**：
+  - **减少系统调用**：在进入事件循环前先尝试发送数据，避免不必要的写事件注册
+  - **提高性能**：如果数据能够一次性发送完，就不需要等待写事件，减少延迟
+  - **优化资源使用**：减少事件注册的数量，降低事件循环的负担
+
+
+- **它是这样实现的**：
+  - 1. **遍历待写入客户端列表**：从 `server.clients_pending_write` 列表中遍历所有待写入的客户端
+  - 2. **清除标志并移除**：清除客户端的 `CLIENT_PENDING_WRITE` 标志，并从列表中移除
+  - 3. **检查客户端保护状态**：如果客户端被保护（`CLIENT_PROTECTED`），跳过处理
+  - 4. **尝试同步写入**：调用 `writeToClient()` 尝试同步写入数据
+     - `handler_installed` 参数为 0，表示写事件处理器尚未安装
+     - 如果数据能够一次性发送完，就不需要注册写事件
+  - 5. **注册写事件（如果需要）**：
+     - 如果同步写入后仍有待发送的数据，需要注册写事件
+     - 如果 AOF 策略是 `always`，设置 `AE_BARRIER` 标志，确保在同一个事件循环迭代中不会同时处理读和写事件
+     - 注册写事件，处理函数为 `sendReplyToClient`
+     - 如果注册失败，异步释放客户端
+
+```c
+// networking.c 第 1103-1143 行
+/* This function is called just before entering the event loop, in the hope
+ * we can just write the replies to the client output buffer without any
+ * need to use a syscall in order to install the writable event handler,
+ * get it called, and so forth. */
+int handleClientsWithPendingWrites(void) {
+    listIter li;
+    listNode *ln;
+    int processed = listLength(server.clients_pending_write);
+
+    // 1. 遍历待写入客户端列表
+    listRewind(server.clients_pending_write, &li);
+    while((ln = listNext(&li))) {
+        client *c = listNodeValue(ln);
+        
+        // 2. 清除待写入标志并从列表中移除
+        c->flags &= ~CLIENT_PENDING_WRITE;
+        listDelNode(server.clients_pending_write, ln);
+
+        /* If a client is protected, don't do anything,
+         * that may trigger write error or recreate handler. */
+        // 3. 如果客户端被保护，跳过处理
+        //    - 被保护的客户端不应该触发写错误或重新创建处理器
+        if (c->flags & CLIENT_PROTECTED) continue;
+
+        /* Try to write buffers to the client socket. */
+        // 4. 尝试同步写入数据到客户端套接字
+        //    - handler_installed 参数为 0，表示写事件处理器尚未安装
+        //    - 如果写入成功且数据发送完毕，writeToClient 会返回 C_OK
+        //    - 如果写入失败或数据未发送完毕，writeToClient 会返回 C_ERR 或仍有待发送数据
+        if (writeToClient(c->fd, c, 0) == C_ERR) continue;
+
+        /* If after the synchronous writes above we still have data to
+         * output to the client, we need to install the writable handler. */
+        // 5. 如果同步写入后仍有待发送的数据，需要注册写事件
+        if (clientHasPendingReplies(c)) {
+            int ae_flags = AE_WRITABLE;
+            
+            /* For the fsync=always policy, we want that a given FD is never
+             * served for reading and writing in the same event loop iteration,
+             * so that in the middle of receiving the query, and serving it
+             * to the client, we'll call beforeSleep() that will do the
+             * actual fsync of AOF to disk. AE_BARRIER ensures that. */
+            // 5.1 如果 AOF 策略是 always，设置 AE_BARRIER 标志
+            //     - 确保在同一个事件循环迭代中，不会同时处理读和写事件
+            //     - 这样可以在接收查询和服务客户端之间调用 beforeSleep() 执行 AOF fsync
+            if (server.aof_state == AOF_ON &&
+                server.aof_fsync == AOF_FSYNC_ALWAYS)
+            {
+                ae_flags |= AE_BARRIER;
+            }
+            
+            // 5.2 注册写事件
+            //     - 如果注册失败，异步释放客户端
+            if (aeCreateFileEvent(server.el, c->fd, ae_flags,
+                sendReplyToClient, c) == AE_ERR)
+            {
+                freeClientAsync(c);
+            }
+        }
+    }
+    return processed;  // 返回处理的客户端数量
+}
+```
+
+### aeProcessEvents 事件捕获与分发
+
+- `aeProcessEvents()` 是事件捕获与分发的核心函数，实现的主要功能包括捕获事件、判断事件类型和调用具体的事件处理函数，从而实现事件的处理。
+- 从 aeProcessEvents 函数的主体结构中，我们可以看到主要有三个 if 条件分支：
+- **三种情况**：
+  - **情况一**：既没有时间事件，也没有网络事件
+  - **情况二**：有 IO 事件或者有需要紧急处理的时间事件
+  - **情况三**：只有普通的时间事件
+
+- **处理逻辑**：
+  - 对于**第一种情况**：因为没有任何事件需要处理，`aeProcessEvents` 函数就会直接返回到 `aeMain` 的主循环，开始下一轮的循环
+  - 对于**第三种情况**：该情况发生时只有普通时间事件发生，所以 `aeProcessEvents` 函数会调用专门处理时间事件的函数 `processTimeEvents`，对时间事件进行处理
+  - 对于**第二种情况**：首先，当该情况发生时，Redis 需要捕获发生的网络事件，并进行相应的处理。在这种情况下，`aeApiPoll` 函数会被调用，用来捕获事件。`aeApiPoll` 函数就是封装了对 `epoll_wait`（或 `select`、`kqueue`）的调用
+
+- 它是这样实现的：
+  - 1. **情况一判断**：如果既没有时间事件也没有网络事件，直接返回 0
+  - 2. **情况二和情况三判断**：如果有 IO 事件或需要处理时间事件，进入处理流程
+  - 3. **查找最近时间事件**：如果设置了 `AE_TIME_EVENTS`，查找最近的时间事件用于计算超时时间
+  - 4. **计算超时时间**：
+     - 如果有时间事件，计算距离最近时间事件的等待时间
+     - 如果没有时间事件，根据 `AE_DONT_WAIT` 标志决定是否阻塞等待
+  - 5. **捕获网络事件**：调用 `aeApiPoll()` 等待事件就绪（封装了 `epoll_wait`/`select`/`kqueue`）
+  - 6. **执行后置回调**：在 IO 多路复用休眠后执行 `aftersleep` 回调
+  - 7. **处理文件事件**：遍历就绪的文件事件，调用相应的事件处理函数
+     - 正常情况下：先处理读事件，再处理写事件
+     - 如果设置了 `AE_BARRIER`：先处理写事件，再处理读事件（用于在回复客户端前先持久化数据）
+  - 8. **处理时间事件**：调用 `processTimeEvents()` 处理到期的时间事件
+```c
+// ae.c 第 369-493 行
+int aeProcessEvents(aeEventLoop *eventLoop, int flags)
+{
+    int processed = 0, numevents;
+
+    /* Nothing to do? return ASAP */
+    // 情况一：既没有时间事件，也没有网络事件
+    //    - 如果 flags 中既没有 AE_TIME_EVENTS 也没有 AE_FILE_EVENTS，直接返回
+    if (!(flags & AE_TIME_EVENTS) && !(flags & AE_FILE_EVENTS)) return 0;
+
+    // 情况二和情况三：有 IO 事件或者有需要紧急处理的时间事件，如果没有IO事件，也会一直处理时间事件。
+    //    - 如果有文件描述符注册（maxfd != -1），或者需要处理时间事件且不立即返回
+    if (eventLoop->maxfd != -1 ||
+        ((flags & AE_TIME_EVENTS) && !(flags & AE_DONT_WAIT))) {
+        int j;
+        aeTimeEvent *shortest = NULL;
+        struct timeval tv, *tvp;
+
+        // 1. 查找最近的时间事件，用于计算超时时间
+        //    - 如果设置了 AE_TIME_EVENTS 且不立即返回，查找最近的时间事件
+        if (flags & AE_TIME_EVENTS && !(flags & AE_DONT_WAIT))
+            shortest = aeSearchNearestTimer(eventLoop);
+        
+        // 2. 计算超时时间
+        if (shortest) {
+            long now_sec, now_ms;
+            aeGetTime(&now_sec, &now_ms);
+            tvp = &tv;
+
+            // 2.1 计算距离最近时间事件的等待时间
+            long long ms =
+                (shortest->when_sec - now_sec)*1000 +
+                shortest->when_ms - now_ms;
+
+            if (ms > 0) {
+                // 2.2 如果还有时间，设置超时时间
+                tvp->tv_sec = ms/1000;
+                tvp->tv_usec = (ms % 1000)*1000;
+            } else {
+                // 2.3 如果时间事件已经到期，立即返回（不等待）
+                tvp->tv_sec = 0;
+                tvp->tv_usec = 0;
+            }
+        } else {
+
+            // 3. 如果没有时间事件，根据 flags 设置超时时间
+            if (flags & AE_DONT_WAIT) {
+                // 3.1 如果设置了 AE_DONT_WAIT，立即返回（不等待）
+                tv.tv_sec = tv.tv_usec = 0;
+                tvp = &tv;
+            } else {
+                // 3.2 否则阻塞等待（直到有事件发生）
+                tvp = NULL; /* wait forever */
+            }
+        }
+
+        // 4. 调用 IO 多路复用 API 等待事件就绪
+        //    - aeApiPoll 封装了 epoll_wait/select/kqueue 的调用
+        //    - 只有超时或者有文件就绪事件发生时才会返回
+        numevents = aeApiPoll(eventLoop, tvp);
+
+        // 5. 在 IO 多路复用休眠后执行 aftersleep 回调
+        //    - 用于处理输出缓冲区、刷新从节点输出缓冲区等
+        if (eventLoop->aftersleep != NULL && flags & AE_CALL_AFTER_SLEEP)
+            eventLoop->aftersleep(eventLoop);
+
+        // 6. 处理所有就绪的文件事件
+        for (j = 0; j < numevents; j++) {
+            // 6.1 获取文件事件和就绪的事件类型
+            aeFileEvent *fe = &eventLoop->events[eventLoop->fired[j].fd];
+            int mask = eventLoop->fired[j].mask;
+            int fd = eventLoop->fired[j].fd;
+            int fired = 0; /* Number of events fired for current fd. */
+
+            // 6.2 判断是否需要反转调用顺序（AE_BARRIER 标志）
+            int invert = fe->mask & AE_BARRIER;
+            // 6.3 处理读事件（如果没有设置 AE_BARRIER，先处理读事件）
+            if (!invert && fe->mask & mask & AE_READABLE) {
+                fe->rfileProc(eventLoop, fd, fe->clientData, mask);
+                fired++;
+            }
+
+            // 6.4 处理写事件
+            if (fe->mask & mask & AE_WRITABLE) {
+                // 6.4.1 如果读事件未触发，或者读写事件处理函数不同，调用写事件处理函数
+                if (!fired || fe->wfileProc != fe->rfileProc) {
+                    fe->wfileProc(eventLoop, fd, fe->clientData, mask);
+                    fired++;
+                }
+            }
+
+            // 6.5 如果设置了 AE_BARRIER，在写事件之后处理读事件
+            if (invert && fe->mask & mask & AE_READABLE) {
+                if (!fired || fe->wfileProc != fe->rfileProc) {
+                    fe->rfileProc(eventLoop, fd, fe->clientData, mask);
+                    fired++;
+                }
+            }
+
+            processed++;
+        }
+    }
+    
+    /* Check time events */
+    // 7. 处理时间事件
+    //    - 情况三：只有普通的时间事件时，会执行到这里
+    //    - processTimeEvents 会遍历时间事件链表，处理到期的时间事件
+    if (flags & AE_TIME_EVENTS)
+        processed += processTimeEvents(eventLoop);
+
+    return processed; /* return the number of processed file/time events */
+}
+```
+
+### ae 框架的 IO 多路复用封装
+
+- ae 框架通过统一的函数接口封装不同平台的 IO 多路复用机制，这些函数都是 `static` 的，只在对应的实现文件中可见。
+
+#### 统一的函数接口
+
+- 所有 IO 多路复用实现都需要提供以下函数：
+  - `aeApiCreate()`：创建 IO 多路复用实例
+  - `aeApiResize()`：调整文件描述符集合大小
+  - `aeApiFree()`：释放 IO 多路复用实例
+  - `aeApiAddEvent()`：添加文件描述符到监听集合
+  - `aeApiDelEvent()`：从监听集合中删除文件描述符
+  - `aeApiPoll()`：等待事件就绪
+  - `aeApiName()`：返回 IO 多路复用机制的名称
+
+#### epoll 封装实现
+
+- Redis 在 Linux 上使用 epoll 作为 IO 多路复用机制，封装在 `ae_epoll.c` 中。
+
+```c
+// ae_epoll.c 第 34-37 行
+typedef struct aeApiState {
+    int epfd;                        // epoll 文件描述符
+    struct epoll_event *events;      // epoll 事件数组
+} aeApiState;
+```
+
+##### aeApiCreate 创建 epoll 实例
+
+```c
+// ae_epoll.c 第 39-56 行
+static int aeApiCreate(aeEventLoop *eventLoop) {
+    aeApiState *state = zmalloc(sizeof(aeApiState));
+    
+    if (!state) return -1;
+    
+    // 1. 分配 epoll_event 数组
+    //    - 大小为 setsize，用于存储就绪的事件
+    state->events = zmalloc(sizeof(struct epoll_event)*eventLoop->setsize);
+    if (!state->events) {
+        zfree(state);
+        return -1;
+    }
+    
+    // 2. 创建 epoll 实例
+    //    - epoll_create(1024) 中的 1024 是提示值，Linux 2.6.8 后忽略
+    //    - 返回 epoll 文件描述符
+    state->epfd = epoll_create(1024);
+    if (state->epfd == -1) {
+        zfree(state->events);
+        zfree(state);
+        return -1;
+    }
+    
+    // 3. 将状态保存到 eventLoop 的 apidata 中
+    eventLoop->apidata = state;
+    return 0;
+}
+```
+
+##### aeApiAddEvent 添加事件
+
+```c
+// ae_epoll.c 第 73-88 行
+static int aeApiAddEvent(aeEventLoop *eventLoop, int fd, int mask) {
+    aeApiState *state = eventLoop->apidata;
+    struct epoll_event ee = {0}; /* avoid valgrind warning */
+    
+    // 1. 判断操作类型
+    //    - 如果文件描述符之前没有注册事件，使用 EPOLL_CTL_ADD
+    //    - 如果文件描述符已经注册了事件，使用 EPOLL_CTL_MOD
+    int op = eventLoop->events[fd].mask == AE_NONE ?
+            EPOLL_CTL_ADD : EPOLL_CTL_MOD;
+    
+    // 2. 设置 epoll 事件
+    ee.events = 0;
+    mask |= eventLoop->events[fd].mask; /* Merge old events */
+    if (mask & AE_READABLE) ee.events |= EPOLLIN;   // 可读事件
+    if (mask & AE_WRITABLE) ee.events |= EPOLLOUT;  // 可写事件
+    ee.data.fd = fd;  // 保存文件描述符，用于事件返回时识别
+    
+    // 3. 调用 epoll_ctl 添加或修改事件
+    if (epoll_ctl(state->epfd, op, fd, &ee) == -1) return -1;
+    return 0;
+}
+```
+
+##### aeApiDelEvent 删除事件
+
+```c
+// ae_epoll.c 第 90-106 行
+static void aeApiDelEvent(aeEventLoop *eventLoop, int fd, int delmask) {
+    aeApiState *state = eventLoop->apidata;
+    struct epoll_event ee = {0}; /* avoid valgrind warning */
+    
+    // 1. 计算删除后的掩码
+    //    - 从当前掩码中移除要删除的事件
+    int mask = eventLoop->events[fd].mask & (~delmask);
+    
+    // 2. 设置剩余的事件
+    ee.events = 0;
+    if (mask & AE_READABLE) ee.events |= EPOLLIN;
+    if (mask & AE_WRITABLE) ee.events |= EPOLLOUT;
+    ee.data.fd = fd;
+    
+    // 3. 根据剩余事件决定操作
+    if (mask != AE_NONE) {
+        // 3.1 如果还有事件，使用 MOD 操作更新
+        epoll_ctl(state->epfd, EPOLL_CTL_MOD, fd, &ee);
+    } else {
+        // 3.2 如果没有事件了，使用 DEL 操作删除
+        //     - 注意：Linux < 2.6.9 需要非空的 event 指针
+        epoll_ctl(state->epfd, EPOLL_CTL_DEL, fd, &ee);
+    }
+}
+```
+
+##### aeApiPoll 等待事件
+
+```c
+// ae_epoll.c 第 108-131 行
+static int aeApiPoll(aeEventLoop *eventLoop, struct timeval *tvp) {
+    aeApiState *state = eventLoop->apidata;
+    int retval, numevents = 0;
+    
+    // 1. 调用 epoll_wait 等待事件就绪
+    //    - timeout 转换为毫秒（-1 表示阻塞等待）
+    retval = epoll_wait(state->epfd, state->events, eventLoop->setsize,
+            tvp ? (tvp->tv_sec*1000 + tvp->tv_usec/1000) : -1);
+    
+    if (retval > 0) {
+        int j;
+        numevents = retval;
+        
+        // 2. 遍历就绪的事件，转换为 ae 框架的事件格式
+        for (j = 0; j < numevents; j++) {
+            int mask = 0;
+            struct epoll_event *e = state->events+j;
+            
+            // 2.1 转换 epoll 事件为 ae 事件
+            if (e->events & EPOLLIN) mask |= AE_READABLE;   // 可读
+            if (e->events & EPOLLOUT) mask |= AE_WRITABLE;  // 可写
+            if (e->events & EPOLLERR) mask |= AE_WRITABLE;  // 错误时也触发写事件
+            if (e->events & EPOLLHUP) mask |= AE_WRITABLE; // 挂起时也触发写事件
+            
+            // 2.2 保存到 fired 数组中
+            eventLoop->fired[j].fd = e->data.fd;
+            eventLoop->fired[j].mask = mask;
+        }
+    }
+    return numevents;  // 返回就绪事件的数量
+}
+```
+
+#### select 封装实现
+
+- Redis 在不支持 epoll/kqueue 的系统上使用 select 作为备选方案，封装在 `ae_select.c` 中。
+
+```c
+// ae_select.c 第 35-40 行
+typedef struct aeApiState {
+    fd_set rfds, wfds;        // 可读和可写文件描述符集合
+    /* We need to have a copy of the fd sets as it's not safe to reuse
+     * FD sets after select(). */
+    fd_set _rfds, _wfds;      // select 后的副本（select 会修改原集合）
+} aeApiState;
+```
+
+##### aeApiCreate 创建 select 状态
+
+```c
+// ae_select.c 第 42-50 行
+static int aeApiCreate(aeEventLoop *eventLoop) {
+    aeApiState *state = zmalloc(sizeof(aeApiState));
+    
+    if (!state) return -1;
+    
+    // 1. 初始化文件描述符集合
+    FD_ZERO(&state->rfds);  // 清空可读集合
+    FD_ZERO(&state->wfds);  // 清空可写集合
+    
+    // 2. 将状态保存到 eventLoop 的 apidata 中
+    eventLoop->apidata = state;
+    return 0;
+}
+```
+
+##### aeApiAddEvent 添加事件
+
+```c
+// ae_select.c 第 62-68 行
+static int aeApiAddEvent(aeEventLoop *eventLoop, int fd, int mask) {
+    aeApiState *state = eventLoop->apidata;
+    
+    // 1. 根据事件类型添加到对应的集合
+    if (mask & AE_READABLE) FD_SET(fd, &state->rfds);  // 添加到可读集合
+    if (mask & AE_WRITABLE) FD_SET(fd, &state->wfds);  // 添加到可写集合
+    
+    return 0;
+}
+```
+
+##### aeApiDelEvent 删除事件
+
+```c
+// ae_select.c 第 70-75 行
+static void aeApiDelEvent(aeEventLoop *eventLoop, int fd, int mask) {
+    aeApiState *state = eventLoop->apidata;
+    
+    // 1. 根据事件类型从对应的集合中删除
+    if (mask & AE_READABLE) FD_CLR(fd, &state->rfds);  // 从可读集合删除
+    if (mask & AE_WRITABLE) FD_CLR(fd, &state->wfds);  // 从可写集合删除
+}
+```
+
+##### aeApiPoll 等待事件
+
+```c
+// ae_select.c 第 77-100 行
+static int aeApiPoll(aeEventLoop *eventLoop, struct timeval *tvp) {
+    aeApiState *state = eventLoop->apidata;
+    int retval, j, numevents = 0;
+    
+    // 1. 复制文件描述符集合
+    //    - select 会修改传入的集合，所以需要先复制
+    memcpy(&state->_rfds, &state->rfds, sizeof(fd_set));
+    memcpy(&state->_wfds, &state->wfds, sizeof(fd_set));
+    
+    // 2. 调用 select 等待事件就绪
+    //    - maxfd+1 是因为 select 需要最大文件描述符 + 1
+    retval = select(eventLoop->maxfd+1,
+                &state->_rfds, &state->_wfds, NULL, tvp);
+    
+    if (retval > 0) {
+        // 3. 遍历所有文件描述符，找出就绪的
+        //    - 这是 select 的缺点：需要 O(n) 遍历
+        for (j = 0; j <= eventLoop->maxfd; j++) {
+            int mask = 0;
+            aeFileEvent *fe = &eventLoop->events[j];
+            
+            // 3.1 跳过未注册的文件描述符
+            if (fe->mask == AE_NONE) continue;
+            
+            // 3.2 检查是否就绪
+            if (fe->mask & AE_READABLE && FD_ISSET(j, &state->_rfds))
+                mask |= AE_READABLE;
+            if (fe->mask & AE_WRITABLE && FD_ISSET(j, &state->_wfds))
+                mask |= AE_WRITABLE;
+            
+            // 3.3 如果就绪，保存到 fired 数组
+            if (mask) {
+                eventLoop->fired[numevents].fd = j;
+                eventLoop->fired[numevents].mask = mask;
+                numevents++;
+            }
+        }
+    }
+    return numevents;  // 返回就绪事件的数量
+}
+```
+
+### ae 框架的自动选择机制
+
+- Redis 通过编译时的宏定义自动选择最优的 IO 多路复用机制，优先级从高到低：
+
+```c
+// ae.c 第 47-61 行
+/* Include the best multiplexing layer supported by this system.
+ * The following should be ordered by performances, descending. */
+#ifdef HAVE_EVPORT
+    #include "ae_evport.c"      // Solaris evport（最高性能）
+#else
+    #ifdef HAVE_EPOLL
+        #include "ae_epoll.c"   // Linux epoll
+    #else
+        #ifdef HAVE_KQUEUE
+            #include "ae_kqueue.c"  // BSD/macOS kqueue
+        #else
+            #include "ae_select.c"  // 其他系统 select（备选方案）
+        #endif
+    #endif
+#endif
+```
+
+- **选择顺序**：
+  1. **evport**（Solaris）：最高性能
+  2. **epoll**（Linux）：高性能，O(1) 复杂度
+  3. **kqueue**（BSD/macOS）：类似 epoll 的高性能机制
+  4. **select**（其他系统）：备选方案，兼容性最好
 
 
