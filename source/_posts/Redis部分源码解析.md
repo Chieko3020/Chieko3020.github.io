@@ -1,8 +1,8 @@
 ---
 title: Redis部分源码解析
 date: 2026-01-21 13:16:21
-tags:
-categories:
+tags: "你知道吗"
+categories: "只属于你的小妙招 <br> 看似有用实则没用"
 ---
 
 # Redis = Ready + Start——如何开始
@@ -68,9 +68,9 @@ categories:
 - Redis 是内存数据库，所以，高效使用内存对 Redis 的实现来说非常重要。Redis 主要是通过两大方面的技术来提升内存使用效率的：
   - 1. 数据结构的优化设计与使用
   - 2. 内存数据按一定规则淘汰
-- 其中，数据结构的设计和使用必须是内存友好的，也就是效率高的；而内存淘汰则是用置换算法，关于这些算法（LRU/LFU）需要在内存管理部分解析
+- 其中，数据结构的设计和使用必须是内存友好的，也就是效率高的；而内存淘汰则是用置换算法
 - 对于实现数据结构来说，如果想要节省内存，一是使用连续的内存空间，避免内存碎片开销；二是针对不同长度的数据，采用不同大小的元数据，以避免使用统一大小的元数据，造成内存空间的浪费。
-- 在数据访问方面，你也要知道使用共享对象其实可以避免重复创建冗余的数据，从而也可以有效地节省内存空间。不过，共享对象主要适用于只读场景，如果一个字符串被反复地修改，就无法被多个请求共享访问了。
+- 在数据访问方面，使用共享对象其实可以避免重复创建冗余的数据，从而也可以有效地节省内存空间。不过，共享对象主要适用于只读场景，如果一个字符串被反复地修改，就无法被多个请求共享访问了。
 
 ## 基本数据对象
 
@@ -86,12 +86,13 @@ categories:
     - 位域的访问是通过点运算符（.）来实现的，与普通的结构体成员访问方式相同。
 
 ```c
+// server.h 第 615-623 行
 typedef struct redisObject {
     unsigned type:4; //redisObject的数据类型，4个bits
     unsigned encoding:4; //redisObject的编码类型，4个bits
     unsigned lru:LRU_BITS;  //redisObject的LRU时间，LRU_BITS宏定义默认为24个bits
     int refcount; //redisObject的引用计数，4个字节
-    void *ptr; //指向值的指针，8个字节
+    void *ptr; //全局键值对数据库中指向值的指针，8个字节
 } robj;
 
 ```
@@ -176,6 +177,7 @@ struct sds_header {
     - 比如sdshdr8的头部占用len+alloc+flag=17字节，那么hdrlen是17，sds的值就是在内存分配函数返回的**指针sh加上hdrlen指针偏移量**。
 
 ```c
+// sds.h 第 76-80 行
 #define SDS_TYPE_5  0
 #define SDS_TYPE_8  1
 #define SDS_TYPE_16 2
@@ -187,7 +189,7 @@ struct sds_header {
 - sds的具体定义如下：
 
 ```c
-// sds.h
+// sds.h 第 43-68 行
 typedef char *sds;
 struct __attribute__ ((__packed__)) sdshdr5 {
     unsigned char flags;  // 3 bit存类型，5 bit存长度
@@ -221,6 +223,7 @@ struct __attribute__ ((__packed__)) sdshdr8 {
 - 嵌入式字符串：在创建一个字符串时，Redis 会调用 createStringObject 函数，来创建相应的 redisObject，而这个 redisObject 中的 ptr 指向 SDS 数据结构。createStringObject 函数会根据要创建的字符串的长度，决定具体调用哪个函数来完成创建：
 
 ```c
+// object.c 第 118-124 行
 #define OBJ_ENCODING_EMBSTR_SIZE_LIMIT 44
 robj *createStringObject(const char *ptr, size_t len) {
     //创建嵌入式字符串，字符串长度小于等于44字节
@@ -271,36 +274,66 @@ robj *createStringObject(const char *ptr, size_t len) {
   - 6. 调用c函数memcpy拷贝init到sds，并且加上`\0`,最后返回sds
 
 ```c
-sds sdsnewlen(const void *init, size_t initlen) {
+// sds.c 第 89-145 行
+sds   sdsnewlen(const void *init, size_t initlen) {
     void *sh;
     sds s;
-    char type = sdsReqType(initlen);  // 第1步：根据长度选择类型
-    if (type == SDS_TYPE_5 && initlen == 0) type = SDS_TYPE_8;  // 空字符串特殊处理
+    // 根据长度选择类型
+    char type = sdsReqType(initlen);
+    /* Empty strings are usually created in order to append. Use type 8
+     * since type 5 is not good at this. */
+    // 如果长度为0，则使用sdshdr8
+    if (type == SDS_TYPE_5 && initlen == 0) type = SDS_TYPE_8;
     int hdrlen = sdsHdrSize(type);
-
-    sh = s_malloc(hdrlen+initlen+1);  // 第2步：分配内存
-    s = (char*)sh+hdrlen;             // 第3步：指针指向buf开始
-    fp = ((unsigned char*)s)-1;       // flags指针
-    
-    // 第4步：根据类型初始化头部
+    unsigned char *fp; /* flags pointer. */
+    // 分配空间 hrelen结构体的大小
+    sh = s_malloc(hdrlen+initlen+1);
+    if (init==SDS_NOINIT)
+        init = NULL;
+    else if (!init)
+        // 初始化sh
+        memset(sh, 0, hdrlen+initlen+1);
+    if (sh == NULL) return NULL;
+    s = (char*)sh+hdrlen;
+    fp = ((unsigned char*)s)-1;
     switch(type) {
         case SDS_TYPE_5: {
-            *fp = type | (initlen << SDS_TYPE_BITS);  // 长度存在flags高5位
+            *fp = type | (initlen << SDS_TYPE_BITS);
             break;
         }
         case SDS_TYPE_8: {
             SDS_HDR_VAR(8,s);
-            sh->len = initlen;      // len记录实际长度
-            sh->alloc = initlen;    // alloc初始化为len（无预分配）
+            sh->len = initlen;
+            sh->alloc = initlen;
             *fp = type;
             break;
         }
-        // TYPE_16/32/64 类似...
+        case SDS_TYPE_16: {
+            SDS_HDR_VAR(16,s);
+            sh->len = initlen;
+            sh->alloc = initlen;
+            *fp = type;
+            break;
+        }
+        case SDS_TYPE_32: {
+            SDS_HDR_VAR(32,s);
+            sh->len = initlen;
+            sh->alloc = initlen;
+            *fp = type;
+            break;
+        }
+        case SDS_TYPE_64: {
+            SDS_HDR_VAR(64,s);
+            sh->len = initlen;
+            sh->alloc = initlen;
+            *fp = type;
+            break;
+        }
     }
-    
+    // 如果initlen不为0且init不为空，则复制init到s
     if (initlen && init)
-        memcpy(s, init, initlen);   // 第5步：复制数据
-    s[initlen] = '\0';              // 第6步：添加结尾\0（二进制安全）
+        memcpy(s, init, initlen);
+    s[initlen] = '\0';
     return s;
 }
 
@@ -316,6 +349,7 @@ sds sdsnewlen(const void *init, size_t initlen) {
     - s_free 宏定义值zfree，后者是内存池jemalloc的内存释放方法的封装
 
 ```c
+// sds.c 第 165-168 行
 void sdsfree(sds s) {
     if (s == NULL) return;
     s_free((char*)s-sdsHdrSize(s[-1]));  // 关键：减去头部大小，释放整个分配块
@@ -333,44 +367,53 @@ void sdsfree(sds s) {
 - 2倍扩容的好处：均摊复杂度为O(1)，n次操作，总分配次数为O(logn)
 
 ```c
+// sds.c 第 204-249 行
 sds sdsMakeRoomFor(sds s, size_t addlen) {
-    size_t avail = sdsavail(s);    // 当前可用空间
-    
-    /* 快速路径：空间充足，无需分配 */
+    void *sh, *newsh;
+    size_t avail = sdsavail(s);
+    size_t len, newlen;
+    char type, oldtype = s[-1] & SDS_TYPE_MASK;
+    int hdrlen;
+
+    /* Return ASAP if there is enough space left. */
+    // 判断是否需要扩容
     if (avail >= addlen) return s;
 
-    size_t len = sdslen(s);
-    char oldtype = s[-1] & SDS_TYPE_MASK;
-    
-    /* 计算新大小 */
-    size_t newlen = len + addlen;
-    if (newlen < SDS_MAX_PREALLOC)     // < 1MB
-        newlen *= 2;                   // 翻倍扩容
+    len = sdslen(s);
+    sh = (char*)s-sdsHdrSize(oldtype);
+    newlen = (len+addlen);
+    // 小于1MB 2倍 大于1MB 线性增加1MB
+    if (newlen < SDS_MAX_PREALLOC)
+        newlen *= 2;
     else
-        newlen += SDS_MAX_PREALLOC;    // 增加1MB
+        newlen += SDS_MAX_PREALLOC;
 
-    char type = sdsReqType(newlen);    // 是否需要升级类型？
-    
-    if (type == SDS_TYPE_5) type = SDS_TYPE_8;  // TYPE_5不能扩容，升级到TYPE_8
-    
-    int hdrlen = sdsHdrSize(type);
-    
-    /* 情况1：头部大小不变 */
-    if (oldtype == type) {
-        newsh = s_realloc(sh, hdrlen+newlen+1);  // 原地扩容
+    type = sdsReqType(newlen);
+
+    /* Don't use type 5: the user is appending to the string and type 5 is
+     * not able to remember empty space, so sdsMakeRoomFor() must be called
+     * at every appending operation. */
+    // 如果类型为sdshdr5，则升级为sdshdr8
+    if (type == SDS_TYPE_5) type = SDS_TYPE_8;
+    // 没有升级 原地s_realloc
+    hdrlen = sdsHdrSize(type);
+    if (oldtype==type) {
+        newsh = s_realloc(sh, hdrlen+newlen+1);
+        if (newsh == NULL) return NULL;
         s = (char*)newsh+hdrlen;
-    } 
-    /* 情况2：头部大小改变（升级类型） */
-    else {
-        newsh = s_malloc(hdrlen+newlen+1);       // 分配新内存
-        memcpy((char*)newsh+hdrlen, s, len+1);  // 复制数据
-        s_free(sh);                              // 释放旧内存
+    } else {
+        // 升级 重新分配空间 复制数据 释放旧空间 设置新空间 设置类型
+        /* Since the header size changes, need to move the string forward,
+         * and can't use realloc */
+        newsh = s_malloc(hdrlen+newlen+1);
+        if (newsh == NULL) return NULL;
+        memcpy((char*)newsh+hdrlen, s, len+1);
+        s_free(sh);
         s = (char*)newsh+hdrlen;
-        s[-1] = type;                            // 更新flags
-        sdssetlen(s, len);                       // 更新len
+        s[-1] = type;
+        sdssetlen(s, len);
     }
-    
-    sdssetalloc(s, newlen);  // 更新alloc为实际分配大小
+    sdssetalloc(s, newlen);
     return s;
 }
 
@@ -383,6 +426,7 @@ sds sdsMakeRoomFor(sds s, size_t addlen) {
   - 2. 复制并追加数据以及`\0`
 
 ```c
+// sds.c 第 397-407 行
 sds sdscatlen(sds s, const void *t, size_t len) {
     size_t curlen = sdslen(s);
     
@@ -403,10 +447,11 @@ sds sdscatlen(sds s, const void *t, size_t len) {
   - 直接调用sdslen计算参数的字符串长度给sdsnewlen，返回它创建的sds指针
 
 ```c
+// sds.c 第 160-162 行
+// 直接根据长度创建新串返回
 sds sdsdup(const sds s) {
-    return sdsnewlen(s, sdslen(s));  // 简单调用sdsnewlen
+    return sdsnewlen(s, sdslen(s));
 }
-
 ```
 
 #### 覆盖
@@ -416,6 +461,7 @@ sds sdsdup(const sds s) {
   - 2. 调用memcpy将新串的内容写到s中
 
 ```c
+// sds.c 第 426-435 行
 sds sdscpylen(sds s, const char *t, size_t len) {
     /* 如果分配空间不足，扩容 */
     if (sdsalloc(s) < len) {
@@ -440,6 +486,7 @@ sds sdscpylen(sds s, const char *t, size_t len) {
 - sdsgrowzero()调用sdsMakeRoomFor扩容，在此之上对空闲空间使用字符0填充
 
 ```c
+// sds.c 第 379-390 行
 sds sdsgrowzero(sds s, size_t len) {
     size_t curlen = sdslen(s);
     
@@ -472,6 +519,7 @@ sds sdsgrowzero(sds s, size_t len) {
 - 在 dict.h 文件中，Hash 表被定义为一个二维数组（dictEntry **table），这个数组的每个元素（也就是哈希桶）是一个指向哈希节点（dictEntry）的指针。而哈希节点之间彼此通过指针配合头插法连接，形成一个单链表。
 
 ```c
+// dict.h 第 47-82 行
 /* 单个哈希表 */
 typedef struct dictht {
     dictEntry **table;      // 哈希表数组（指针数组）
@@ -548,6 +596,7 @@ typedef struct dictType {
     - 2. 然后对dict结构体的其他成员进行初始化
 
 ```c
+// dict.c 第 111-134 行
 dict *dictCreate(dictType *type, void *privDataPtr) {
     dict *d = zmalloc(sizeof(*d));
     _dictInit(d, type, privDataPtr);
@@ -585,6 +634,7 @@ static void _dictReset(dictht *ht) {
 - 这里额外说明，Redis添加键值对前会使用dictFind检查键是否存在，是则调用db.c的dbOverwrite()函数修改键值对，不是才会调用db.c的dbAdd添加键值对。而dbAdd方法会调用dictAdd函数
 
 ```c
+// dict.c 第 265-308 行
 int dictAdd(dict *d, void *key, void *val) {
     dictEntry *entry = dictAddRaw(d, key, NULL);
     if (!entry) return DICT_ERR;
@@ -628,6 +678,7 @@ dictEntry *dictAddRaw(dict *d, void *key, dictEntry **existing) {
   - 4. 如果ht[0]没找到，判断当前重哈希状态，是的话就接着找ht[1]，否则返回
 
 ```c
+// dict.c 第 476-500 行（简化版）
 dictEntry *dictFind(dict *d, const void *key) {
     dictEntry *he;
     uint64_t h, idx, table;
@@ -664,6 +715,7 @@ dictEntry *dictFind(dict *d, const void *key) {
   - 2. 否则根据该函数内部调用的_dictKeyIndex方法设置的**existing**也就是旧值，先更新值，再依据保存的旧值释放它的空间
 
 ```c
+// dict.c 第 325-347 行
 int dictReplace(dict *d, void *key, void *val)
 {
     dictEntry *entry, *existing, auxentry;
@@ -691,6 +743,7 @@ int dictReplace(dict *d, void *key, void *val)
     - 3. 查找成功后释放节点的键/值/节点结构体内存
 
 ```c
+// dict.c 第 403-445 行
 int dictDelete(dict *d, const void *key) {
     return dictGenericDelete(d, key, 0) ? DICT_OK : DICT_ERR;
 }
@@ -761,6 +814,7 @@ static dictEntry *dictGenericDelete(dict *d, const void *key, int nofree) {
     - 实际上**分配的内存**如上所述是**哈希表大小的2倍** 而不是用哈希表当前存储元素的2倍，因为要求分配内存是大于size（这里是2倍used）的最小2的整数幂
 
 ```c
+// dict.c 第 147-177 行和 135-146 行
 int dictExpand(dict *d, unsigned long size) {
     if (dictIsRehashing(d) || d->ht[0].used > size)
         return DICT_ERR;
@@ -852,6 +906,7 @@ static unsigned long _dictNextPower(unsigned long size)
     - 3. 最后修改rehashidx为-1
 
 ```c
+// dict.c 第 188-233 行（简化版）
 int dictRehash(dict *d, int n) {
     int empty_visits = n * 10;  // 最多访问n*10个空bucket
     if (!dictIsRehashing(d)) return 0;
@@ -921,6 +976,7 @@ static void _dictRehashStep(dict *d) {
 - Sorted Set 的实现代码在t_zset.c文件中，包括 Sorted Set 的各种操作实现，同时 Sorted Set 相关的结构定义在server.h文件中。
 
 ```c
+// server.h 第 827-830 行
 typedef struct zset {
     dict *dict;
     zskiplist *zsl;
@@ -942,6 +998,7 @@ typedef struct zset {
   - 6. 跳表的每个节点都有一个score分数值，用来表示当前元素的权重,头节点是0
 
 ```c
+// server.h 第 811-825 行和 t_zset.c 第 122-127 行
 // 跳表节点
 typedef struct zskiplistNode {
     sds ele; // 每一个节点的sds表示存储的元素
@@ -1039,7 +1096,7 @@ int zslRandomLevel(void) {
   - 1. 为了找到要更新的节点，我们需要以下两个长度为64的数组来辅助操作。
     - update[​]​：插入节点时，需要更新被插入节点每层的前一个节点。由于每层更新的节点不一样，所以将每层需要更新的节点记录在update[i]中。
     - rank[​]​：记录当前层从header节点到update[i]节点所经历的步长，在更新update[i]的span和设置新插入节点的span时用到。
-  - 2. 从头节点x开始，由高到低查找插入位置，如果 score < 目标score，继续向前，如果 score == 目标score，比较字符串，字典序小的继续向前，否则，下降到下一层,同时记录每个节点的前一个节点update和步长span
+  - 2. 从头节点x开始，由高到低查找插入位置，如果 score < 目标score，继续向前，如果 score == 目标score，比较字符串，字典序小的继续向前，否则，下降到下一层, 同时记录每个节点的前一个节点update和步长span
     - 当查找到的结点保存的元素权重，比要查找的权重小时，跳表就会继续访问该层上的下一个结点。
     - 当查找到的结点保存的元素权重，等于要查找的权重时，跳表会再检查该结点保存的 SDS 类型数据，是否比要查找的 SDS 数据小。如果结点数据小于要查找的数据时，跳表仍然会继续访问该层上的下一个结点。
     - 但是，当上述两个条件都不满足时，跳表就会用到当前查找到的结点的 level 数组了。跳表会使用当前结点 level 数组里的下一层指针，然后沿着下一层指针继续查找，这就相当于跳到了下一层接着查找。
@@ -1105,7 +1162,7 @@ zskiplistNode *zslInsert(zskiplist *zsl, double score, sds ele) {
 
         /* update span covered by update[i] as x is inserted here */
         x->level[i].span = update[i]->level[i].span - (rank[0] - rank[i]);
-        update[i]->level[i].span = (rank[0] - rank[i]) + 1;
+        update[i]->level[i].span = (rank[0] - rank[i]) + 1;z
     }
 
     /* increment span for untouched levels */
@@ -1155,7 +1212,7 @@ int zslDelete(zskiplist *zsl, double score, sds ele, zskiplistNode **node) {
     // 取出第一层的待删节点，判断score element 与传入的是否相同
     x = x->level[0].forward;
     if (x && score == x->score && sdscmp(x->ele,ele) == 0) {
-        // 执行真正的删除操作，这里传了update数组，应该是每一层都要删
+        // 执行真正的删除操作，这里传了update数组 每一层都要删
         zslDeleteNode(zsl, x, update);
         if (!node)
             zslFreeNode(x);
@@ -1291,7 +1348,7 @@ unsigned long zslGetRank(zskiplist *zsl, double score, sds ele) {
              (x->level[i].forward->score == score &&
               sdscmp(x->level[i].forward->ele, ele) <= 0)))
         {
-            rank += x->level[i].span;  // 关键：累加跨度
+            rank += x->level[i].span;  // 累加跨度
             x = x->level[i].forward;    // 向前移动
         }
         
@@ -1817,7 +1874,7 @@ unsigned char *ziplistPrev(unsigned char *zl, unsigned char *p) {
 
 #### 级联更新
 
-- 当插入或删除元素时，如果导致某个节点的 prevlen 动态改变大小，会影响后续节点的 prevlen长度，导致后续节点也要更新，引发连锁反应。
+- 当插入或删除元素时，如果导致某个节点的 prevlen 改变，影响其总大小，会影响后续节点的 prevlen长度，导致后续节点也要更新，引发连锁反应。
 - 级联更新会导致多次重新分配内存及数据复制，效率很低。但是出现这种情况的概率是很低的，因此对于删除元素和插入元素操作，Redis并没有为了避免连锁更新而采取措施。Redis只是在删除元素和插入元素操作的末尾，检查是否需要更新后续元素的previous_entry_length字段，其实现函数为_ziplistCascadeUpdate：
   - 1. 先解析出当前entry长度和存储rawlen所需空间大小
   - 2. 检查是否有下一个节点，没有就不要级联更新
@@ -1851,7 +1908,7 @@ unsigned char *__ziplistCascadeUpdate(unsigned char *zl, unsigned char *p) {
         // 步骤4: 检查是否需要更新
         // 如果下一个entry记录的prevlen就是当前的rawlen，不需要更新
         if (next.prevrawlen == rawlen) 
-            break;  // ✓ 完成，不需要继续
+            break;  //  完成，不需要继续
 
         // ===== 需要更新：分两种情况 =====
         
@@ -1969,6 +2026,7 @@ unsigned char *__ziplistCascadeUpdate(unsigned char *zl, unsigned char *p) {
   - 3. zi指向元素所在的ziplist
   - 4. offset表明节点在所在的ziplist中的偏移量
   - 5. direction表明迭代器的方向。
+
 ```c
 //快表结构体
 // quicklist.h 第 73-80 行
@@ -2071,6 +2129,7 @@ quicklist *quicklistNew(int fill, int compress) {
     - 1. 需要向当前quicklistNode第一个元素（entry1）前面插入元素，当前ziplist所在的quicklistNode的前一个quicklistNode可以插入，则将数据插入到前一个quicklistNode。如果前一个quicklistNode不能插入（不包含前一个节点为空的情况）​，则新建一个quicklistNode插入到当前quicklistNode前面。
     - 2. 需要向当前quicklistNode的最后一个元素（entryN）后面插入元素，当前ziplist所在的quicklistNode的后一个quicklistNode可以插入，则直接将数据插入到后一个quicklistNode。如果后一个quicklistNode不能插入（不包含为后一个节点为空的情况）​，则新建一个quicklistNode插入到当前quicklistNode的后面。
     - 3. 不满足前面2个条件的所有其他种情况，将当前所在的quicklistNode以当前待插入位置为基准，拆分成左右两个quicklistNode，之后将需要插入的数据插入到其中一个拆分出来的quicklistNode中
+
 ```c
 // quicklist.c 第 480-497 行
 int quicklistPushHead(quicklist *quicklist, void *value, size_t sz) {
@@ -2129,6 +2188,7 @@ int quicklistPushTail(quicklist *quicklist, void *value, size_t sz) {
     - 返回0代表没有删除任何元素，返回1并不代表删除了count个元素，因为count可能大于quicklist所有元素个数，故而只能代表操作成功
 
 - 另外，删除单一元素，可以使用quicklist对外的接口quicklistDelEntry实现，也可以通过quicklistPop将头部或者尾部元素弹出。quicklistPop可以弹出头部或者尾部元素，具体实现是通过ziplist的接口获取元素值，再通过上述的quicklistDelIndex将数据删除。
+
 ```c
 // quicklist.c 第 634-661 行
 void quicklistDelEntry(quicklistIter *iter, quicklistEntry *entry) {
@@ -2662,33 +2722,41 @@ static uint8_t intsetSearch(intset ＊is, int64_t value, uint32_t ＊pos) {
 
 #### 获取元素
 
-- 使用 intsetGet() 根据位置获取元素，使用 intsetRandom() 随机获取元素，它们的实现是这样的：
-  - 1. intsetGet()：
-    - 1. 检查位置是否有效
-    - 2. 调用 _intsetGet() 获取值
-  - 2. intsetRandom()：
-    - 1. 生成随机索引
-    - 2. 调用 _intsetGet() 获取值
+- 使用 intsetGet() 根据位置获取元素，它的实现是这样的：
+  - 1. 根据编码类型从 contents 数组中读取对应大小的整数
+  - 2. 进行字节序转换（如果需要）
 
 ```c
 // intset.c 第 266-272 行
-uint8_t intsetGet(intset *is, uint32_t pos, int64_t *value) {
-    if (pos < intrev32ifbe(is->length)) {  // 1. 检查位置有效性
-        *value = _intsetGet(is, pos);       // 2. 获取值
-        return 1;
-    }
-    return 0;
+static int64_t _intsetGet(intset *is, int pos) {
+    return _intsetGetEncoded(is,pos,intrev32ifbe(is->encoding));
 }
 
-// intset.c 第 260-262 行
-int64_t intsetRandom(intset *is) {
-    return _intsetGet(is, rand() % intrev32ifbe(is->length));  // 随机获取
+/* Set the value at pos, using the configured encoding. */
+static int64_t _intsetGetEncoded(intset *is, int pos, uint8_t enc) {
+    int64_t v64;
+    int32_t v32;
+    int16_t v16;
+
+    if (enc == INTSET_ENC_INT64) {
+        memcpy(&v64,((int64_t*)is->contents)+pos,sizeof(v64));
+        memrev64ifbe(&v64);
+        return v64;
+    } else if (enc == INTSET_ENC_INT32) {
+        memcpy(&v32,((int32_t*)is->contents)+pos,sizeof(v32));
+        memrev32ifbe(&v32);
+        return v32;
+    } else {
+        memcpy(&v16,((int16_t*)is->contents)+pos,sizeof(v16));
+        memrev16ifbe(&v16);
+        return v16;
+    }
 }
 ```
 
 #### 辅助函数
 
-- _intsetGet() 和 _intsetSet() 用于根据编码类型读写整数，它们的实现是这样的：
+- _intsetGet() 和_intsetSet() 用于根据编码类型读写整数，它们的实现是这样的：
   - 1. _intsetGet()：
     - 1. 根据编码类型从 contents 数组中读取对应大小的整数
     - 2. 进行字节序转换（如果需要）
@@ -3209,7 +3277,7 @@ void zlibc_free(void *ptr) {
     - jemalloc 的后台线程定期检查各个 arena
     - 将不再使用的内存页标记为 dirty，等待系统回收
       - 这个过程是异步的，不会阻塞主线程
-      
+
 #### set_jemalloc_bg_thread
 
 - `set_jemalloc_bg_thread()` 用于启用或禁用 jemalloc 的后台线程，这是 jemalloc 内存池机制的一部分。
@@ -3347,7 +3415,7 @@ int removeExpire(redisDb *db, robj *key) {
   - 6. 比较当前时间和过期时间，如果 `now > when` 则返回 1（已过期）
 
 ```c
-// db.c 第 1130-1148 行
+// db.c 第 41-77 行
 int keyIsExpired(redisDb *db, robj *key) {
     // 1. 获取键的过期时间（毫秒时间戳）
     //    - 如果键没有设置过期时间，返回 -1
@@ -3400,7 +3468,7 @@ int keyIsExpired(redisDb *db, robj *key) {
   - `dbRandomKey()`：随机获取键时检查
 
 ```c
-// db.c 第 1186-1206 行
+// db.c 第 1213-1243 行
 int expireIfNeeded(redisDb *db, robj *key) {
     // 1. 检查键是否过期
     //    - keyIsExpired() 会检查过期时间、加载状态、Lua 脚本状态等
@@ -3858,6 +3926,7 @@ void expireGenericCommand(client *c, long long basetime, int unit) {
   - 1. 如果经常删除大对象，启用 `lazyfree-lazy-server-del`
   - 2. 如果过期键较多且较大，启用 `lazyfree-lazy-expire`
   - 3. 如果内存压力大，启用 `lazyfree-lazy-eviction`
+
 ```conf
 # 是否对 DEL 命令使用异步删除
 lazyfree-lazy-server-del no
@@ -4439,6 +4508,7 @@ void lazyfreeFreeSlotsMapFromBioThread(rax *rt) {
     - 如果旧值是大对象，使用 `freeObjAsync()` 异步释放
     - 避免释放大对象阻塞主线程
   - 在内存淘汰时，释放被淘汰的对象
+
 ```c
 // lazyfree.c 第 94-102 行
 void freeObjAsync(robj *o) {
@@ -4626,16 +4696,16 @@ lazyfree-lazy-eviction no
 
 - Redis 提供了 8 种内存淘汰策略，通过 `maxmemory-policy` 配置：
 
-| 策略 | 说明 | 适用场景 
+| 策略 | 说明 | 适用场景
 | ------ | ------ | ----------
-| `volatile-lru` | 从设置了过期时间的键中，选择最近最少使用的键删除 | 希望保留热点数据，但允许过期键被淘汰 
-| `allkeys-lru` | 从所有键中，选择最近最少使用的键删除 | 希望保留热点数据，所有键都可能被淘汰 
-| `volatile-lfu` | 从设置了过期时间的键中，选择最不经常使用的键删除 | 希望保留频繁访问的数据 
-| `allkeys-lfu` | 从所有键中，选择最不经常使用的键删除 | 希望保留频繁访问的数据，所有键都可能被淘汰 
-| `volatile-ttl` | 从设置了过期时间的键中，选择 TTL 最短的键删除 | 优先删除即将过期的键 
-| `volatile-random` | 从设置了过期时间的键中，随机选择一个键删除 | 随机淘汰，不关心访问模式 
-| `allkeys-random` | 从所有键中，随机选择一个键删除 | 随机淘汰，不关心访问模式 
-| `noeviction` | 不淘汰任何键，写操作返回错误 | 不允许数据丢失的场景 
+| `volatile-lru` | 从设置了过期时间的键中，选择最近最少使用的键删除 | 希望保留热点数据，但允许过期键被淘汰
+| `allkeys-lru` | 从所有键中，选择最近最少使用的键删除 | 希望保留热点数据，所有键都可能被淘汰
+| `volatile-lfu` | 从设置了过期时间的键中，选择最不经常使用的键删除 | 希望保留频繁访问的数据
+| `allkeys-lfu` | 从所有键中，选择最不经常使用的键删除 | 希望保留频繁访问的数据，所有键都可能被淘汰
+| `volatile-ttl` | 从设置了过期时间的键中，选择 TTL 最短的键删除 | 优先删除即将过期的键
+| `volatile-random` | 从设置了过期时间的键中，随机选择一个键删除 | 随机淘汰，不关心访问模式
+| `allkeys-random` | 从所有键中，随机选择一个键删除 | 随机淘汰，不关心访问模式
+| `noeviction` | 不淘汰任何键，写操作返回错误 | 不允许数据丢失的场景
 
 - 策略标志位：
   - `MAXMEMORY_FLAG_LRU`：LRU 策略标志
@@ -4646,14 +4716,14 @@ lazyfree-lazy-eviction no
 
 - LRU 算法就是指最近最少使用（Least Recently Used，LRU）算法，这是一个经典的缓存算法。从基本原理上来说，LRU 算法会使用一个链表来维护缓存中每一个数据的访问情况，并根据数据的实时访问，调整数据在链表中的位置，然后通过数据在链表中的位置，来表示数据是最近刚访问的，还是已经有一段时间没有访问了。具体来说，LRU 算法会把链表的头部和尾部分别设置为 MRU 端和 LRU 端。其中，MRU 是 Most Recently Used 的缩写，MRU 端表示这里的数据是刚被访问的。而 LRU 端则表示，这里的数据是最近最少访问的数据。
 - LRU 算法的执行，可以分成三种情况：
-    - 1. 当有新数据插入时，LRU 算法会把该数据插入到链表头部，同时把原来链表头部的数据及其之后的数据，都向尾部移动一位。
-    - 2. 当有数据刚被访问了一次之后，LRU 算法就会把该数据从它在链表中的当前位置，移动到链表头部。同时，把从链表头部到它当前位置的其他数据，都向尾部移动一位。
-    - 3. 当链表长度无法再容纳更多数据时，若再有新数据插入，LRU 算法就会去除链表尾部的数据，这也相当于将数据从缓存中淘汰掉。
+  - 1. 当有新数据插入时，LRU 算法会把该数据插入到链表头部，同时把原来链表头部的数据及其之后的数据，都向尾部移动一位。
+  - 2. 当有数据刚被访问了一次之后，LRU 算法就会把该数据从它在链表中的当前位置，移动到链表头部。同时，把从链表头部到它当前位置的其他数据，都向尾部移动一位。
+  - 3. 当链表长度无法再容纳更多数据时，若再有新数据插入，LRU 算法就会去除链表尾部的数据，这也相当于将数据从缓存中淘汰掉。
 
 - 如果要严格按照 LRU 算法的基本原理来实现的话，要为 Redis 使用最大内存时，可容纳的所有数据维护一个链表；每当有新数据插入或是现有数据被再次访问时，需要执行多次链表操作。既需要额外的内存空间来保存链表，还会在访问数据的过程中，让 Redis 受到数据移动和链表操作的开销影响，从而就会降低 Redis 访问性能
-    - 因此Redis 使用近似 LRU 算法，通过采样和淘汰池（Eviction Pool）来实现
-    - 近似 LRU 算法并没有使用耗时耗空间的链表，而是使用了固定大小的待淘汰数据集合，每次随机选择一些 key 加入待淘汰数据集合中。最后，再按照待淘汰集合中 key 的空闲时间长度，删除空闲时间最长的 key。避免维护完整的 LRU 链表。
-    
+- 因此Redis 使用近似 LRU 算法，通过采样和淘汰池（Eviction Pool）来实现
+- 近似 LRU 算法并没有使用耗时耗空间的链表，而是使用了固定大小的待淘汰数据集合，每次随机选择一些 key 加入待淘汰数据集合中。最后，再按照待淘汰集合中 key 的空闲时间长度，删除空闲时间最长的 key。避免维护完整的 LRU 链表。
+
 - 为了实现近似 LRU 算法，Redis 首先是设置了全局 LRU 时钟，并在键值对创建时获取全局 LRU 时钟值作为访问时间戳，以及在每次访问时获取全局 LRU 时钟值，更新访问时间戳。然后，当 Redis 每处理一个命令时，都会调用 freeMemoryIfNeeded 函数来判断是否需要释放内存。如果已使用内存超出了 maxmemory，那么，近似 LRU 算法就会随机选择一些键值对，组成待淘汰候选集合，并根据它们的访问时间戳，选出最旧的数据，将其淘汰。
 
 #### 全局 LRU 时钟值的计算
@@ -4684,6 +4754,7 @@ unsigned int getLRUClock(void) {
     return (mstime()/LRU_CLOCK_RESOLUTION) & LRU_CLOCK_MAX;
 }
 ```
+
 ##### serverCron 更新全局 LRU 时钟
 
 - `serverCron()` 是 Redis 的定时任务函数，每秒执行 `server.hz` 次（默认 10 次）。
@@ -5225,7 +5296,9 @@ unsigned long long estimateObjectIdleTime(robj *o) {
 
 ### LFU 实现
 
--  LFU 算法是根据数据访问的频率来选择被淘汰数据的，所以 LFU 算法会记录每个数据的访问次数。当一个数据被再次访问时，就会增加该数据的访问次数。不过，访问次数和访问频率还不能完全等同。访问频率是指在一定时间内的访问次数，也就是说，在计算访问频率时，我们不仅需要记录访问次数，还要记录这些访问是在多长时间内执行的。要实现 LFU 算法时，我们需要能统计到数据的访问频率，而不是简单地记录数据访问次数
+- LFU 算法是根据数据访问的频率来选择被淘汰数据的，所以 LFU 算法会记录每个数据的访问次数。当一个数据被再次访问时，就会增加该数据的访问次数。不过，访问次数和访问频率还不能完全等同。
+- 访问频率是指在一定时间内的访问次数，也就是说，在计算访问频率时，我们不仅需要记录访问次数，还要记录这些访问是在多长时间内执行的。
+- 要实现 LFU 算法时，我们需要能统计到数据的访问频率，而不是简单地记录数据访问次数
 - LFU 算法的实现可以分成三部分内容，分别是键值对访问频率记录、键值对访问频率初始化和更新，以及 LFU 算法淘汰数据。
 
 - Redis 使用 LFU（Least Frequently Used）算法，通过访问频率计数器来选择淘汰对象。LFU 复用 `redisObject->lru` 字段，将其分为两部分：
@@ -5236,7 +5309,7 @@ unsigned long long estimateObjectIdleTime(robj *o) {
 - LFU 算法的实现可以分成三部分内容：
   1. **键值对访问频率记录**：在 `redisObject->lru` 字段中同时记录访问次数（LOG_C）和访问时间戳（LDT）
   2. **键值对访问频率初始化和更新**：在创建对象时初始化 LFU 信息，在访问键时先执行时间衰减，再执行对数递增
-  3. **LFU 算法淘汰数据**：使用与近似 LRU 算法相同的淘汰池机制，但按照访问频率大小来排序和选择淘汰数据 
+  3. **LFU 算法淘汰数据**：使用与近似 LRU 算法相同的淘汰池机制，但按照访问频率大小来排序和选择淘汰数据
   
 #### 键值对访问频率记录
 
@@ -5266,7 +5339,6 @@ unsigned long long estimateObjectIdleTime(robj *o) {
     - 为了区分不同的访问频率，LFU 算法在实现时采用了按概率增加访问次数的方法
     - 已有访问次数越大的键值对，它的访问次数就越难再增加
     - 这样可以让计数器值更好地反映访问频率的差异
-
 
 #### 键值对访问频率初始化和更新
 
@@ -5612,13 +5684,12 @@ if (server.maxmemory_policy & MAXMEMORY_FLAG_LRU) {
   - LRU：`idle` 表示空闲时间
   - LFU：`idle` 表示逆频率（频率越低，`idle` 越大）
 
-
-
 ### 淘汰池（Eviction Pool）
 
 - Redis 使用淘汰池来维护候选淘汰键，避免每次淘汰都重新采样。
 
 #### 淘汰池结构
+
 - evictionPoolEntry淘汰池结构体：
   - 大小：16 个候选键（`EVPOOL_SIZE = 16`）
   - 排序：按 `idle` 值升序排列（左侧空闲时间短，右侧空闲时间长）
@@ -6212,7 +6283,7 @@ int freeMemoryIfNeededAndSafe(void) {
 
 - 在这一阶段，main 函数会对命令行传入的参数进行解析，并且调用 loadServerConfig 函数，对命令行参数和配置文件中的参数进行合并处理，然后为 Redis 各功能模块的关键参数设置合适的取值，以便 server 能高效地运行。
 - 首先，Redis 在 main 函数中会先调用 initServerConfig 函数，为各种参数设置默认值。接下来，main 函数就会对 Redis 程序启动时的命令行参数进行逐一解析。main 函数会把解析后的参数及参数值保存成字符串，接着，main 函数会调用 loadServerConfig 函数进行第二和第三轮的赋值。
-    - loadServerConfig 函数是在config.c文件中实现的，该函数是以 Redis 配置文件和命令行参数的解析字符串为参数，将配置文件中的所有配置项读取出来，形成字符串。紧接着，loadServerConfig 函数会把解析后的命令行参数，追加到配置文件形成的配置项字符串。那么配置项字符串就同时包含了配置文件中设置的参数，以及命令行设置的参数。
+  - loadServerConfig 函数是在config.c文件中实现的，该函数是以 Redis 配置文件和命令行参数的解析字符串为参数，将配置文件中的所有配置项读取出来，形成字符串。紧接着，loadServerConfig 函数会把解析后的命令行参数，追加到配置文件形成的配置项字符串。那么配置项字符串就同时包含了配置文件中设置的参数，以及命令行设置的参数。
 - 最后，loadServerConfig 函数会进一步调用 loadServerConfigFromString 函数，对配置项字符串中的每一个配置项进行匹配。一旦匹配成功，loadServerConfigFromString 函数就会按照配置项的值设置 server 的参数。
 
 - **目的**：解析命令行参数和配置文件，设置服务器配置
@@ -6226,14 +6297,14 @@ int freeMemoryIfNeededAndSafe(void) {
 ### 初始化 server
 
 - 在完成对运行参数的解析和设置后，main 函数会调用 initServer 函数，对 server 运行时的各种资源进行初始化工作。这主要包括了 server 资源管理所需的数据结构初始化、键值对数据库初始化、server 网络框架初始化等。而在调用完 initServer 后，main 函数还会再次判断当前 server 是否为哨兵模式。如果是哨兵模式，main 函数会调用 sentinelIsRunning 函数，设置启动哨兵模式。否则的话，main 函数会调用 loadDataFromDisk 函数，从磁盘上加载 AOF 或者是 RDB 文件，以便恢复之前的数据。
-    - 可以从 loadDataFromDisk 函数中看到，Redis server 会先读取 AOF；而如果没有 AOF，则再读取 RDB。
+  - 可以从 loadDataFromDisk 函数中看到，Redis server 会先读取 AOF；而如果没有 AOF，则再读取 RDB。
 - 初始化server的大致流程：
-    - Redis server 运行时需要对多种资源进行管理
-        - 比如说，和 server 连接的客户端、从库等，Redis 用作缓存时的替换候选集，以及 server 运行时的状态信息，这些资源的管理信息都会在 initServer 函数中进行初始化。
-    - 在完成资源管理信息的初始化后，initServer 函数会对 Redis 数据库进行初始化。因为一个 Redis 实例可以同时运行多个数据库，所以 initServer 函数会使用一个循环，依次为每个数据库创建相应的数据结构。
-        - 这个代码逻辑是实现在 initServer 函数中，它会为每个数据库执行初始化操作，包括创建全局哈希表，为过期 key、被 BLPOP 阻塞的 key、将被 PUSH 的 key 和被监听的 key 创建相应的信息表。
-    - initServer 函数会为运行的 Redis server 创建事件驱动框架，并开始启动端口监听，用于接收外部请求。
-        - 为了高效处理高并发的外部请求，initServer 在创建的事件框架中，针对每个监听 IP 上可能发生的客户端连接，都创建了监听事件，用来监听客户端连接请求。同时，initServer 为监听事件设置了相应的处理函数 acceptTcpHandler，只要有客户端连接到 server 监听的 IP 和端口，事件驱动框架就会检测到有连接事件发生，然后调用 acceptTcpHandler 函数来处理具体的连接
+  - 1. Redis server 运行时需要对多种资源进行管理
+    - 比如说，和 server 连接的客户端、从库等，Redis 用作缓存时的替换候选集，以及 server 运行时的状态信息，这些资源的管理信息都会在 initServer 函数中进行初始化。
+  - 2. 在完成资源管理信息的初始化后，initServer 函数会对 Redis 数据库进行初始化。因为一个 Redis 实例可以同时运行多个数据库，所以 initServer 函数会使用一个循环，依次为每个数据库创建相应的数据结构。
+    - 这个代码逻辑是实现在 initServer 函数中，它会为每个数据库执行初始化操作，包括创建全局哈希表，为过期 key、被 BLPOP 阻塞的 key、将被 PUSH 的 key 和被监听的 key 创建相应的信息表。
+  - 3. initServer 函数会为运行的 Redis server 创建事件驱动框架，并开始启动端口监听，用于接收外部请求。
+    - 为了高效处理高并发的外部请求，initServer 在创建的事件框架中，针对每个监听 IP 上可能发生的客户端连接，都创建了监听事件，用来监听客户端连接请求。同时，initServer 为监听事件设置了相应的处理函数 acceptTcpHandler，只要有客户端连接到 server 监听的 IP 和端口，事件驱动框架就会检测到有连接事件发生，然后调用 acceptTcpHandler 函数来处理具体的连接
 - **目的**：初始化服务器的所有组件，准备接受客户端连接
 - **主要操作**：
   - **`initServer()`**：核心初始化函数
@@ -6268,6 +6339,7 @@ int freeMemoryIfNeededAndSafe(void) {
   - 清理事件循环（正常情况下不会执行到这里）
 
 ```c
+
 // server.c 第 4095-4331 行
 int main(int argc, char **argv) {
     struct timeval tv;
@@ -6532,18 +6604,20 @@ int main(int argc, char **argv) {
 #### select
 
 - **定义**：`select()` 是最早的 IO 多路复用接口，在 POSIX 标准中定义。
-    - select 函数使用三个集合，表示监听的三类事件，分别是读数据事件（对应readfds集合）、写数据事件（对应writefds集合）和异常事件（对应__exceptfds集合）
-    - fd_set 结构体的定义，其实就是一个 long int 类型的数组，该数组中一共有 32 个元素，每个元素是 32 位，每一位可以用来表示一个文件描述符的状态。select 函数对每一个描述符集合，都可以监听 1024 个描述符。
+  - select 函数使用三个集合，表示监听的三类事件，分别是读数据事件（对应readfds集合）、写数据事件（对应writefds集合）和异常事件（对应__exceptfds集合）
+  - fd_set 结构体的定义，其实就是一个 long int 类型的数组，该数组中一共有 32 个元素，每个元素是 32 位，每一位可以用来表示一个文件描述符的状态。select 函数对每一个描述符集合，都可以监听 1024 个描述符。
     - 1. 在调用 select 函数前，可以先创建好传递给 select 函数的描述符集合，然后再创建监听套接字。而为了让创建的监听套接字能被 select 函数监控，需要把这个套接字的描述符加入到创建好的描述符集合中。
     - 2. 然后可以调用 select 函数，并把创建好的描述符集合作为参数传递给 select 函数。程序在调用 select 函数后，会发生阻塞。而当 select 函数检测到有描述符就绪后，就会结束阻塞，并返回就绪的文件描述符个数。
     - 3. 可以使用一个循环流程, 在描述符集合中查找哪些描述符就绪了,依次对就绪描述符对应的套接字进行读写或异常处理操作
 
 - **函数签名**：
+
 ```c
 #include <sys/select.h>
 int select(int nfds, fd_set *readfds, fd_set *writefds, 
            fd_set *exceptfds, struct timeval *timeout);
 ```
+
 - **参数说明**：
   - `nfds`：需要监视的文件描述符的最大值 + 1
   - `readfds`：可读文件描述符集合
@@ -6555,6 +6629,7 @@ int select(int nfds, fd_set *readfds, fd_set *writefds,
   - 超时：返回 0
   - 错误：返回 -1
 - **使用示例**：
+
 ```c
 fd_set readfds;
 FD_ZERO(&readfds);           // 清空集合
@@ -6564,6 +6639,7 @@ if (ret > 0 && FD_ISSET(sockfd, &readfds)) {
     // sockfd 可读
 }
 ```
+
 - **特点**：
   - **优点**：跨平台，几乎所有操作系统都支持
   - **缺点**：
@@ -6576,14 +6652,16 @@ if (ret > 0 && FD_ISSET(sockfd, &readfds)) {
 
 - **定义**：`poll()` 是 `select()` 的改进版本，解决了文件描述符数量限制的问题。
 - 与select类似，创建 pollfd 数组和监听套接字，并进行绑定，将监听套接字加入 pollfd 数组，并设置其监听读事件，也就是客户端的连接请求，循环调用 poll 函数，检测 pollfd 数组中是否有就绪的文件描述符。和 select 函数相比，poll 函数的改进之处主要就在于允许一次监听超过 1024 个文件描述符。但是当调用了 poll 函数后仍然需要遍历每个文件描述符，检测该描述符是否就绪，然后再进行处理
-    - 如果是连接套接字就绪，这表明是有客户端连接，可以调用 accept 接受连接，并创建已连接套接字，并将其加入 pollfd 数组，并监听读事件
-    - 如果是已连接套接字就绪，这表明客户端有读写请求，调用 recv/send 函数处理读写请求
+  - 如果是连接套接字就绪，这表明是有客户端连接，可以调用 accept 接受连接，并创建已连接套接字，并将其加入 pollfd 数组，并监听读事件
+  - 如果是已连接套接字就绪，这表明客户端有读写请求，调用 recv/send 函数处理读写请求
 
 - **函数签名**：
+
 ```c
 #include <poll.h>
 int poll(struct pollfd *fds, nfds_t nfds, int timeout);
 ```
+
 - **参数说明**：
   - `fds`：`pollfd` 结构体数组，每个元素包含文件描述符和关注的事件
   - `nfds`：数组元素个数
@@ -6599,7 +6677,9 @@ struct pollfd {
     short revents;  // 返回的事件（由内核填充）
 };
 ```
+
 - **使用示例**：
+
 ```c
 struct pollfd fds[1];
 fds[0].fd = sockfd;
@@ -6609,6 +6689,7 @@ if (ret > 0 && (fds[0].revents & POLLIN)) {
     // sockfd 可读
 }
 ```
+
 - **特点**：
   - **优点**：
     - 没有文件描述符数量限制（理论上只受系统资源限制）
@@ -6622,7 +6703,7 @@ if (ret > 0 && (fds[0].revents & POLLIN)) {
 
 - **定义**：`epoll()` 是 Linux 特有的 IO 多路复用接口，是 `select()` 和 `poll()` 的高效替代方案。、
 - 对于 epoll 机制来说，需要先调用 epoll_create 函数，创建一个 epoll 实例。
-    - 这个 epoll 实例内部维护了两个结构，分别是记录要监听的文件描述符和已经就绪的文件描述符，而对于已经就绪的文件描述符来说，它们会被返回给用户程序进行处理。
+  - 这个 epoll 实例内部维护了两个结构，分别是记录要监听的文件描述符和已经就绪的文件描述符，而对于已经就绪的文件描述符来说，它们会被返回给用户程序进行处理。
 - 在创建了 epoll 实例后，需要再使用 epoll_ctl 函数，给被监听的文件描述符添加监听事件类型，以及使用 epoll_wait 函数获取就绪的文件描述符。
 - 最后根据 epoll_wait 函数返回的已就绪描述符进行对应的事件处理，不用像使用 select 和 poll 一样，遍历查询哪些文件描述符已经就绪了。
 
@@ -6630,18 +6711,20 @@ if (ret > 0 && (fds[0].revents & POLLIN)) {
   - `epoll_create()`：创建一个 epoll 实例，返回文件描述符
   - `epoll_ctl()`：向 epoll 实例中添加、修改或删除文件描述符
   - `epoll_wait()`：等待文件描述符就绪
-- **函数签名**：
+- **函数签名**
+
 ```c
 #include <sys/epoll.h>
 int epoll_create(int size);  // size 是提示值，Linux 2.6.8 后忽略
 int epoll_ctl(int epfd, int op, int fd, struct epoll_event *event);
 int epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout);
 ```
+
 - **epoll_event 结构体**：
 - 使用 epoll_event 结构体，来记录待监听的文件描述符及其监听的事件类型，其中包含了 epoll_data_t 联合体变量，以及整数类型的 events 变量。epoll_data_t 联合体中有记录文件描述符的成员变量 fd，而 events 变量会取值使用不同的宏定义值，来表示 epoll_data_t 变量中的文件描述符所关注的事件类型：
-    - EPOLLIN：读事件，表示文件描述符对应套接字有数据可读。
-    - EPOLLOUT：写事件，表示文件描述符对应套接字有数据要写。
-    - EPOLLERR：错误事件，表示文件描述符对于套接字出错。
+  - 1. EPOLLIN：读事件，表示文件描述符对应套接字有数据可读。
+  - 2. EPOLLOUT：写事件，表示文件描述符对应套接字有数据要写。
+  - 3. EPOLLERR：错误事件，表示文件描述符对于套接字出错。
 
 ```c
 struct epoll_event {
@@ -6655,7 +6738,9 @@ typedef union epoll_data {
     uint64_t u64;
 } epoll_data_t;
 ```
+
 - **使用示例**：
+
 ```c
 int epfd = epoll_create(1024);
 struct epoll_event event;
@@ -6671,6 +6756,7 @@ for (int i = 0; i < ret; i++) {
     }
 }
 ```
+
 - **特点**：
   - **优点**：
     - 没有文件描述符数量限制
@@ -6733,54 +6819,53 @@ for (int i = 0; i < ret; i++) {
 ### 为什么 Redis 不使用 Proactor？
 
 - 1. **平台支持限制**：
-   - **Linux 异步 IO 支持不完善**：Linux 的异步 IO（AIO）实现存在诸多问题
-     - `aio_read()` 和 `aio_write()` 只对直接 IO（O_DIRECT）有效，对普通文件描述符支持不佳
-     - 网络套接字的异步 IO 支持不完整，很多情况下会退化为同步 IO
-     - AIO 的实现存在性能问题和 bug
-   - **跨平台兼容性**：Proactor 模式主要依赖操作系统的异步 IO 支持
-     - Windows 的 IOCP（I/O Completion Port）是典型的 Proactor 实现，但 Redis 主要运行在 Linux 上
-     - 不同平台的异步 IO API 差异很大，难以统一封装
+  - **Linux 异步 IO 支持不完善**：Linux 的异步 IO（AIO）实现存在诸多问题
+    - `aio_read()` 和 `aio_write()` 只对直接 IO（O_DIRECT）有效，对普通文件描述符支持不佳
+    - 网络套接字的异步 IO 支持不完整，很多情况下会退化为同步 IO
+    - AIO 的实现存在性能问题和 bug
+  - **跨平台兼容性**：Proactor 模式主要依赖操作系统的异步 IO 支持
+    - Windows 的 IOCP（I/O Completion Port）是典型的 Proactor 实现，但 Redis 主要运行在 Linux 上
+    - 不同平台的异步 IO API 差异很大，难以统一封装
 
 - 2. **Reactor 模式已足够高效**：
-   - **epoll 性能优异**：在 Linux 上，`epoll()` 配合 Reactor 模式已经能够实现非常高的性能
-     - `epoll()` 是 O(1) 复杂度，只返回就绪的文件描述符
-     - 单线程事件驱动可以处理数万并发连接
-   - **实现简单**：Reactor 模式使用同步 IO，代码逻辑清晰，易于理解和维护
-     - 事件处理函数直接调用 `read()`/`write()`，流程直观
-     - 错误处理简单，不需要处理异步 IO 的复杂状态
+  - **epoll 性能优异**：在 Linux 上，`epoll()` 配合 Reactor 模式已经能够实现非常高的性能
+    - `epoll()` 是 O(1) 复杂度，只返回就绪的文件描述符
+    - 单线程事件驱动可以处理数万并发连接
+  - **实现简单**：Reactor 模式使用同步 IO，代码逻辑清晰，易于理解和维护
+    - 事件处理函数直接调用 `read()`/`write()`，流程直观
+    - 错误处理简单，不需要处理异步 IO 的复杂状态
 
 - 3. **Redis 的业务特点**：
-   - **内存操作为主**：Redis 的主要操作都在内存中完成，IO 操作相对较少
-     - 命令执行速度很快，IO 不是主要瓶颈
-     - 网络 IO 的延迟对整体性能影响较小
-   - **单线程模型**：Redis 采用单线程事件驱动模型，Reactor 模式更符合这种设计
-     - 避免了异步 IO 带来的复杂状态管理
-     - 避免了多线程环境下的同步问题
+  - **内存操作为主**：Redis 的主要操作都在内存中完成，IO 操作相对较少
+    - 命令执行速度很快，IO 不是主要瓶颈
+    - 网络 IO 的延迟对整体性能影响较小
+  - **单线程模型**：Redis 采用单线程事件驱动模型，Reactor 模式更符合这种设计
+    - 避免了异步 IO 带来的复杂状态管理
+    - 避免了多线程环境下的同步问题
 
 - 4. **代码复杂度和维护成本**：
-   - **异步 IO 的复杂性**：Proactor 模式需要处理异步 IO 的复杂状态
-     - 需要管理 IO 操作的上下文信息
-     - 错误处理更加复杂（异步错误通知）
-     - 调试和问题排查更困难
-   - **统一接口困难**：不同平台的异步 IO API 差异很大
-     - Windows 的 IOCP、Linux 的 AIO、BSD 的 kqueue 异步模式，API 完全不同
-     - 难以像 Reactor 模式那样提供统一的封装接口
+  - **异步 IO 的复杂性**：Proactor 模式需要处理异步 IO 的复杂状态
+    - 需要管理 IO 操作的上下文信息
+    - 错误处理更加复杂（异步错误通知）
+    - 调试和问题排查更困难
+  - **统一接口困难**：不同平台的异步 IO API 差异很大
+    - Windows 的 IOCP、Linux 的 AIO、BSD 的 kqueue 异步模式，API 完全不同
+    - 难以像 Reactor 模式那样提供统一的封装接口
 
 - 5. **实际性能考虑**：
-   - **网络 IO 的特点**：对于网络 IO，Reactor 模式已经能够充分利用系统资源
-     - 非阻塞 IO + epoll 已经能够实现高效的并发处理
-     - 异步 IO 的优势主要体现在磁盘 IO 上，对网络 IO 的提升有限
-   - **Redis 的使用场景**：Redis 主要用于缓存和消息队列，网络 IO 延迟要求不是极端严格
-     - 不需要为了微小的性能提升而引入复杂的异步 IO 实现
-
+  - **网络 IO 的特点**：对于网络 IO，Reactor 模式已经能够充分利用系统资源
+    - 非阻塞 IO + epoll 已经能够实现高效的并发处理
+    - 异步 IO 的优势主要体现在磁盘 IO 上，对网络 IO 的提升有限
+  - **Redis 的使用场景**：Redis 主要用于缓存和消息队列，网络 IO 延迟要求不是极端严格
+    - 不需要为了微小的性能提升而引入复杂的异步 IO 实现
 
 ## Redis ae 事件驱动框架
 
 - Redis 的 ae（An Event-driven programming library）框架是一个简单的事件驱动编程库，封装了不同平台的 IO 多路复用机制，提供了统一的事件处理接口。为了适配不同的操作系统，Redis 对不同操作系统实现的网络 IO 多路复用函数，都进行了统一的封装，封装后的代码分别通过以下四个文件中实现：
-    - ae_epoll.c，对应 Linux 上的 IO 复用函数 epoll；
-    - ae_evport.c，对应 Solaris 上的 IO 复用函数 evport；
-    - ae_kqueue.c，对应 macOS 或 FreeBSD 上的 IO 复用函数 kqueue；
-    - ae_select.c，对应 Linux（或 Windows）的 IO 复用函数 select。
+  - ae_epoll.c，对应 Linux 上的 IO 复用函数 epoll；
+  - ae_evport.c，对应 Solaris 上的 IO 复用函数 evport；
+  - ae_kqueue.c，对应 macOS 或 FreeBSD 上的 IO 复用函数 kqueue；
+  - ae_select.c，对应 Linux（或 Windows）的 IO 复用函数 select。
 
 ### ae 框架的设计思想
 
@@ -6797,12 +6882,12 @@ for (int i = 0; i < ret; i++) {
 ```c
 // ae.h 第 97-109 行
 typedef struct aeEventLoop {
-    int maxfd;   /* highest file descriptor currently registered */
-    int setsize; /* max number of file descriptors tracked */
+    int maxfd;   //当前注册的最大文件描述符（用于 select）
+    int setsize; //最大文件描述符数量
     long long timeEventNextId;
     time_t lastTime;     /* Used to detect system clock skew */
-    aeFileEvent *events; /* Registered events */
-    aeFiredEvent *fired; /* Fired events */
+    aeFileEvent *events; // 表示 IO 事件
+    aeFiredEvent *fired; //已触发的事件数组
     aeTimeEvent *timeEventHead; // 时间事件链表头
     int stop; // 停止标识
     void *apidata; /* This is used for polling API specific data */
@@ -6824,11 +6909,11 @@ typedef struct aeEventLoop {
 
 - `aeCreateEventLoop()` 是创建和初始化事件循环的函数，负责分配内存、初始化数据结构，并创建平台相关的 IO 多路复用实例。
 - 参数 setsize 的大小，其实是由 server 结构的 maxclients 变量和宏定义 CONFIG_FDSET_INCR 共同决定的。其中，maxclients 变量的值大小，可以在 Redis 的配置文件 redis.conf 中进行定义，默认值是 1000。而宏定义 CONFIG_FDSET_INCR 的大小，等于宏定义 CONFIG_MIN_RESERVED_FDS 的值再加上 96
-    - 事件驱动框架监听的 IO 事件数组大小就等于参数 setsize，这样决定了和 Redis server 连接的客户端数量
+  - 事件驱动框架监听的 IO 事件数组大小就等于参数 setsize，这样决定了和 Redis server 连接的客户端数量
 
 - 1. aeCreateEventLoop 函数会创建一个 aeEventLoop 结构体类型的变量 eventLoop。然后，该函数会给 eventLoop 的成员变量分配内存空间，比如，按照传入的参数 setsize，给 IO 事件数组和已触发事件数组分配相应的内存空间。此外，该函数还会给 eventLoop 的成员变量赋初始值。
 - 2. aeCreateEventLoop 函数会调用 aeApiCreate 函数。aeApiCreate 函数就会调用 epoll_create 创建 epoll 实例，同时会创建 epoll_event 结构的数组，数组大小等于参数 setsize。
-    - aeApiCreate 函数是把创建的 epoll 实例描述符和 epoll_event 数组，保存在了 aeApiState 结构体类型的变量 state，紧接着，aeApiCreate 函数把 state 变量赋值给 eventLoop 中的 apidata。这样一来，eventLoop 结构体中就有了 epoll 实例和 epoll_event 数组的信息，这样就可以用来基于 epoll 创建和处理事件了
+  - aeApiCreate 函数是把创建的 epoll 实例描述符和 epoll_event 数组，保存在了 aeApiState 结构体类型的变量 state，紧接着，aeApiCreate 函数把 state 变量赋值给 eventLoop 中的 apidata。这样一来，eventLoop 结构体中就有了 epoll 实例和 epoll_event 数组的信息，这样就可以用来基于 epoll 创建和处理事件了
 - 3. aeCreateEventLoop 函数会把所有网络 IO 事件对应文件描述符的掩码，初始化为 AE_NONE，表示暂时不对任何事件进行监听
 
 - 它是这样实现的：
@@ -6836,13 +6921,13 @@ typedef struct aeEventLoop {
   - 2. **分配文件事件数组**：分配大小为 `setsize` 的 `aeFileEvent` 数组，索引为文件描述符
   - 3. **分配已触发事件数组**：分配 `aeFiredEvent` 数组，用于存储就绪的事件
   - 4. **初始化基本字段**：
-     - `setsize`：最大文件描述符数量
-     - `lastTime`：当前时间（用于检测系统时钟偏移）
-     - `timeEventHead`：时间事件链表头（初始化为 NULL）
-     - `timeEventNextId`：时间事件 ID 计数器（从 0 开始）
-     - `stop`：停止标志（初始化为 0，表示不停止）
-     - `maxfd`：最大文件描述符（初始化为 -1）
-     - `beforesleep`、`aftersleep`：前置和后置回调（初始化为 NULL）
+    - `setsize`：最大文件描述符数量
+    - `lastTime`：当前时间（用于检测系统时钟偏移）
+    - `timeEventHead`：时间事件链表头（初始化为 NULL）
+    - `timeEventNextId`：时间事件 ID 计数器（从 0 开始）
+    - `stop`：停止标志（初始化为 0，表示不停止）
+    - `maxfd`：最大文件描述符（初始化为 -1）
+    - `beforesleep`、`aftersleep`：前置和后置回调（初始化为 NULL）
   - 5. **创建 IO 多路复用实例**：调用 `aeApiCreate()` 创建平台相关的 IO 多路复用实例（epoll/select/kqueue）
   - 6. **初始化文件事件掩码**：将所有文件事件的掩码初始化为 `AE_NONE`，表示未注册任何事件
   - 7. **错误处理**：如果初始化失败，释放已分配的内存
@@ -6905,9 +6990,10 @@ err:
 #### aeFileEvent 文件事件
 
 - `aeFileEvent` 表示一个文件事件，包含事件类型和处理函数。
-    - mask 是用来表示事件类型的掩码。对于网络通信的事件来说，主要有 AE_READABLE、AE_WRITABLE 和 AE_BARRIER 三种类型事件。框架在分发事件时，依赖的就是结构体中的事件类型；
-    - rfileProc 和 wfileProce 分别是指向 AE_READABLE 和 AE_WRITABLE 这两类事件的处理函数，也就是 Reactor 模型中的 handler。框架在分发事件后，就需要调用结构体中定义的函数进行事件处理；
-    - clientData 是用来指向客户端私有数据的指针。
+  - mask 是用来表示事件类型的掩码。对于网络通信的事件来说，主要有 AE_READABLE、AE_WRITABLE 和 AE_BARRIER 三种类型事件。框架在分发事件时，依赖的就是结构体中的事件类型；
+  - rfileProc 和 wfileProce 分别是指向 AE_READABLE 和 AE_WRITABLE 这两类事件的处理函数，也就是 Reactor 模型中的 handler。框架在分发事件后，就需要调用结构体中定义的函数进行事件处理；
+  - clientData 是用来指向客户端私有数据的指针。
+
 ```c
 // ae.h 第 71-76 行
 typedef struct aeFileEvent {
@@ -6944,9 +7030,9 @@ typedef struct aeFileEvent {
   - 1. **检查文件描述符范围**：确保文件描述符不超过 `setsize` 限制
   - 2. **获取事件结构体**：从 `events` 数组中获取对应文件描述符的事件结构体
   - 3. **调用平台 API**：调用 `aeApiAddEvent()` 将文件描述符添加到 IO 多路复用机制
-     - 在 Linux 上：`aeApiAddEvent()` → `epoll_ctl(EPOLL_CTL_ADD/MOD)`
-     - 在 BSD/macOS 上：`aeApiAddEvent()` → `kevent()`
-     - 在其他系统上：`aeApiAddEvent()` → `FD_SET()`
+    - 在 Linux 上：`aeApiAddEvent()` → `epoll_ctl(EPOLL_CTL_ADD/MOD)`
+    - 在 BSD/macOS 上：`aeApiAddEvent()` → `kevent()`
+    - 在其他系统上：`aeApiAddEvent()` → `FD_SET()`
   - 4. **更新事件掩码**：将新的事件类型合并到现有掩码中
   - 5. **设置处理函数**：根据事件类型（可读/可写）设置相应的处理函数
   - 6. **保存客户端数据**：保存客户端数据指针（通常指向 `client` 结构体）
@@ -7049,8 +7135,6 @@ void aeDeleteFileEvent(aeEventLoop *eventLoop, int fd, int mask)
 }
 ```
 
-
-
 ##### aeGetFileEvents 获取文件事件
 
 - `aeGetFileEvents()` 用于获取文件描述符已注册的事件类型。
@@ -7085,9 +7169,9 @@ int aeGetFileEvents(aeEventLoop *eventLoop, int fd) {
   - 3. **错误处理**：如果接受失败且不是 `EWOULDBLOCK`（非阻塞模式下的正常情况），记录警告日志
   - 4. **记录连接信息**：记录接受的客户端 IP 和端口
   - 5. **处理连接**：调用 `acceptCommonHandler()` 进行通用处理
-     - 创建客户端结构体（`createClient()`）
-     - 设置非阻塞模式
-     - 注册读事件（`aeCreateFileEvent(fd, AE_READABLE, readQueryFromClient, client)`）
+    - 创建客户端结构体（`createClient()`）
+    - 设置非阻塞模式
+    - 注册读事件（`aeCreateFileEvent(fd, AE_READABLE, readQueryFromClient, client)`）
 
 - **调用时机**：
   - 在 `initServer()` 中，为每个监听 IP 的套接字注册了 `AE_READABLE` 事件，处理函数为 `acceptTcpHandler`
@@ -7095,8 +7179,8 @@ int aeGetFileEvents(aeEventLoop *eventLoop, int fd) {
 
 ```c
 // networking.c 第 752-772 行
-// 真正处理redis client连接的回调函数！！
-// 也就是接收TCP连接请求。
+// 真正处理redis client连接的回调函数
+// 也就是接收TCP连接请求
 void acceptTcpHandler(aeEventLoop *el, int fd, void *privdata, int mask) {
     int cport, cfd, max = MAX_ACCEPTS_PER_CALL;
     char cip[NET_IP_STR_LEN];
@@ -7151,12 +7235,6 @@ void readQueryFromClient(aeEventLoop *el, int fd, void *privdata, int mask) {
     // 1. 设置读取长度（默认值）
     readlen = PROTO_IOBUF_LEN;
     
-    /* If this is a multi bulk request, and we are processing a bulk reply
-     * that is large enough, try to maximize the probability that the query
-     * buffer contains exactly the SDS string representing the object, even
-     * at the risk of requiring more read(2) calls. This way the function
-     * processMultiBulkBuffer() can avoid copying buffers to create the
-     * Redis Object representing the argument. */
     // 2. 如果是多批量请求且正在处理大参数，优化读取长度
     //    - 尽量让查询缓冲区包含完整的对象字符串，避免复制缓冲区
     if (c->reqtype == PROTO_REQ_MULTIBULK && c->multibulklen && c->bulklen != -1
@@ -7198,9 +7276,7 @@ void readQueryFromClient(aeEventLoop *el, int fd, void *privdata, int mask) {
         return;
     } else if (c->flags & CLIENT_MASTER) {
         // 7.3 如果是主节点连接，追加到待处理缓冲区
-        /* Append the query buffer to the pending (not applied) buffer
-         * of the master. We'll use this buffer later in order to have a
-         * copy of the string applied by the last command executed. */
+
         c->pending_querybuf = sdscatlen(c->pending_querybuf,
                                         c->querybuf+qblen,nread);
     }
@@ -7228,12 +7304,6 @@ void readQueryFromClient(aeEventLoop *el, int fd, void *privdata, int mask) {
         return;
     }
 
-    /* Time to process the buffer. If the client is a master we need to
-     * compute the difference between the applied offset before and after
-     * processing the buffer, to understand how much of the replication stream
-     * was actually applied to the master state: this quantity, and its
-     * corresponding part of the replication stream, will be propagated to
-     * the sub-slaves and to the replication backlog. */
     // 13. 处理输入缓冲区
     //    - processInputBufferAndReplicate 会解析命令、执行命令、处理复制等
     processInputBufferAndReplicate(c);
@@ -7246,9 +7316,9 @@ void readQueryFromClient(aeEventLoop *el, int fd, void *privdata, int mask) {
   - 3. **预分配缓冲区空间**：使用 `sdsMakeRoomFor()` 为查询缓冲区预分配空间
   - 4. **读取数据**：调用 `read()` 从套接字读取数据到查询缓冲区
   - 5. **处理读取结果**：
-     - 错误（`nread == -1`）：如果是 `EAGAIN` 直接返回，其他错误释放客户端
-     - 连接关闭（`nread == 0`）：释放客户端
-     - 主节点连接：追加到待处理缓冲区
+    - 错误（`nread == -1`）：如果是 `EAGAIN` 直接返回，其他错误释放客户端
+    - 连接关闭（`nread == 0`）：释放客户端
+    - 主节点连接：追加到待处理缓冲区
   - 6. **更新状态**：更新 SDS 长度、最后交互时间、复制偏移量、统计信息
   - 7. **检查缓冲区限制**：如果超过最大长度，释放客户端
   - 8. **处理输入缓冲区**：调用 `processInputBufferAndReplicate()` 解析和执行命令
@@ -7281,6 +7351,18 @@ void sendReplyToClient(aeEventLoop *el, int fd, void *privdata, int mask) {
 ##### writeToClient 实际发送数据
 
 - `writeToClient()` 是实际向客户端发送数据的函数，处理输出缓冲区的发送逻辑。
+- **它是这样实现的**：
+  - 1. **循环发送数据**：只要客户端有待发送的回复，就继续发送
+  - 2. **发送固定缓冲区**：如果固定缓冲区（`c->buf`）有数据，先发送固定缓冲区
+  - 3. **发送回复链表**：如果固定缓冲区为空，发送回复链表（`c->reply`）中的数据
+  - 4. **限制发送量**：每次事件最多发送 `NET_MAX_WRITES_PER_EVENT` 字节，避免单个客户端占用过多时间
+  - 5. **处理写入错误**：
+    - `EAGAIN`：暂时无法写入（非阻塞模式），正常情况
+    - 其他错误：记录日志并释放客户端
+  - 6. **更新状态**：更新最后交互时间、统计信息
+  - 7. **清理工作**：
+    - 如果没有待发送的数据，删除写事件（`aeDeleteFileEvent`）
+    - 如果设置了关闭标志，释放客户端
 
 ```c
 // networking.c 第 999-1089 行
@@ -7340,18 +7422,7 @@ int writeToClient(int fd, client *c, int handler_installed) {
                     serverAssert(c->reply_bytes == 0);
             }
         }
-        /* Note that we avoid to send more than NET_MAX_WRITES_PER_EVENT
-         * bytes, in a single threaded server it's a good idea to serve
-         * other clients as well, even if a very large request comes from
-         * super fast link that is always able to accept data (in real world
-         * scenario think about 'KEYS *' against the loopback interface).
-         *
-         * However if we are over the maxmemory limit we ignore that and
-         * just deliver as much data as it is possible to deliver.
-         *
-         * Moreover, we also send as much as possible if the client is
-         * a slave or a monitor (otherwise, on high-speed traffic, the
-         * replication/output buffer will grow indefinitely) */
+
         // 4. 限制每次事件发送的数据量
         //    - 避免单个客户端占用过多时间，影响其他客户端
         //    - 如果超过内存限制，或者是从节点/监控客户端，则不受限制
@@ -7380,10 +7451,7 @@ int writeToClient(int fd, client *c, int handler_installed) {
     
     // 7. 更新最后交互时间（非主节点客户端）
     if (totwritten > 0) {
-        /* For clients representing masters we don't count sending data
-         * as an interaction, since we always send REPLCONF ACK commands
-         * that take some time to just fill the socket output buffer.
-         * We just rely on data / pings received for timeout detection. */
+
         if (!(c->flags & CLIENT_MASTER)) c->lastinteraction = server.unixtime;
     }
     
@@ -7404,19 +7472,6 @@ int writeToClient(int fd, client *c, int handler_installed) {
 }
 ```
 
-- **它是这样实现的**：
-  - 1. **循环发送数据**：只要客户端有待发送的回复，就继续发送
-  - 2. **发送固定缓冲区**：如果固定缓冲区（`c->buf`）有数据，先发送固定缓冲区
-  - 3. **发送回复链表**：如果固定缓冲区为空，发送回复链表（`c->reply`）中的数据
-  - 4. **限制发送量**：每次事件最多发送 `NET_MAX_WRITES_PER_EVENT` 字节，避免单个客户端占用过多时间
-  - 5. **处理写入错误**：
-     - `EAGAIN`：暂时无法写入（非阻塞模式），正常情况
-     - 其他错误：记录日志并释放客户端
-  - 6. **更新状态**：更新最后交互时间、统计信息
-  - 7. **清理工作**：
-     - 如果没有待发送的数据，删除写事件（`aeDeleteFileEvent`）
-     - 如果设置了关闭标志，释放客户端
-
 #### aeTimeEvent 时间事件
 
 - `aeTimeEvent` 表示一个时间事件，包含触发时间、处理函数等信息。
@@ -7424,7 +7479,7 @@ int writeToClient(int fd, client *c, int handler_installed) {
 ```c
 // ae.h 第 79-88 行
 typedef struct aeTimeEvent {
-    long long id; /* time event identifier. */
+    long long id; //时间事件的唯一标识符
     long when_sec; /* 事件到达的秒级时间戳 seconds */
     long when_ms; /* 事件到达的毫秒级时间戳 milliseconds */
     aeTimeProc *timeProc; // 时间事件触发后的处理函数
@@ -7456,11 +7511,11 @@ typedef struct aeTimeEvent {
   - 1. **生成时间事件 ID**：使用 `timeEventNextId` 作为唯一标识符，并递增
   - 2. **分配内存**：使用 `zmalloc` 分配 `aeTimeEvent` 结构体内存
   - 3. **初始化字段**：
-     - `id`：时间事件 ID
-     - `when_sec`、`when_ms`：计算触发时间（当前时间 + 延迟时间）
-     - `timeProc`：设置处理函数
-     - `finalizerProc`：设置结束回调函数
-     - `clientData`：设置私有数据
+    - `id`：时间事件 ID
+    - `when_sec`、`when_ms`：计算触发时间（当前时间 + 延迟时间）
+    - `timeProc`：设置处理函数
+    - `finalizerProc`：设置结束回调函数
+    - `clientData`：设置私有数据
   - 4. **插入链表**：将时间事件插入到双向链表的头部
   - 5. **返回 ID**：返回时间事件 ID，用于后续删除
 
@@ -7507,8 +7562,8 @@ long long aeCreateTimeEvent(aeEventLoop *eventLoop, long long milliseconds,
   - 1. **遍历链表**：从 `timeEventHead` 开始遍历时间事件链表
   - 2. **查找匹配 ID**：查找 `id` 匹配的时间事件
   - 3. **标记删除**：将时间事件的 `id` 设置为 `AE_DELETED_EVENT_ID`（延迟删除策略）
-     - 不立即删除节点，而是在 `processTimeEvents` 中实际删除
-     - 这样可以避免在遍历链表时删除节点导致的问题
+    - 不立即删除节点，而是在 `processTimeEvents` 中实际删除
+    - 这样可以避免在遍历链表时删除节点导致的问题
   - 4. **返回结果**：找到并标记成功返回 `AE_OK`，未找到返回 `AE_ERR`
 
 ```c
@@ -7542,16 +7597,16 @@ int aeDeleteTimeEvent(aeEventLoop *eventLoop, long long id)
   - 1. **检测系统时钟偏移**：如果系统时钟被调回到过去，强制所有时间事件立即处理
   - 2. **遍历时间事件链表**：从 `timeEventHead` 开始遍历所有时间事件
   - 3. **删除标记为删除的事件**：
-     - 如果事件的 `id` 为 `AE_DELETED_EVENT_ID`，从链表中移除
-     - 调用 `finalizerProc` 结束回调函数（如果设置了）
-     - 释放内存
+    - 如果事件的 `id` 为 `AE_DELETED_EVENT_ID`，从链表中移除
+    - 调用 `finalizerProc` 结束回调函数（如果设置了）
+    - 释放内存
   - 4. **跳过新创建的事件**：跳过在当前迭代中创建的时间事件（避免重复处理）
   - 5. **获取当前时间**：调用 `aeGetTime()` 获取当前时间
   - 6. **检查事件是否到期**：如果当前时间 >= 触发时间，则事件到期
   - 7. **执行处理函数**：调用 `timeProc` 处理函数
   - 8. **根据返回值决定后续操作**：
-     - 如果返回值不是 `AE_NOMORE`：表示需要继续执行，返回值表示下次执行的延迟时间（毫秒），更新触发时间
-     - 如果返回值是 `AE_NOMORE`：表示事件执行完毕，标记为删除
+    - 如果返回值不是 `AE_NOMORE`：表示需要继续执行，返回值表示下次执行的延迟时间（毫秒），更新触发时间
+    - 如果返回值是 `AE_NOMORE`：表示事件执行完毕，标记为删除
 
 ```c
 // ae.c 第 274-352 行
@@ -7651,6 +7706,7 @@ static int processTimeEvents(aeEventLoop *eventLoop) {
   - 3. 执行前置回调：如果设置了 `beforesleep` 回调，在每次循环前执行
   - 4. 处理事件：调用 `aeProcessEvents()` 处理所有类型的事件
   - 5. 循环继续：如果 `stop` 标志为 0，继续下一轮循环
+
 ```c
 // ae.c 第 521-530 行
 /**
@@ -7714,30 +7770,18 @@ void aeMain(aeEventLoop *eventLoop) {
 
 ```c
 // server.c 第 1392-1444 行
-/* This function gets called every time Redis is entering the
- * main loop of the event driven library, that is, before to sleep
- * for ready file descriptors. */
 void beforeSleep(struct aeEventLoop *eventLoop) {
     UNUSED(eventLoop);
-
-    /* Call the Redis Cluster before sleep function. Note that this function
-     * may change the state of Redis Cluster (from ok to fail or vice versa),
-     * so it's a good idea to call it before serving the unblocked clients
-     * later in this function. */
     // 1. 处理集群相关操作
     //    - 处理故障转移、更新集群状态、保存配置等
     if (server.cluster_enabled) clusterBeforeSleep();
 
-    /* Run a fast expire cycle (the called function will return
-     * ASAP if a fast cycle is not needed). */
     // 2. 快速过期键清理
     //    - 运行快速过期周期，清理过期键
     //    - 只在主节点上执行（server.masterhost == NULL）
     if (server.active_expire_enabled && server.masterhost == NULL)
         activeExpireCycle(ACTIVE_EXPIRE_CYCLE_FAST);
 
-    /* Send all the slaves an ACK request if at least one client blocked
-     * during the previous event loop iteration. */
     // 3. 处理复制相关操作
     //    - 如果在上一次事件循环迭代中有客户端被阻塞，向所有从节点发送 ACK 请求
     if (server.get_ack_from_slaves) {
@@ -7752,39 +7796,29 @@ void beforeSleep(struct aeEventLoop *eventLoop) {
         server.get_ack_from_slaves = 0;
     }
 
-    /* Unblock all the clients blocked for synchronous replication
-     * in WAIT. */
     // 4. 处理同步复制的客户端
     //    - 解除所有因同步复制（WAIT 命令）而阻塞的客户端
     if (listLength(server.clients_waiting_acks))
         processClientsWaitingReplicas();
 
-    /* Check if there are clients unblocked by modules that implement
-     * blocking commands. */
     // 5. 处理模块阻塞的客户端
     //    - 检查是否有被模块实现的阻塞命令解除阻塞的客户端
     moduleHandleBlockedClients();
 
-    /* Try to process pending commands for clients that were just unblocked. */
     // 6. 处理刚解除阻塞的客户端
     //    - 尝试处理刚解除阻塞的客户端的待处理命令
     if (listLength(server.unblocked_clients))
         processUnblockedClients();
 
-    /* Write the AOF buffer on disk */
     // 7. 刷新 AOF 缓冲区到磁盘
     //    - 将 AOF 缓冲区中的数据写入磁盘
     flushAppendOnlyFile(0);
 
-    /* Handle writes with pending output buffers. */
     // 8. 处理待写入的客户端
     //    - 处理有待发送输出缓冲区的客户端
     //    - 这是 beforeSleep 中最重要的操作之一
     handleClientsWithPendingWrites();
 
-    /* Before we are going to sleep, let the threads access the dataset by
-     * releasing the GIL. Redis main thread will not touch anything at this
-     * time. */
     // 9. 释放模块的 GIL（Global Interpreter Lock）
     //    - 在进入休眠前，让模块线程访问数据集
     if (moduleCount()) moduleReleaseGIL();
@@ -7809,19 +7843,18 @@ void beforeSleep(struct aeEventLoop *eventLoop) {
   - **提高性能**：如果数据能够一次性发送完，就不需要等待写事件，减少延迟
   - **优化资源使用**：减少事件注册的数量，降低事件循环的负担
 
-
 - **它是这样实现的**：
   - 1. **遍历待写入客户端列表**：从 `server.clients_pending_write` 列表中遍历所有待写入的客户端
   - 2. **清除标志并移除**：清除客户端的 `CLIENT_PENDING_WRITE` 标志，并从列表中移除
   - 3. **检查客户端保护状态**：如果客户端被保护（`CLIENT_PROTECTED`），跳过处理
   - 4. **尝试同步写入**：调用 `writeToClient()` 尝试同步写入数据
-     - `handler_installed` 参数为 0，表示写事件处理器尚未安装
-     - 如果数据能够一次性发送完，就不需要注册写事件
+    - `handler_installed` 参数为 0，表示写事件处理器尚未安装
+    - 如果数据能够一次性发送完，就不需要注册写事件
   - 5. **注册写事件（如果需要）**：
-     - 如果同步写入后仍有待发送的数据，需要注册写事件
-     - 如果 AOF 策略是 `always`，设置 `AE_BARRIER` 标志，确保在同一个事件循环迭代中不会同时处理读和写事件
-     - 注册写事件，处理函数为 `sendReplyToClient`
-     - 如果注册失败，异步释放客户端
+    - 如果同步写入后仍有待发送的数据，需要注册写事件
+    - 如果 AOF 策略是 `always`，设置 `AE_BARRIER` 标志，确保在同一个事件循环迭代中不会同时处理读和写事件
+    - 注册写事件，处理函数为 `sendReplyToClient`
+    - 如果注册失败，异步释放客户端
 
 ```c
 // networking.c 第 1103-1143 行
@@ -7843,13 +7876,10 @@ int handleClientsWithPendingWrites(void) {
         c->flags &= ~CLIENT_PENDING_WRITE;
         listDelNode(server.clients_pending_write, ln);
 
-        /* If a client is protected, don't do anything,
-         * that may trigger write error or recreate handler. */
         // 3. 如果客户端被保护，跳过处理
         //    - 被保护的客户端不应该触发写错误或重新创建处理器
         if (c->flags & CLIENT_PROTECTED) continue;
 
-        /* Try to write buffers to the client socket. */
         // 4. 尝试同步写入数据到客户端套接字
         //    - handler_installed 参数为 0，表示写事件处理器尚未安装
         //    - 如果写入成功且数据发送完毕，writeToClient 会返回 C_OK
@@ -7862,11 +7892,6 @@ int handleClientsWithPendingWrites(void) {
         if (clientHasPendingReplies(c)) {
             int ae_flags = AE_WRITABLE;
             
-            /* For the fsync=always policy, we want that a given FD is never
-             * served for reading and writing in the same event loop iteration,
-             * so that in the middle of receiving the query, and serving it
-             * to the client, we'll call beforeSleep() that will do the
-             * actual fsync of AOF to disk. AE_BARRIER ensures that. */
             // 5.1 如果 AOF 策略是 always，设置 AE_BARRIER 标志
             //     - 确保在同一个事件循环迭代中，不会同时处理读和写事件
             //     - 这样可以在接收查询和服务客户端之间调用 beforeSleep() 执行 AOF fsync
@@ -7908,14 +7933,15 @@ int handleClientsWithPendingWrites(void) {
   - 2. **情况二和情况三判断**：如果有 IO 事件或需要处理时间事件，进入处理流程
   - 3. **查找最近时间事件**：如果设置了 `AE_TIME_EVENTS`，查找最近的时间事件用于计算超时时间
   - 4. **计算超时时间**：
-     - 如果有时间事件，计算距离最近时间事件的等待时间
-     - 如果没有时间事件，根据 `AE_DONT_WAIT` 标志决定是否阻塞等待
+    - 如果有时间事件，计算距离最近时间事件的等待时间
+    - 如果没有时间事件，根据 `AE_DONT_WAIT` 标志决定是否阻塞等待
   - 5. **捕获网络事件**：调用 `aeApiPoll()` 等待事件就绪（封装了 `epoll_wait`/`select`/`kqueue`）
   - 6. **执行后置回调**：在 IO 多路复用休眠后执行 `aftersleep` 回调
   - 7. **处理文件事件**：遍历就绪的文件事件，调用相应的事件处理函数
-     - 正常情况下：先处理读事件，再处理写事件
-     - 如果设置了 `AE_BARRIER`：先处理写事件，再处理读事件（用于在回复客户端前先持久化数据）
+    - 正常情况下：先处理读事件，再处理写事件
+    - 如果设置了 `AE_BARRIER`：先处理写事件，再处理读事件（用于在回复客户端前先持久化数据）
   - 8. **处理时间事件**：调用 `processTimeEvents()` 处理到期的时间事件
+
 ```c
 // ae.c 第 369-493 行
 int aeProcessEvents(aeEventLoop *eventLoop, int flags)
@@ -8320,5 +8346,3 @@ static int aeApiPoll(aeEventLoop *eventLoop, struct timeval *tvp) {
   2. **epoll**（Linux）：高性能，O(1) 复杂度
   3. **kqueue**（BSD/macOS）：类似 epoll 的高性能机制
   4. **select**（其他系统）：备选方案，兼容性最好
-
-
