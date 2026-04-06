@@ -1,6 +1,7 @@
 hexo.extend.filter.register("stylus:renderer", (style) => {
   const themeConfig = hexo.theme.config;
   // google font families
+  const familiesEnabled = themeConfig.font?.enable;
   const articleFamilies = (themeConfig.font?.article ?? [])
     .map((i) => `'${i}'`)
     .join(",");
@@ -15,12 +16,38 @@ hexo.extend.filter.register("stylus:renderer", (style) => {
     .map((i) => `'${i}'`)
     .join(",");
   // custom font families
+  const customFamiliesEnabled = themeConfig.custom_font?.enable;
   const customArticleFamilies = (themeConfig.custom_font?.article ?? [])
     .map((i) => `'${i.name}'`)
     .join(",");
   const customCodeFamilies = (themeConfig.custom_font?.code ?? [])
     .map((i) => `'${i.name}'`)
     .join(",");
+  // giscus iframe needs its own font stylesheet imports.
+  const fontDisplay = "&display=swap";
+  const fontStyles = ":400,400italic,700,700italic";
+  const giscusGoogleFamilies = (
+    themeConfig.font?.enable
+      ? [
+          ...(themeConfig.font?.article ?? []),
+          ...(themeConfig.font?.code ?? []),
+        ]
+      : []
+  )
+    .filter((item) => item)
+    .map((item) => item + fontStyles)
+    .join("|");
+  const giscusGoogleFontCss = giscusGoogleFamilies
+    ? `https://fonts.googleapis.com/css?family=${giscusGoogleFamilies}${fontDisplay}`
+    : "";
+  const giscusCustomFontCss = (
+    themeConfig.custom_font?.enable
+      ? [
+          ...(themeConfig.custom_font?.article ?? []).map((item) => item.css),
+          ...(themeConfig.custom_font?.code ?? []).map((item) => item.css),
+        ]
+      : []
+  ).filter((item, index, array) => item && array.indexOf(item) === index);
 
   // sponsor and article_copyright
   let postHasSponsor = false;
@@ -99,32 +126,43 @@ hexo.extend.filter.register("stylus:renderer", (style) => {
     themeConfig.gitalk?.clientID &&
     themeConfig.gitalk?.clientSecret;
   const hasGiscus = themeConfig.giscus?.enable;
+  const hasUtterances =
+    themeConfig.utterances?.enable && themeConfig.utterances?.repo;
   style
     .define(
       "article-families",
-      articleFamilies.length ? articleFamilies + "," : ""
+      articleFamilies.length && familiesEnabled ? articleFamilies + "," : "",
     )
-    .define("code-families", codeFamilies.length ? codeFamilies + "," : "")
+    .define(
+      "code-families",
+      codeFamilies.length && familiesEnabled ? codeFamilies + "," : "",
+    )
     .define(
       "local-article-families",
       localArticleFamilies.length
         ? localArticleFamilies
-        : "-apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif"
+        : "-apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif",
     )
     .define(
       "local-code-families",
       localCodeFamilies.length
         ? localCodeFamilies
-        : "Menlo, Monaco, Consolas, monospace"
+        : "Menlo, Monaco, Consolas, monospace",
     )
     .define(
       "custom-article-families",
-      customArticleFamilies.length ? customArticleFamilies + "," : ""
+      customArticleFamilies.length && customFamiliesEnabled
+        ? customArticleFamilies + ","
+        : "",
     )
     .define(
       "custom-code-families",
-      customCodeFamilies.length ? customCodeFamilies + "," : ""
+      customCodeFamilies.length && customFamiliesEnabled
+        ? customCodeFamilies + ","
+        : "",
     )
+    .define("giscus-google-font-css", giscusGoogleFontCss)
+    .define("giscus-custom-font-css-count", giscusCustomFontCss.length)
     .define("post-has-sponsor", postHasSponsor)
     .define("post-has-copyright", postHasCopyright)
     .define("post-has-sidebar", postHasSidebar)
@@ -150,80 +188,109 @@ hexo.extend.filter.register("stylus:renderer", (style) => {
     .define("light-red-6", light["--red-6"] || "#fff7f7")
     .define(
       "light-color-red-6-shadow",
-      light["--color-red-6-shadow"] || "rgba(255, 78, 78, 0.6)"
+      light["--color-red-6-shadow"] || "rgba(255, 78, 78, 0.6)",
     )
     .define(
       "light-color-red-3-shadow",
-      light["--color-red-3-shadow"] || "rgba(255, 78, 78, 0.3)"
+      light["--color-red-3-shadow"] || "rgba(255, 78, 78, 0.3)",
     )
-    .define("light-highlight-nav", light["--highlight-nav"] || "#e6e6e6")
+    .define("light-highlight-nav", light["--highlight-nav"] || "#f5f5f5")
     .define(
       "light-highlight-scrollbar",
-      light["--highlight-scrollbar"] || "#d6d6d6"
+      light["--highlight-scrollbar"] || "#d6d6d6",
     )
     .define(
       "light-highlight-background",
-      light["--highlight-background"] || "#f7f7f7"
-    )
-    .define(
-      "light-highlight-current-line",
-      light["--highlight-current-line"] || "#dadada"
+      light["--highlight-background"] || "#fdfdfd",
     )
     .define(
       "light-highlight-selection",
-      light["--highlight-selection"] || "#e9e9e9"
+      light["--highlight-selection"] || "#e9e9e988",
     )
     .define(
       "light-highlight-foreground",
-      light["--highlight-foreground"] || "#4d4d4d"
+      light["--highlight-foreground"] || "#24292e",
     )
     .define(
       "light-highlight-comment",
-      light["--highlight-comment"] || "#7d7d7d"
+      light["--highlight-comment"] || "#7d7d7d",
     )
-    .define("light-highlight-red", light["--highlight-red"] || "#c8362b")
-    .define("light-highlight-orange", light["--highlight-orange"] || "#b66014")
+    .define("light-highlight-red", light["--highlight-red"] || "#d73a49")
+    .define("light-highlight-orange", light["--highlight-orange"] || "#e36209")
     .define("light-highlight-yellow", light["--highlight-yellow"] || "#cb911d")
-    .define("light-highlight-green", light["--highlight-green"] || "#2ea52e")
-    .define("light-highlight-aqua", light["--highlight-aqua"] || "#479d9d")
-    .define("light-highlight-blue", light["--highlight-blue"] || "#1973b8")
-    .define("light-highlight-purple", light["--highlight-purple"] || "#7135ac")
+    .define("light-highlight-green", light["--highlight-green"] || "#22863a")
+    .define("light-highlight-aqua", light["--highlight-aqua"] || "#005cc5")
+    .define("light-highlight-blue", light["--highlight-blue"] || "#032f62")
+    .define("light-highlight-purple", light["--highlight-purple"] || "#6f42c1")
+    .define(
+      "light-highlight-deletion",
+      light["--highlight-deletion"] || "#b31d28",
+    )
+    .define(
+      "light-highlight-deletion-bg",
+      light["--highlight-deletion-bg"] || "#ffeef0",
+    )
+    .define(
+      "light-highlight-addition",
+      light["--highlight-addition"] || "#22863a",
+    )
+    .define(
+      "light-highlight-addition-bg",
+      light["--highlight-addition-bg"] || "#f0fff4",
+    )
     .define("dark-red-4", dark["--red-4"] || "rgba(255, 208, 208, 0.5)")
     .define("dark-red-5", dark["--red-5"] || "rgba(255,228,228,0.15)")
     .define("dark-red-5-5", dark["--red-5-5"] || "rgba(255,236,236,0.05)")
     .define("dark-red-6", dark["--red-6"] || "rgba(255, 243, 243, 0.2)")
-    .define("dark-highlight-nav", dark["--highlight-nav"] || "#2e353f")
+    .define("dark-highlight-nav", dark["--highlight-nav"] || "#222830")
     .define(
       "dark-highlight-scrollbar",
-      dark["--highlight-scrollbar"] || "#454d59"
+      dark["--highlight-scrollbar"] || "#454d59",
     )
     .define(
       "dark-highlight-background",
-      dark["--highlight-background"] || "#22272e"
-    )
-    .define(
-      "dark-highlight-current-line",
-      dark["--highlight-current-line"] || "#393939"
+      dark["--highlight-background"] || "#1e2027",
     )
     .define(
       "dark-highlight-selection",
-      dark["--highlight-selection"] || "#515151"
+      dark["--highlight-selection"] || "#51515155",
     )
     .define(
       "dark-highlight-foreground",
-      dark["--highlight-foreground"] || "#cccccc"
+      dark["--highlight-foreground"] || "#c9d1d9",
     )
-    .define("dark-highlight-comment", dark["--highlight-comment"] || "#999999")
-    .define("dark-highlight-red", dark["--highlight-red"] || "#f47067")
-    .define("dark-highlight-orange", dark["--highlight-orange"] || "#f69d50")
+    .define("dark-highlight-comment", dark["--highlight-comment"] || "#8b949e")
+    .define("dark-highlight-red", dark["--highlight-red"] || "#ff7b72")
+    .define("dark-highlight-orange", dark["--highlight-orange"] || "#ffa657")
     .define("dark-highlight-yellow", dark["--highlight-yellow"] || "#ffcc66")
-    .define("dark-highlight-green", dark["--highlight-green"] || "#99cc99")
-    .define("dark-highlight-aqua", dark["--highlight-aqua"] || "#66cccc")
-    .define("dark-highlight-blue", dark["--highlight-blue"] || "#54b6ff")
-    .define("dark-highlight-purple", dark["--highlight-purple"] || "#dcbdfb")
+    .define("dark-highlight-green", dark["--highlight-green"] || "#7ee787")
+    .define("dark-highlight-aqua", dark["--highlight-aqua"] || "#a5d6ff")
+    .define("dark-highlight-blue", dark["--highlight-blue"] || "#79c0ff")
+    .define("dark-highlight-purple", dark["--highlight-purple"] || "#d2a8ff")
+    .define(
+      "dark-highlight-deletion",
+      dark["--highlight-deletion"] || "#ffa198",
+    )
+    .define(
+      "dark-highlight-deletion-bg",
+      dark["--highlight-deletion-bg"] || "#490202",
+    )
+    .define(
+      "dark-highlight-addition",
+      dark["--highlight-addition"] || "#7ee787",
+    )
+    .define(
+      "dark-highlight-addition-bg",
+      dark["--highlight-addition-bg"] || "#04260f",
+    )
 
     .define("has-valine", hasValine)
     .define("has-waline", hasWaline)
     .define("has-gitalk", hasGitalk)
-    .define("has-giscus", hasGiscus);
+    .define("has-giscus", hasGiscus)
+    .define("has-utterances", hasUtterances);
+
+  giscusCustomFontCss.forEach((cssUrl, index) => {
+    style.define(`giscus-custom-font-css-${index}`, cssUrl);
+  });
 });

@@ -1,115 +1,50 @@
-<% if (page.type == 404) { %>
+<%_ if (page.type == 404) { _%>
   <%- partial('404', {post: page}) %>
-<% } else { %>
+<%_ } else { _%>
   <!DOCTYPE html>
   <html <% if (page.lang) { %>lang="<%- page.lang %>" <% } else if (config.language) { %>lang="<%- config.language %>" <% } %> 
-    <% if (theme.dark_mode.enable === true) { %>
+    <%_ if (theme.dark_mode.enable === true) { _%>
       data-theme-mode="true"
-    <% } else if (theme.dark_mode.enable === 'auto') { %>
+    <%_ } else if (theme.dark_mode.enable === 'auto') { _%>
       data-theme-mode="auto"
-    <% } else if (theme.dark_mode.enable === false) { %>
+    <%_ } else if (theme.dark_mode.enable === false) { _%>
       data-theme-mode="false"
-    <% } %>
+    <%_ } _%>
   >
   <%- partial('_partial/head', {post: page}) %>
   <body>
-    <% if (theme.injector.body_begin) { %>
+    <%_ if (theme.injector.body_begin) { _%>
       <%- render(theme.injector.body_begin, 'html'); %>
-    <% } %>
-    <script>
-      const cdnPath = "/live2d";
-        // "https://cdn.jsdelivr.net/gh/Chieko3020/Chieko3020.github.io@main/source/live2d";
-      const config = {
-        // 资源路径
-        path: {
-          homePath: "/",
-          modelPath: cdnPath + "/Resources/",
-          cssPath: cdnPath + "/waifu.css",
-          tipsJsonPath: cdnPath + "/waifu-tips.json",
-          tipsJsPath: cdnPath + "/waifu-tips.js",
-          live2dCorePath: cdnPath + "/Core/live2dcubismcore.js",
-          live2dSdkPath: cdnPath + "/live2d-sdk.js",
-        },
-        // 工具栏
-        tools: [
-          "hitokoto",
-          // "asteroids",
-          "express",
-          "switch-model",
-          "switch-texture",
-          "photo",
-          "info",
-          "quit",
-        ],
-        // 模型拖拽
-        drag: {
-          enable: true,
-          direction: ["x", "y"],
-        },
-        // 模型切换(order: 顺序切换，random: 随机切换)
-        switchType: "order",
-      };
-
-      // 加载资源并初始化
-      if (screen.width >= 768) {
-        Promise.all([
-          loadExternalResource(config.path.cssPath, "css"),
-          loadExternalResource(config.path.live2dCorePath, "js"),
-          loadExternalResource(config.path.live2dSdkPath, "js"),
-          loadExternalResource(config.path.tipsJsPath, "js"),
-        ]).then(() => {
-          initWidget({
-            homePath: config.path.homePath,
-            waifuPath: config.path.tipsJsonPath,
-            cdnPath: config.path.modelPath,
-            tools: config.tools,
-            dragEnable: config.drag.enable,
-            dragDirection: config.drag.direction,
-            switchType: config.switchType,
-          });
-        });
-      }
-
-      // 异步加载资源
-      function loadExternalResource(url, type) {
-        return new Promise((resolve, reject) => {
-          let tag;
-          if (type === "css") {
-            tag = document.createElement("link");
-            tag.rel = "stylesheet";
-            tag.href = url;
-          } else if (type === "js") {
-            tag = document.createElement("script");
-            tag.src = url;
-          }
-          if (tag) {
-            tag.onload = () => resolve(url);
-            tag.onerror = () => reject(url);
-            document.head.appendChild(tag);
-          }
-        });
-      }
-    </script>
+    <%_ } _%>
     <%- partial('_partial/loader', {post: page}) %>
     <div id="container">
       <div id="wrap">
         <%- partial('_partial/header', {post: page}) %>
-        <div id="content" aria-label="Page content" <% if (page.sidebar === 'left' || page.sidebar === undefined && theme.sidebar === 'left') { %>class="sidebar-left" <% } %> <% if (page.sidebar === 'right' || page.sidebar === undefined && theme.sidebar === 'right') { %>class="sidebar-right" <% } %>>
+        <%_ /* Backward compatibility */ _%>
+        <%_ let globalSidebar = theme.sidebar; _%>
+        <%_ if (typeof globalSidebar === 'object' && globalSidebar !== null) { _%>
+          <%_ globalSidebar = globalSidebar.position; _%>
+        <%_ } _%>
+        <%_ let pageSidebar = page.sidebar; _%>
+        <%_ if (typeof pageSidebar === 'object' && pageSidebar !== null) { _%>
+          <%_ pageSidebar = pageSidebar.position; _%>
+        <%_ } _%>
+        <div id="content" aria-label="Page content" <% if ((globalSidebar === 'left' && pageSidebar === undefined) || pageSidebar === 'left') { %>class="sidebar-left" <% } %> <% if ((globalSidebar === 'right' && pageSidebar === undefined) || pageSidebar === 'right') { %>class="sidebar-right" <% } %>>
           <%- partial('_partial/sidebar', { post: page }) %>
           <section id="main" aria-label="Main content"><%- body %></section>
         </div>
         <%- partial_lang('_partial/footer', null, { cache: !config.relative_link, lang: page.lang }) %>
-        <% if (theme.top.enable) { %>
+        <%_ if (theme.top.enable) { _%>
           <div class="sidebar-top">
             <div class="sidebar-top-taichi <%- theme.top.icon?.rotate ? 'rotate' : '' %>"></div>
             <div class="arrow-up"></div>
           </div>
-        <% } %>
+        <%_ } _%>
         <div id="mask" class="hide"></div>
       </div>
       <%- partial('_partial/mobile-nav', { post: page }) %>
     </div>
-    <% if (theme.algolia_search.enable || theme.generator_search.enable) { %>
+    <%_ if (theme.algolia_search.enable || theme.generator_search.enable) { _%>
       <div class="site-search">
         <div class="reimu-popup popup">
           <div class="reimu-search">
@@ -122,14 +57,14 @@
             <div id="reimu-hits"></div>
             <div id="reimu-pagination" class="reimu-pagination"></div>
           </div>
-          <img class="reimu-bg" src="<%- url_for('/images/Background_scenery_default.webp', {relative: false}) %>"/>
+          <img class="reimu-bg" src="<%- url_for('/images/reimu.png', {relative: false}) %>" loading="lazy" decoding="async" fetchpriority="low"/>
         </div>
       </div>
-    <% } %>
-    <% if (theme.player.aplayer.enable && !theme.player.meting.enable && theme.player.aplayer.options.fixed === true) { %>
+    <%_ } _%>
+    <%_ if (theme.player.aplayer.enable && !theme.player.meting.enable && theme.player.aplayer.options.fixed === true) { _%>
       <div id="aplayer" theme="var(--color-link)"></div>
-    <% } %>
-    <% if (theme.player.meting.enable && theme.player.aplayer.options.fixed === true) { %>
+    <%_ } _%>
+    <%_ if (theme.player.meting.enable && theme.player.aplayer.options.fixed === true) { _%>
       <meting-js
         theme="var(--color-link)"
         <% if (theme.player.meting.options.id != null) { %>id="<%= theme.player.meting.options.id %>"<% } %>
@@ -146,15 +81,11 @@
         <% if (theme.player.aplayer.options.listFolded != null) { %>list-folded="<%= theme.player.aplayer.options.listFolded %>"<% } %>
         <% if (theme.player.aplayer.options.lrcType != null) { %>lrc-type="<%= theme.player.aplayer.options.lrcType %>"<% } %>
       ></meting-js>
-    <% } %>
-    <!-- Preset OML2D status to sleep before OML2D script loads -->
-    <script>
-      try { localStorage.setItem('oml2d-status', 'sleep') } catch (e) {}
-    </script>
+    <%_ } _%>
     <%- partial('_partial/after-footer', {post: page}) %>
-    <% if (theme.injector.body_end) { %>
+    <%_ if (theme.injector.body_end) { _%>
       <%- render(theme.injector.body_end, 'html'); %>
-    <% } %>
+    <%_ } _%>
   </body>
   </html>
-<% } %>
+<%_ } _%>

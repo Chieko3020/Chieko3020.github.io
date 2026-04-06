@@ -1,4 +1,4 @@
-const { htmlTag } = require("hexo-util");
+const { htmlTag, url_for } = require("hexo-util");
 const moize = require("moize");
 
 let relative_link = true;
@@ -15,15 +15,28 @@ function asyncCssHelper(content) {
         if (!path.endsWith(".css")) {
           path += ".css";
         }
-        return `<link rel="preload" href="${item}" as="style" onload="this.onload=null;this.rel='stylesheet'">`;
+        return `<link rel="preload" href="${url_for.call(
+          this,
+          path
+        )}" as="style" onload="this.onload=null;this.rel='stylesheet'">`;
       } else {
         if (!item.href.endsWith(".css")) item.href += ".css";
-        return htmlTag("link", {
-          rel: "preload",
-          as: "style",
-          onload: "this.onload=null;this.rel='stylesheet'",
-          ...item,
-        });
+        item.href = url_for.call(this, item.href);
+        return (
+          `<link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'"` +
+          Object.entries(item)
+            .map(([key, value]) => {
+              if (value === true) {
+                return ` ${key}`;
+              } else if (value === false) {
+                return "";
+              } else {
+                return ` ${key}="${value}"`;
+              }
+            })
+            .join("") +
+          `>`
+        );
       }
     })
     .join("\n");

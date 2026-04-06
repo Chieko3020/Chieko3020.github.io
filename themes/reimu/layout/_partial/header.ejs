@@ -1,48 +1,50 @@
 <div id="header-nav">
   <nav id="main-nav" aria-label="Primary navigation">
-    <% if (!Array.isArray(theme.menu)) { %>
-      <% for (let i in theme.menu) { %>
-        <span class="main-nav-link-wrap">
+    <%_ if (!Array.isArray(theme.menu)) { _%>
+      <%_ for (let i in theme.menu) { _%>
+        <a class="main-nav-link-wrap" href="<%- url_for_lang(theme.menu[i]) %>">
           <div class="main-nav-icon icon-taichi"></div>
-          <a class="main-nav-link" href="<%- url_for_lang(theme.menu[i]) %>"><%= __(i) %></a>
-        </span>
-      <% } %>
-    <% } else { %>
-      <% for (let item of theme.menu) { %>
-        <span class="main-nav-link-wrap">
-          <div class="main-nav-icon icon <%= (item.icon === 'e62b' && theme.icon_font) || (item.icon === 'f6ad' && !theme.icon_font) || !item.icon ? 'rotate' : '' %>">
-             <% if (item.icon) { %>
-              <% if (item.icon.includes('/') && item.icon.includes('.')) { %>
-                <img src="<%- url_for(item.icon, {relative: false}) %>" alt="<%= item.name %> icon" style="height: 1em;">
-              <% } else { %>
-                <%- `&#x${item.icon};` %>
-              <% } %>
-             <% } else { %>
-              <%- theme.icon_font ? '&#xe62b;' : '&#xf6ad;' %>
-             <% } %>
-          </div>
-          <a class="main-nav-link" href="<%- url_for_lang(item.url) %>"><%= __(item.name) %></a>
-        </span>
-      <% } %>
-    <% } %>
+          <span class="main-nav-link"><%= __(i) %></span>
+        </a>
+      <%_ } _%>
+    <%_ } else { _%>
+      <%_ for (let item of theme.menu) { _%>
+        <a class="main-nav-link-wrap" href="<%- url_for_lang(item.url) %>">
+          <%_ if (item.icon !== false) { _%>
+            <div class="main-nav-icon icon <%= (item.icon === 'e62b' && theme.icon_font) || (item.icon === 'f6ad' && !theme.icon_font) || !item.icon ? 'rotate' : '' %>">
+              <%_ if (item.icon) { _%>
+                <%_ if (item.icon.includes('/') && item.icon.includes('.')) { _%>
+                  <img src="<%- url_for(item.icon, {relative: false}) %>" alt="<%= item.name %> icon" style="height: 1em;">
+                <%_ } else { _%>
+                  <%- `&#x${item.icon};` %>
+                <%_ } _%>
+              <%_ } else { _%>
+                <%- theme.icon_font ? '&#xe62b;' : '&#xf6ad;' %>
+              <%_ } _%>
+            </div>
+          <%_ } _%>
+          <span class="main-nav-link"><%= __(item.name) %></span>
+        </a>
+      <%_ } _%>
+    <%_ } _%>
     <a id="main-nav-toggle" class="nav-icon" aria-label="Toggle navigation" role="button"></a>
   </nav>
   <nav id="sub-nav" aria-label="Secondary navigation">
-    <% if (theme.rss) { %>
+    <%_ if (theme.rss) { _%>
       <a id="nav-rss-link" class="nav-icon" href="<%- url_for(theme.rss) %>" title="<%= __('rss_feed') %>" aria-label="<%= __('rss_feed') %>" target="_blank"></a>
-    <% } %>
-    <% if (theme.algolia_search.enable || theme.generator_search.enable) { %>
+    <%_ } _%>
+    <%_ if (theme.algolia_search.enable || theme.generator_search.enable) { _%>
       <a id="nav-search-btn" class="nav-icon popup-trigger" title="<%= __('search') %>" aria-label="<%= __('search') %>"></a>
-    <% } %>
+    <%_ } _%>
   </nav>
-  <% if (theme.i18n.enable) { %>
-    <% let i18nMap = {
+  <%_ if (theme.i18n.enable) { _%>
+    <%_ let i18nMap = {
       'en': 'English',
       'zh-CN': '简体中文',
       'zh-TW': '正體中文',
       'ja': '日本語',
       'pt-BR': 'Português Brasileiro'
-    } %>
+    } _%>
     <nav id="i18n-nav" aria-label="Language selection">
       <div class="custom-dropdown">
         <div class="select-selected" id="select-selected" role="button" aria-haspopup="listbox" aria-expanded="false" aria-label="Language menu">
@@ -50,9 +52,9 @@
           <span id="selected-lang"><%= i18nMap[post.lang] %></span>
         </div>
         <ul class="select-items" id="select-items" role="listbox" aria-label="Languages">
-          <% for (let i of get_langs()) { %>
+          <%_ for (let i of get_langs()) { _%>
             <li data-value="<%= i %>" role="option" <% if (post.lang === i) { %>class="selected" aria-selected="true"<% } else { %>aria-selected="false"<% } %>><%= i18nMap[i] %></li>
-          <% } %>
+          <%_ } _%>
         </ul>
       </div>
       <script>
@@ -70,9 +72,9 @@
         selectOptions.forEach((item) => {
           item.addEventListener("click", () => {
             const langMap = {};
-            <% for (let i of get_langs()) { %>
+            <%_ for (let i of get_langs()) { _%>
               langMap['<%= i %>'] = '<%= switch_lang(i) %>';
-            <% } %>
+            <%_ } _%>
             selectedLang.textContent = item.textContent;
             selectItems.classList.remove("show");
             selectOptions.forEach((option) => {
@@ -91,68 +93,86 @@
         });
       </script>
     </nav>
-  <% } %>
+  <%_ } _%>
+  <%_ if (theme.triangle_badge.enable) { _%>
+  <a href="<%= theme.triangle_badge.link %>" class="triangle-badge" title="<%= theme.triangle_badge.icon %>" target="_blank" rel="noopener nofollow noreferrer">
+    <div class="icon icon-<%= theme.triangle_badge.icon %> triangle-badge-icon"></div>
+  </a>
+  <%_ } _%>
 </div>
 <header id="header" aria-label="Site header">
-  <% if (post.cover && post.cover.startsWith("rgb")) { %>
+  <%_ let headerImage = post.banner ?? post.cover; _%>
+  <%_ if (headerImage && headerImage.startsWith("rgb")) { _%>
     <picture></picture>
-    <img style="position: absolute;top: 0;left: 0;width: 100%;height: 150%;z-index: -2;display: block;background: <%- post.cover %>;mask: linear-gradient(to top, transparent, #fff 50%);"></img>
-  <% } else if (post.cover) { %>
+    <img style="position: absolute;top: 0;left: 0;width: 100%;height: 180%;z-index: -2;display: block;background: <%- headerImage %>;mask: linear-gradient(to top, transparent, #fff 50%);"></img>
+  <%_ } else if (headerImage) { _%>
     <picture></picture>
-    <img <% if (theme.material_theme.enable) { %>crossorigin="anonymous"<% } %> fetchpriority="high" src="<%- url_for(post.cover, {relative: false}) %>" alt="<%= post.title %>">
-  <% } else if (post.cover == false) { %>
+    <img <% if (theme.material_theme.enable) { %>crossorigin="anonymous"<% } %> fetchpriority="high" src="<%- url_for(headerImage, {relative: false}) %>" alt="<%= post.title %>">
+  <%_ } else if (headerImage == false) { _%>
     <picture></picture>
     <img style="visibility:hidden"></img>
-  <% } else { %>
-    <% if (is_post()) { %>
-      <% if (theme.cover && theme.cover.startsWith("rgb")) { %>
+  <%_ } else { _%>
+    <%_ if (is_post()) { _%>
+      <%_ if (theme.cover && theme.cover.startsWith("rgb")) { _%>
         <picture></picture>
-        <img style="position: absolute;top: 0;left: 0;width: 100%;height: 150%;z-index: -2;display: block;background: <%- theme.cover %>;mask: linear-gradient(to top, transparent, #fff 50%);"></img>
-      <% } else if (theme.cover) { %>
+        <img style="position: absolute;top: 0;left: 0;width: 100%;height: 180%;z-index: -2;display: block;background: <%- theme.cover %>;mask: linear-gradient(to top, transparent, #fff 50%);"></img>
+      <%_ } else if (theme.cover) { _%>
         <picture></picture>
         <img <% if (theme.material_theme.enable) { %>crossorigin="anonymous"<% } %> fetchpriority="high" src="<%- url_for(theme.cover, {relative: false}) %>" alt="<%= post.title %>">
-      <% } else if (theme.cover === false) { %>
+      <%_ } else if (theme.cover === false) { _%>
         <picture></picture>
         <img style="visibility:hidden"></img>
-      <% } else { %>
+      <%_ } else { _%>
         <picture>
-          <% if (theme.banner_srcset.enable) { %>
-            <% for (let i of theme.banner_srcset.srcset) { %>
-              <source media="<%= i.media %>" srcset="<%- url_for(i.src, {relative: false}) %>">
-            <% } %>
+          <%_ if (theme.banner_srcset.enable) { _%>
+            <%_ for (let i of theme.banner_srcset.srcset) { _%>
+              <%_ if (Array.isArray(i.src)) { _%>
+                <%_ for (let srcItem of i.src) { _%>
+                  <source media="<%= i.media %>" srcset="<%- url_for(srcItem, {relative: false}) %>">
+                <%_ } _%>
+              <%_ } else { _%>
+                <source media="<%= i.media %>" srcset="<%- url_for(i.src, {relative: false}) %>">
+              <%_ } _%>
+            <%_ } _%>
             <img <% if (theme.material_theme.enable) { %>crossorigin="anonymous"<% } %> fetchpriority="high" src="<%- url_for(theme.banner, {relative: false}) %>" alt="<%= post.title %>">
-          <% } %>
+          <%_ } _%>
         </picture>
-        <% if (theme.banner_srcset.enable) { %>
+        <%_ if (theme.banner_srcset.enable) { _%>
           <img alt="<%= post.title %>" style="visibility: hidden;">
-        <% } else { %>
+        <%_ } else { _%>
           <img <% if (theme.material_theme.enable) { %>crossorigin="anonymous"<% } %> fetchpriority="high" src="<%- url_for(theme.banner, {relative: false}) %>" alt="<%= post.title %>">
-        <% } %>
-      <% } %>
-    <% } else { %>
+        <%_ } _%>
+      <%_ } _%>
+    <%_ } else { _%>
       <picture>
-        <% if (theme.banner_srcset.enable) { %>
-          <% for (let i of theme.banner_srcset.srcset) { %>
-            <source media="<%= i.media %>" srcset="<%- url_for(i.src, {relative: false}) %>">
-          <% } %>
+        <%_ if (theme.banner_srcset.enable) { _%>
+          <%_ for (let i of theme.banner_srcset.srcset) { _%>
+            <%_ if (Array.isArray(i.src)) { _%>
+              <%_ for (let srcItem of i.src) { _%>
+                <source media="<%= i.media %>" srcset="<%- url_for(srcItem, {relative: false}) %>">
+              <%_ } _%>
+            <%_ } else { _%>
+              <source media="<%= i.media %>" srcset="<%- url_for(i.src, {relative: false}) %>">
+            <%_ } _%>
+          <%_ } _%>
           <img <% if (theme.material_theme.enable) { %>crossorigin="anonymous"<% } %> fetchpriority="high" src="<%- url_for(theme.banner, {relative: false}) %>" alt="<%= post.title %>">
-        <% } %>
+        <%_ } _%>
       </picture>
-      <% if (theme.banner_srcset.enable) { %>
+      <%_ if (theme.banner_srcset.enable) { _%>
         <img alt="<%= post.title %>" style="visibility: hidden;">
-      <% } else { %>
+      <%_ } else { _%>
         <img <% if (theme.material_theme.enable) { %>crossorigin="anonymous"<% } %> fetchpriority="high" src="<%- url_for(theme.banner, {relative: false}) %>" alt="<%= post.title %>">
-      <% } %>
-    <% } %>
-  <% } %>
+      <%_ } _%>
+    <%_ } _%>
+  <%_ } _%>
   <div id="header-outer">
     <div id="header-title">
-      <% if (post.type == '404') { %>
+      <%_ if (post.type == '404') { _%>
         <a href="/" id="logo">
           <h1 data-aos="<%= theme.animation.options.header.title %>"><%= __("not_found.title") %></h1>
         </a>
-      <% } else { %>
-        <% let title;
+      <%_ } else { _%>
+        <%_ let title;
             if (is_archive()) {
               title = __('archives');
             } else if (is_category()) {
@@ -163,19 +183,19 @@
               title = post.title;
             } else {
               title = config.title;
-            } %>
-        <% if (title) { %>
+            } _%>
+        <%_ if (title) { _%>
           <span id="logo">
             <h1 data-aos="<%= theme.animation.options.header.title %>"><%= title %></h1>
           </span>
-        <% } %>
-      <% } %>
-      <% if (post.type == 404) { %>
+        <%_ } _%>
+      <%_ } _%>
+      <%_ if (post.type == 404) { _%>
         <h2 id="subtitle-wrap" data-aos="<%= theme.animation.options.header.subTitle %>">
           <a href="/" id="subtitle"><%= __("not_found.subtitle") %></a>
         </h2>
-      <% } else { %>
-        <% let subtitle;
+      <%_ } else { _%>
+        <%_ let subtitle;
             if (is_archive()) {
               if (is_month()) {
                 subtitle = page.year + '/' + page.month;
@@ -194,15 +214,21 @@
               } else {
                 subtitle = null;
               }
-            } else if (theme.subtitle || config.subtitle) {
-              subtitle = theme.subtitle || config.subtitle;
-            } %>
+            } else if (theme.subtitle && typeof theme.subtitle === 'string') {
+              subtitle = theme.subtitle;
+            } else if (config.subtitle) {
+              subtitle = config.subtitle;
+            } _%>
         <h2 id="subtitle-wrap" data-aos="<%= theme.animation.options.header.subTitle %>">
-          <% if (subtitle) { %>
-            <span id="subtitle"><%- subtitle %></span>
-          <% } %>
+          <%_ if (subtitle) { _%>
+            <%_ if (is_home() && theme.subtitle?.typing?.enable) { _%>
+              <span id="subtitle"><span></span></span>
+            <%_ } else { _%>
+              <span id="subtitle"><%= subtitle %></span>
+            <%_ } _%>
+          <%_ } _%>
         </h2>
-      <% } %>
+      <%_ } _%>
     </div>
   </div>
 </header>

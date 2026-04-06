@@ -12,7 +12,7 @@
 
 简体中文 | [English](https://github.com/D-Sketon/hexo-theme-reimu/blob/main/README.en.md)
 
-<img src="https://cdn.jsdelivr.net/gh/D-Sketon/hexo-theme-reimu@main/_screenshot/Reimu_dark.png"/>
+<img src="https://cdn.jsdelivr.net/gh/D-Sketon/hexo-theme-reimu@main/_screenshot/Reimu.png"/>
 </div>
 
 ---
@@ -22,17 +22,18 @@
 
 本人是车车人，所以制作了这样一款博丽灵梦风格的 Hexo 主题，融合了 [landscape](https://github.com/hexojs/hexo-theme-landscape)、[Tangyuxian](https://github.com/tangyuxian/hexo-theme-tangyuxian) 和 [Shoka](https://github.com/amehime/hexo-theme-shoka) 三个主题
 
-|framework|repository|version|stars|
-|-|-|-|-|
-|[Hexo](https://hexo.io/)|[hexo-theme-reimu](https://github.com/D-Sketon/hexo-theme-reimu)|<img alt="version" src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgithub.com%2FD-Sketon%2Fhexo-theme-reimu%2Fraw%2Fmain%2Fpackage.json&query=%24.version&label=version">|<img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/D-Sketon/hexo-theme-reimu">|
-|[Hugo](https://gohugo.io)|[hugo-theme-reimu](https://github.com/D-Sketon/hugo-theme-reimu)|<img alt="version" src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgithub.com%2FD-Sketon%2Fhugo-theme-reimu%2Fraw%2Fmain%2Fpackage.json&query=%24.version&label=version">|<img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/D-Sketon/hugo-theme-reimu">|
-|[Astro](https://astro.build)|[astro-theme-reimu](https://github.com/D-Sketon/astro-theme-reimu)|<img alt="version" src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgithub.com%2FD-Sketon%2Fastro-theme-reimu%2Fraw%2Fmain%2Fpackage.json&query=%24.version&label=version">|<img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/D-Sketon/astro-theme-reimu">|
+| framework                    | repository                                                         | version                                                                                                                                                                                     | stars                                                                                              |
+| ---------------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| [Hexo](https://hexo.io/)     | [hexo-theme-reimu](https://github.com/D-Sketon/hexo-theme-reimu)   | <img alt="version" src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgithub.com%2FD-Sketon%2Fhexo-theme-reimu%2Fraw%2Fmain%2Fpackage.json&query=%24.version&label=version">  | <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/D-Sketon/hexo-theme-reimu">  |
+| [Hugo](https://gohugo.io)    | [hugo-theme-reimu](https://github.com/D-Sketon/hugo-theme-reimu)   | <img alt="version" src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgithub.com%2FD-Sketon%2Fhugo-theme-reimu%2Fraw%2Fmain%2Fpackage.json&query=%24.version&label=version">  | <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/D-Sketon/hugo-theme-reimu">  |
+| [Astro](https://astro.build) | [astro-theme-reimu](https://github.com/D-Sketon/astro-theme-reimu) | <img alt="version" src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgithub.com%2FD-Sketon%2Fastro-theme-reimu%2Fraw%2Fmain%2Fpackage.json&query=%24.version&label=version"> | <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/D-Sketon/astro-theme-reimu"> |
 
 **欢迎提交 ISSUE 和 PR！**
 
 ## 特性
 
 ### 基础功能
+
 - ✨ 完整的博客功能
 - 🔄 兼容 Hexo6 及以上版本
 - 📱 响应式布局
@@ -40,11 +41,13 @@
 - 🅰️ i18n 支持
 
 ### 代码与数学
+
 - 🖥️ 代码高亮与复制
 - ➗ KaTeX / MathJax3 数学公式支持
 - 📊 Mermaid 流程图支持
 
 ### 搜索与评论
+
 - 🔍 Algolia 搜索集成
 - 🔍 本地搜索集成
 - 💬 多评论系统支持：
@@ -53,12 +56,16 @@
   - Twikoo
   - Gitalk
   - Giscus
+  - Disqus
+  - Utterances
 
 ### 统计与分析
+
 - 📊 文章阅读统计（Valine / Waline）
 - 👥 访客统计（不蒜子）
 
 ### 媒体与交互功能
+
 - 🎵 音乐播放器支持：
   - Aplayer
   - Meting
@@ -70,12 +77,14 @@
 - 👾 Live2D / Live2D-widgets 集成
 
 ### 导航与结构
+
 - 📑 目录导航
 - 🔄 PJAX 支持
 - 🔧 ServiceWorker 实现
 - 📰 RSS 订阅
 
 ### 设计与自定义
+
 - 🎨 图标支持：
   - Iconfont
   - FontAwesome7
@@ -85,6 +94,8 @@
   - 友情链接
   - 热力图
   - 标签轮盘
+  - 标签页
+  - 照片墙
 - 🎨 动态适配主题色
 - 🎨 自定义容器
 - ©️ 文章版权声明
@@ -123,6 +134,26 @@ theme: reimu
 
 为了保证显示正确，请参考 `_example` 在 `source` 中分别建立 `_data`、`about` 和 `friend` 文件夹 （注意：是博客根目录下的 `source` 文件夹，而不是主题中的 `source` ！）
 
+**目录结构示例：**
+
+```
+source/
+├── images/
+│   └── favicon.ico        # 网站图标
+├── _data/
+│   ├── avatar/
+│   │   └── avatar.webp    # 头像文件
+│   ├── covers.yml         # 文章封面 URL 列表
+│   └── covers/            # 文章封面文件夹
+├── about/                 # 关于页面
+│   └── index.md
+├── friend/                # 友链页面
+│   ├── index.md
+│   └── _data.yml          # 友链数据
+└── _posts/                # 文章文件夹
+    └── xxxx.md
+```
+
 #### \_data
 
 - `avatar` 文件夹中存储作者头像，默认命名 `avatar.webp`，可在内层 `_config.yml` 中做如下配置
@@ -150,37 +181,31 @@ avatar: "avatar.webp" # 默认就是在avatar文件夹内寻找，请不要包�
 
 #### 封面
 
-封面显示逻辑如下
+`banner` 和 `cover` 的显示逻辑如下：
 
-- 如果文章的 Front matter 中包含 cover 的 url，则该文章头图和首页缩略图均显示该 url
+- 文章页头图优先使用 Front-matter 的 `banner`；若未设置 `banner`，则兼容使用 `cover`
+- 当 `banner` / `cover` 均未设置时，文章页头图继续读取内层 `_config.yml` 的全局 `cover`，最终回退到全局 `banner`
+- 列表卡片封面优先使用 Front-matter 的 `cover`（仅 URL 生效）；当 `cover` 未设置、为 `false` 或 `rgb(...)` 时，会回退到 `source/_data/covers` 与 `source/_data/covers.yml` 随机图
+- 若随机封面不可用，则回退到全局 `banner`
 
-```yaml
----
-title: Hello World
-cover: https://example.com
----
-```
-
-- 如果文章的 Front matter 中包含 cover 为 `false`，则该文章不显示头图（首页上仍然是随机图片）
+推荐写法（头图与卡片封面分离）：
 
 ```yaml
 ---
 title: Hello World
-cover: false
+banner: https://example.com/post-header.webp
+cover: https://example.com/post-card.webp
 ---
 ```
 
-- 如果文章的 Front matter 中包含 cover 为 `rgb(xxx,xxx,xxx)`，则该文章头图为对应的渐变纯色（首页上仍然是随机图片）
+兼容旧写法（只写 `cover`）：
 
 ```yaml
 ---
 title: Hello World
-cover: rgb(255,117,117)
+cover: https://example.com/cover.webp
 ---
 ```
-
-- 否则查找 `covers` 文件夹和 `covers.yml`，并从中随机挑选图片
-- 若上述文件均不存在，则显示头图
 
 #### 头图
 
@@ -209,7 +234,111 @@ sticky: true
 ---
 ```
 
+#### 文章总结
+
+默认关闭，可选择在副标题或者文章开头显示文章摘要
+
+```yaml
+summary:
+  enable: false
+  style: 'subtitle' # 'subtitle' | 'blockquote'
+```
+
 </details>
+
+<details>
+<summary>侧边栏</summary>
+
+### 侧边栏
+
+#### 侧边栏位置
+
+默认在右边，可在内层 `_config.yml` 中修改
+
+```yaml
+sidebar:
+  position: right # left | right | false
+  menu: true # 是否显示侧边栏菜单按钮，移动端忽略
+  article:
+    show_common: true # 文章页是否显示通用侧边栏，移动端忽略
+```
+
+此外，也可以通过文章的 Front-matter 控制，其优先级高于全局配置
+
+```yaml
+---
+sidebar: left # left | right | false
+---
+```
+
+> 当 sidebar 设置为 false 时，侧边栏将被隐藏，此时 aplayer 播放器和 widgets 小部件将同时无法显示
+
+#### TOC
+
+默认开启，可在内层 `_config.yml` 中修改
+
+```yaml
+toc: true # true | false
+```
+
+此外，也可以通过文章的 Front-matter 控制，其优先级高于全局配置
+
+```yaml
+---
+toc: true # true | false
+---
+```
+
+你还可以通过如下配置对目录进行行为配置
+
+```yaml
+toc_options:
+  list_number: true # 是否显示编号
+  min_depth: 1 # 最小深度
+  max_depth: 6 # 最大深度
+```
+
+#### 社交链接
+
+可在内层 `_config.yml` 中配置侧边栏中的社交链接
+
+```yaml
+social:
+  github: https://github.com/yourname
+  bilibili: https://space.bilibili.com/yourname
+  # weixin: https://example.com/your-weixin-link
+  # qq: https://example.com/your-qq-link
+  tiktok: https://www.tiktok.com/@yourname
+```
+
+#### 侧边栏小部件
+
+可在内层 `_config.yml` 中配置侧边栏小部件
+
+```yaml
+widgets:
+  # - category # 分类
+  # - tag # 标签
+  # - tagcloud # 标签云
+  # - archive # 归档
+  # - recent_posts # 最近文章
+```
+
+此外，可使用如下配置对小部件进行行为配置
+
+```yaml
+archive_type: "monthly" # monthly | yearly，归档类型
+show_count: false # 归档是否显示数量
+tag_limits:  # 标签数量限制
+recent_posts_limits: 5 # 最近文章数量限制
+tagcloud_limits:  # 标签云数量限制
+only_show_capsule_in_index: false # 仅在归档首页展示所有分类和标签胶囊，可提升大量标签/分类下的构建性能
+uppercase_capsule: true # 是否将分类和标签胶囊自动转为大写
+show_update_time: false # 是否展示文章更新时间
+```
+
+</details>
+
 <details>
 <summary>页脚</summary>
 
@@ -229,7 +358,7 @@ footer:
 
 #### ICP 备案
 
-对于托管在中国大陆的网站，可以根据法规要求显示ICP备案信息
+对于托管在中国大陆的网站，可以根据法规要求显示 ICP 备案信息
 
 ```yml
 icp:
@@ -279,12 +408,12 @@ highlight:
 
 ```yaml
 clipboard:
-  success: 
+  success:
     en: Copy successfully (*^▽^*)
     zh-CN: 复制成功 (*^▽^*)
     zh-TW: 複製成功 (*^▽^*)
     ja: コピー成功 (*^▽^*)
-  fail: 
+  fail:
     en: Copy failed (ﾟ⊿ﾟ)ﾂ
     zh-CN: 复制失败 (ﾟ⊿ﾟ)ﾂ
     zh-TW: 複製失敗 (ﾟ⊿ﾟ)ﾂ
@@ -308,7 +437,7 @@ code_block:
 
 ### 站内评论
 
-> 站内评论可以使用 Front matter 中的 `comments` 独立控制每篇文章是否显示评论。  
+> 站内评论可以使用 Front-matter 中的 `comments` 独立控制每篇文章是否显示评论。  
 > 当 `comments` 为 `false` 时不显示评论，`true` 或不填时根据 `_config.yml` 的配置决定是否显示。
 
 > 1.7.0+ 后支持多评论系统同时使用
@@ -333,6 +462,15 @@ valine:
   enable: true
   appId: "your appId"
   appKey: "your appKey"
+  pageSize: 10 # comment list page size
+  avatar: mp # gravatar style https://valine.js.org/#/avatar
+  # lang: zh-cn # deprecated, use html.lang instead
+  placeholder: Just go go # valine comment input placeholder(like: Please leave your footprints )
+  guest_info: nick,mail,link #valine comment header info
+  recordIP: true # whether to record the IP address of the commenters
+  highlight: true # whether to highlight the code blocks
+  visitor: false # whether to display the number of visitors
+  serverURLs: # leancloud server url
 ```
 
 若基于 [Waline](https://waline.js.org/)  
@@ -387,7 +525,17 @@ giscus:
   reactionsEnabled: 1
   emitMetadata: 0
   inputPosition: bottom
+  theme:
+    light: # 可选，支持 giscus 内置主题名或自定义 CSS URL
+    dark: # 可选，支持 giscus 内置主题名或自定义 CSS URL
 ```
+
+说明：
+
+- Giscus 基于 iframe 渲染，无法直接继承站点全局样式，需要通过 `data-theme` 覆盖。
+- 若 `theme.light` / `theme.dark` 使用 URL，主题会校验该地址是否允许 `https://giscus.app` 跨域访问；校验失败会自动回退到内置 `light` / `dark`。
+- 两个 `theme` 留空时，会尝试使用主题内置的 Reimu 风格 CSS（与全站保持一致的鼠标样式、字体和静态 token；`material_theme` 等动态 token 不支持）。
+- 本地 `hexo s`（HTTP 且通常无 CORS 头）与 `github.io` 默认静态资源场景通常无法直接通过 URL 主题校验，建议使用可配置 CORS 的资源域名（例如 jsDelivr 代理）。
 
 若基于 [gitalk](https://gitalk.github.io/)  
 请参考其[官方文档](https://github.com/gitalk/gitalk?tab=readme-ov-file#usage)完成仓库的配置，并在内层 `_config.yml` 中将 `gitalk.enable` 改为 `true`，并填入对应的数据
@@ -403,11 +551,32 @@ gitalk:
   md5: false # 是否使用 md5 加密路径
 ```
 
+若基于 [Disqus](https://disqus.com/)  
+请在内层 `_config.yml` 中将 `disqus.enable` 改为 `true`，并填入自己的 `shortname`
+
+```yml
+disqus:
+  enable: true
+  shortname: "your shortname"
+  count: true # 是否启用评论数量统计
+```
+
+若基于 [utterances](https://utteranc.es/)
+请在内层 `_config.yml` 中将 `utterances.enable` 改为 `true`，并填入自己的 `repo`
+```yml
+utterances:
+  enable: true
+  repo: owner/repo # 这里需要修改为 你的 GitHub 用户名/刚刚创建的，用户保存博客评论的 GitHub 仓库名
+  issue_term: title
+  theme: github-light # 你可以使用 auto 来自动适配深色和浅色主题
+```
 </details>
 <details>
 <summary>站内搜索</summary>
 
 ### 站内搜索
+
+> 注意不要同时开启 Algolia 和 本地搜索
 
 若选择 [Algolia](https://www.algolia.com/)，请安装 [@reimujs/hexo-algoliasearch](https://github.com/D-Sketon/hexo-algoliasearch)
 
@@ -442,6 +611,12 @@ algolia:
 ```yaml
 algolia_search:
   enable: true
+```
+
+并运行以下命令生成索引
+
+```bash
+hexo algolia
 ```
 
 > 1.5.0+ 后主题内置了 `hexo-generator-search`，所以无需再安装 `hexo-generator-search`
@@ -537,9 +712,10 @@ npm install hexo-filter-mermaid-diagrams --save
 ```yaml
 mermaid:
   enable: true
+  zoom: false # 是否启用缩放功能
 ```
 
-并在需要使用 mermaid 的文章的 front-matter 中添加 `mermaid: true`
+并在需要使用 mermaid 的文章的 Front-matter 中添加 `mermaid: true`
 
 ```yaml
 ---
@@ -602,7 +778,7 @@ lang: en
 
 对于 page 的多语言支持，可直接在 `source` 文件夹下新建对应语言的文件夹，并将 `index.md` 放入其中，如 `source/en/about/index.md`。这会生成 `/en/about` 的页面
 
-详情请见 [如何为Hexo添加多语言支持](https://d-sketon.github.io/20250223/hexo-theme-reimu-i18n/)
+详情请见 [如何为 Hexo 添加多语言支持](https://d-sketon.github.io/20250223/hexo-theme-reimu-i18n/)
 
 </details>
 
@@ -622,17 +798,17 @@ icon_font: 4552607_0khxww3tj3q9
 ```yml
 fontawesome:
   high_priority:
-    - src: webcache|@fortawesome/fontawesome-free@6.5.1/css/regular.min.css
-      integrity: sha384-k5640LgghgAohDLPwSqVWa96yQwWouT6wsAL+J1g0CFJVITNKYkIh1XpPLYKQe7Y
-    - src: webcache|@fortawesome/fontawesome-free@6.5.1/css/solid.min.css
-      integrity: sha384-8yO/A/BtltnG0hDxdwmmkza8UAleyDoAD1FhXiH6rsOQQsCho1P6WZP9TpBBH3YP
+    - src: webcache|@fortawesome/fontawesome-free@7.1.0/css/regular.min.css
+      integrity: sha384-4qYppzjH8EiA+cGdaubu2vL7Rk8WGiqCSj7oRuP1uwtFWkfKNHD20lPfcrbQc8dU
+    - src: webcache|@fortawesome/fontawesome-free@7.1.0/css/solid.min.css
+      integrity: sha384-wbMWab3UDSPm2kvIgVOn/d9KPTecgPU1+Nb3zoQrm/oVu0EkPL6IaKinjbwW0rum
   low_priority:
-    - src: webcache|@fortawesome/fontawesome-free@6.5.1/css/brands.min.css
-      integrity: sha384-/BRyRRN0wxxRgh/DAXU621go9pdoMHl6LFPiX5Pp8PZYZlKBQCDXj9X9DHx6LOud
-    - src: webcache|@fortawesome/fontawesome-free@6.5.1/css/v5-font-face.min.css
-      integrity: sha384-/mBKnLlGtog8q2qQrgugURRDV+iHWHAPvM5KulYXT1C2ErKOKkBI0vbff8ZPq7rL
-    - src: webcache|@fortawesome/fontawesome-free@6.5.1/css/v4-font-face.min.css
-      integrity: sha384-d2Yn1/9Iw78r3oqwk5B+EcpRcmepXR5LyhmRF2a+WoSe9mpRGvVk0ZviFwDGDOTO
+    - src: webcache|@fortawesome/fontawesome-free@7.1.0/css/brands.min.css
+      integrity: sha384-KTGeC2hIMzpeQakhsmzB9bZfhCD5xZZCgI1iZH6f/O457SxzlkzTQg/WXFNoi3ih
+    - src: webcache|@fortawesome/fontawesome-free@7.1.0/css/v5-font-face.min.css
+      integrity: sha384-nJ1ThfldViXoLpJ6jlKcP2beas8BMbYq26SG9Hi8cH89bZi4RZ644v7helMCqJxd
+    - src: webcache|@fortawesome/fontawesome-free@7.1.0/css/v4-font-face.min.css
+      integrity: sha384-UlkrhOIvZxJFd4MElSUp7ow6/RUeYKi/orfCZIRRiOENFuQPIAA3T3HjYfmBRhNq
 ```
 
 </details>
@@ -641,6 +817,16 @@ fontawesome:
 <summary>扩展功能</summary>
 
 ### 扩展功能
+
+#### 回到顶部
+
+默认开启
+
+```yaml
+top:
+  enable: true
+  position: right # left | right
+```
 
 #### 暗黑模式
 
@@ -652,6 +838,16 @@ dark_mode:
   # false 代表暗黑模式默认关闭
   # auto 代表根据用户系统设置自动切换
   enable: auto # true | false | auto
+```
+
+#### 站点统计
+
+默认关闭，支持百度统计、谷歌统计和微软 Clarity
+
+```yaml
+baidu_analytics: false
+google_analytics: false
+clarity: false
 ```
 
 #### Pace 进度条
@@ -670,6 +866,8 @@ pace:
 ```yaml
 firework:
   enable: true
+  disable_on_mobile: false # 是否在移动端禁用，可以提高性能
+  options: # mouse-firework 配置项
 ```
 
 具体配置请查看 [mouse-firework](https://github.com/D-Sketon/mouse-firework)
@@ -682,8 +880,6 @@ firework:
 pjax:
   enable: false
 ```
-
-> PJAX 在 v0.0.10 中被引入，用于那些需要添加音乐播放器等需要 SPA 的用户。经过一段时间的迭代后已基本上稳定，但引入后仍然可能会出现诸如**脚本无法执行**、**脚本重复执行**、**页面渲染混乱**等 BUG。请慎重考虑！
 
 > PJAX 无法与 `relative_link: true` 配合使用！
 
@@ -732,21 +928,25 @@ reimu_cursor:
 #### 响应式头图（v0.2.0+）
 
 默认关闭，打开后并提供对应尺寸的图片和媒体查询可以在一定程度上提高移动端的 LCP
+
 ```yml
 banner_srcset:
-enable: false
-srcset:
-  - src: "/images/banner-600w.webp"
-    media: "(max-width: 479px)"
-  - src: "/images/banner-800w.webp"
-    media: "(max-width: 799px)"
-  - src: "/images/banner.webp"
-    media: "(min-width: 800px)"
+  enable: false
+  srcset:
+    - src: "/images/banner-600w.webp"
+      media: "(max-width: 479px)"
+    - src: "/images/banner-800w.webp"
+      media: "(max-width: 799px)"
+    - src:
+        - "/images/banner.avif"
+        - "/images/banner.webp" #  支持数组形式的 fallback
+      media: "(min-width: 800px)"
 ```
 
 #### 文章版权声明（v0.2.0+）
 
 默认关闭
+
 ```yml
 article_copyright:
   enable: false # 是否展示版权卡片？
@@ -760,7 +960,7 @@ article_copyright:
     license_type: by-nc-sa # https://creativecommons.org/licenses
 ```
 
-此外，也可以通过文章的 front-matter 控制，其优先级高于全局配置
+此外，也可以通过文章的 Front-matter 控制，其优先级高于全局配置
 
 ```yaml
 ---
@@ -771,17 +971,19 @@ copyright: true # 是否展示版权卡片？
 #### Quicklink（v0.2.3+）
 
 默认关闭，打开后可以在用户停留在页面时预加载链接，提高用户体验
+
 ```yml
 quicklink:
   enable: false
   timeout: 3000 # 预加载超时时间
   priority: true # 是否优先加载
-  ignores: [] # 忽略的链接，仅支持字符串
+  ignores: [] # 忽略的链接，仅支持字符串数组
 ```
 
 #### 文章过期提醒（v0.2.4+）
 
 默认关闭
+
 ```yml
 outdate:
   enable: false
@@ -796,6 +998,7 @@ outdate:
 #### 赞助（v0.3.2+）
 
 默认关闭
+
 ```yml
 sponsor:
   enable: false # 是否展示赞助二维码？
@@ -813,7 +1016,7 @@ sponsor:
       src: "/sponsor/alipay.jpg" # 二维码路径，请自行填写
 ```
 
-此外，也可以通过文章的 front-matter 控制，其优先级高于全局配置
+此外，也可以通过文章的 Front-matter 控制，其优先级高于全局配置
 
 ```yaml
 ---
@@ -824,11 +1027,12 @@ sponsor: true # 是否展示赞助二维码？
 #### 首页目录卡片（v1.0.0+）
 
 默认关闭，打开后可以在首页展示目录卡片，用于代替 widget 中的目录
+
 ```yaml
 home_categories:
   enable: false # 是否展示首页目录卡片？
   content:
-    - categories: # 目录名称，格式和 front-matter 中的 categories 一致，可以为字符串（单级分类）或数组（多级分类）
+    - categories: # 目录名称，格式和 Front-matter 中的 categories 一致，可以为字符串（单级分类）或数组（多级分类）
       cover: # 卡片封面，不填则使用随机封面
     - categories:
       cover:
@@ -836,7 +1040,7 @@ home_categories:
 
 #### 音乐播放器（v1.2.0+）
 
-> 使用前建议先打开 Pjax，否则会出现播放器自动暂停的问题
+> 使用前建议先打开 PJAX，否则会出现播放器自动暂停的问题
 
 使用 Aplayer + Meting（可选）默认关闭
 
@@ -846,10 +1050,11 @@ home_categories:
 
 ```yml
 player:
+  disable_on_mobile: false # 是否在移动端禁用播放器，可以提高性能
   position: before_sidebar # before_sidebar / after_sidebar / after_widget
 ```
 
-##### 纯Aplayer
+##### 纯 Aplayer
 
 将 `player.aplayer.enable` 设置为 `true`，并在 `player.aplayer.options` 中参考 [Aplayer Docs](https://aplayer.js.org/#/home?id=options) 进行配置
 
@@ -863,7 +1068,7 @@ player:
       autoplay:
       loop:
       order:
-      preload: 
+      preload:
       volume:
       mutex:
       listFolded:
@@ -884,7 +1089,7 @@ player:
       autoplay:
       loop:
       order:
-      preload: 
+      preload:
       volume:
       mutex:
       listFolded:
@@ -893,9 +1098,9 @@ player:
     enable: true
     meting_api: # custom api
     options:
-      id: 
-      server: 
-      type: 
+      id:
+      server:
+      type:
       auto:
 ```
 
@@ -931,50 +1136,66 @@ injector:
 ```
 
 #### Pangu 自动分割（v1.6.0+）
+
 默认关闭，自动替你在文章中所有的中文字和半形的英文、数字、符号之间插入空白。
 
 ```yml
 pangu:
-  enable: false 
+  enable: false
+```
+
+#### 三角徽标（v1.10.2+）
+
+默认关闭，打开后会在右上角展示三角徽标，支持自定义链接和图标
+
+```yml
+triangle_badge:
+  enable: false
+  icon: github # 与 social 配置里的 icon 相同
+  link: https://github.com/D-Sketon/hexo-theme-reimu
 ```
 
 </details>
 
 <details>
-<summary>内置卡片标签插件</summary>
+<summary>内置标签插件</summary>
 
-### 内置卡片标签插件
+### 内置标签插件
 
 #### friendLink 友链卡片
 
-```yaml
+```markdown
 {% friendsLink path %}
 ```
 
 第一个参数 `path` 表示友链 yaml 的路径
 
-#### postLinkCard 内链卡片
+#### postLinkCard 内链卡片 (不推荐，建议使用 link)
 
-```yaml
+```markdown
 {% postLinkCard slug [cover]|"auto" [escape] %}
 ```
+
+不推荐使用该标签，建议使用 `link` 标签代替。
 
 其中第一个参数为文章的 `slug`；第二个参数（可选）为卡片展示的封面，如果设置为 `auto` 则自动使用博客的 `banner`；第三个参数（可选）表示文章标题是否被转义
 
 > slug 的生成算法：https://github.com/hexojs/hexo-util/blob/master/lib/slugize.ts
 > 简单来说就是去除文章标题的不可见字符，把文章的标题中的特殊字符 `\s~!@#$%^&*()\-_+=[]{}|\;:"'<>,.?/` 全换成分隔符 `-`，合并连续分隔符并去除首尾分隔符
 
-#### externalLinkCard 外链卡片
+#### externalLinkCard 外链卡片 (不推荐，建议使用 link)
 
-```yaml
+```markdown
 {% externalLinkCard title link [cover]|"auto" %}
 ```
+
+不推荐使用该标签，建议使用 `link` 标签代替。
 
 其中第一个参数为文章的标题；第二个参数为文章的外部链接，第三个参数（可选）为卡片展示的封面，如果设置为 `auto` 则自动使用缺省封面
 
 #### heatMapCard 文章热力图 (v1.7.0+)
 
-```yaml
+```markdown
 {% heatMapCard levelStandard %}
 ```
 
@@ -982,14 +1203,100 @@ pangu:
 
 #### tagRoulette 标签轮盘 (v1.9.0+)
 
-```yaml
-{% heatMapCard tags icon %}
+```markdown
+{% tagRoulette tags icon %}
 ```
 
 tagRoulette 是一个互动元素，提供随机标签展示功能，点击按钮后会从预定义的标签池中随机抽取并展示一个标签。
 
-- tags：可选参数，指定标签池，多个标签用英文逗号(,)分隔；未提供时默认使用几个示例标签，例如：tags="记忆衰退,表达欲丧失,更加怠惰,无感,好想睡觉"  
-- icon：可选参数，自定义触发按钮的图标，默认使用： 🕹️（游戏手柄emoji），可替换为任何emoji或文字，如 🎲、🎯、🔄 等
+- tags：可选参数，指定标签池，多个标签用英文逗号(,)分隔；未提供时默认使用几个示例标签，例如："记忆衰退,表达欲丧失,更加怠惰,无感,好想睡觉"
+- icon：可选参数，自定义触发按钮的图标，默认使用： 🕹️（游戏手柄 emoji），可替换为任何 emoji 或文字，如 🎲、🎯、🔄 等
+
+#### link 链接卡片 (v1.11.0+)
+
+```markdown
+{% link slug|title [title] [cover]|"auto" [escape] %}
+```
+
+externalLinkCard 和 postLinkCard 的升级版，推荐使用该标签。
+
+其中第一个参数为文章的 `slug` 或外链的 `title`；第二个参数（可选）为卡片展示的标题；第三个参数（可选）为卡片展示的封面，如果设置为 `auto` 则自动使用博客的 `banner` 或缺省封面；第四个参数（可选）表示文章标题是否被转义
+
+#### tabs 标签页 (v1.11.0+)
+
+```markdown
+{% tabs [activeTab] ["center"] %}
+<!-- tabName -->
+Tab content
+<!-- tabName -->
+Tab content
+{% endtabs %}
+```
+
+从 next, volantis, stellar 主题借鉴而来，支持在文章中创建标签页切换效果。
+
+- activeTab：可选参数，指定默认激活的标签页下标，从 1 开始计数，默认为 1
+- "center"：可选参数，指定标签页标题居中显示，默认左对齐
+- tabName：每个标签页的标题，必须用 `<!-- tabName -->` 包裹，支持使用 `@` + 图标十六进制代码 展示图标，例：
+  - 标题 `<!-- 标题 -->`
+  - 图标 `<!-- @e60c -->`
+  - 图标+标题 `<!-- 标题@e60c -->` 
+
+#### gallery 照片墙 (v1.11.0+)
+
+```markdown
+{% gallery %}
+![alt text](image_url1)
+![alt text](image_url2)
+...
+{% endgallery %}
+```
+
+将多张图片以照片墙的形式展示出来，支持自动排列和响应式布局。
+
+#### grid 网格布局 (v1.11.1+)
+
+```markdown
+{% grid [width] [col] %}
+<!-- cell -->
+内容1
+<!-- cell -->
+内容2
+<!-- cell -->
+内容3
+{% endgrid %}
+```
+
+将内容以网格的形式展示出来，支持响应式布局。
+
+- width：可选参数，设置最小列宽，如 `300` 表示最小列宽为 300px，默认值为 `240`
+- col：可选参数，设置固定列数，如 `col:3` 表示固定 3 列布局，默认值为自适应列数
+- 使用 `<!-- cell -->` 分隔每个网格单元，每个单元的内容会被独立渲染
+
+#### alertBlockquote 警告引用块 (v1.11.1+)
+
+```markdown
+{% alertBlockquote [type] [title] %}
+引用内容
+{% endalertBlockquote %}
+```
+
+下文自定义容器的 fallback 版本，适用于不支持自定义容器的渲染器。
+
+- type：可选参数，指定警告类型，可选值有 `info`、`tip`、`important`、`warning`、`danger`，默认值为 `info`
+- title：可选参数，指定警告标题，若不提供则使用默认标题
+
+#### details 折叠详情块 (v1.11.1+)
+
+```markdown
+{% details [summary] %}
+折叠内容
+{% enddetails %}
+```
+
+下文自定义容器的 fallback 版本，适用于不支持自定义容器的渲染器。
+
+- summary：可选参数，指定折叠块的标题，若不提供则使用默认标题
 
 </details>
 
@@ -998,7 +1305,7 @@ tagRoulette 是一个互动元素，提供随机标签展示功能，点击按�
 
 ### 自定义容器
 
-本主题提供了类似 vitepress 的自定义容器功能，使用前需要安装 [@reimujs/hexo-renderer-markdown-it-plus](https://github.com/D-Sketon/hexo-renderer-markdown-it-plus)
+本主题提供了类似 VitePress 的自定义容器功能，使用前需要安装 [@reimujs/hexo-renderer-markdown-it-plus](https://github.com/D-Sketon/hexo-renderer-markdown-it-plus)
 
 使用方法如下：
 
@@ -1027,7 +1334,7 @@ This is a dangerous warning.
 Danger zone, do not proceed
 :::
 
-::: details
+::: details INFO
 This is a details block.
 :::
 ```
@@ -1035,6 +1342,8 @@ This is a details block.
 </details>
 <details>
 <summary>自定义主题</summary>
+
+### 自定义主题
 
 hexo-theme-reimu 主题支持高度的自定义，你可以通过修改 `_config.yml` 来定制你的主题。
 
@@ -1053,58 +1362,62 @@ material_theme:
 
 hexo-theme-reimu 主题支持通过 CSS 变量定制主题颜色，你可以通过修改 `:root` 伪类下的 CSS 变量来定制你的主题颜色。
 
-~~变量文件位于 `assets/css/_variables.scss`，你可以在这个文件中找到所有的 CSS 变量，但其实只需要修改以下伪类下的变量即可~~
-
 v1.8.0 对外暴露了 `internal_theme` 配置用于定制主题颜色 token
 
 ```yaml
 internal_theme:
   light:
-    --red-0: '#ff0000'
-    --red-1: '#ff5252'
-    --red-2: '#ff7c7c'
-    --red-3: '#ffafaf'
-    --red-4: '#ffd0d0'
-    --red-5: '#ffecec'
-    --red-5-5: '#fff3f3'
-    --red-6: '#fff7f7'
-    --color-red-6-shadow: 'rgba(255, 78, 78, 0.6)'
-    --color-red-3-shadow: 'rgba(255, 78, 78, 0.3)'
+    --red-0: "#ff0000"
+    --red-1: "#ff5252"
+    --red-2: "#ff7c7c"
+    --red-3: "#ffafaf"
+    --red-4: "#ffd0d0"
+    --red-5: "#ffecec"
+    --red-5-5: "#fff3f3"
+    --red-6: "#fff7f7"
+    --color-red-6-shadow: "rgba(255, 78, 78, 0.6)"
+    --color-red-3-shadow: "rgba(255, 78, 78, 0.3)"
 
-    --highlight-nav: '#e6e6e6'
-    --highlight-scrollbar: '#d6d6d6'
-    --highlight-background: '#f7f7f7'
-    --highlight-current-line: '#dadada'
-    --highlight-selection: '#e9e9e9'
-    --highlight-foreground: '#4d4d4d'
-    --highlight-comment: '#7d7d7d'
-    --highlight-red: '#c8362b'
-    --highlight-orange: '#b66014'
-    --highlight-yellow: '#cb911d'
-    --highlight-green: '#2ea52e'
-    --highlight-aqua: '#479d9d'
-    --highlight-blue: '#1973b8'
-    --highlight-purple: '#7135ac'
+    --highlight-nav: "#f5f5f5"
+    --highlight-scrollbar: "#d6d6d6"
+    --highlight-background: "#fdfdfd"
+    --highlight-selection: "#e9e9e988"
+    --highlight-foreground: "#24292e"
+    --highlight-comment: "#7d7d7d"
+    --highlight-red: "#d73a49"
+    --highlight-orange: "#e36209"
+    --highlight-yellow: "#cb911d"
+    --highlight-green: "#22863a"
+    --highlight-aqua: "#005cc5"
+    --highlight-blue: "#032f62"
+    --highlight-purple: "#6f42c1"
+    --highlight-deletion: "#b31d28"
+    --highlight-deletion-bg: "#ffeef0"
+    --highlight-addition: "#22863a"
+    --highlight-addition-bg: "#f0fff4"
   dark:
-    --red-4: 'rgba(255, 208, 208, 0.5)'
-    --red-5: 'rgba(255,228,228,0.15)'
-    --red-5-5: 'rgba(255,236,236,0.05)'
-    --red-6: 'rgba(255, 243, 243, 0.2)'
+    --red-4: "rgba(255, 208, 208, 0.5)"
+    --red-5: "rgba(255,228,228,0.15)"
+    --red-5-5: "rgba(255,236,236,0.05)"
+    --red-6: "rgba(255, 243, 243, 0.2)"
 
-    --highlight-nav: '#2e353f'
-    --highlight-scrollbar: '#454d59'
-    --highlight-background: '#22272e'
-    --highlight-current-line: '#393939'
-    --highlight-selection: '#515151'
-    --highlight-foreground: '#cccccc'
-    --highlight-comment: '#999999'
-    --highlight-red: '#f47067'
-    --highlight-orange: '#f69d50'
-    --highlight-yellow: '#ffcc66'
-    --highlight-green: '#99cc99'
-    --highlight-aqua: '#66cccc'
-    --highlight-blue: '#54b6ff'
-    --highlight-purple: '#dcbdfb'
+    --highlight-nav: "#222830"
+    --highlight-scrollbar: "#454d59"
+    --highlight-background: "#1e2027"
+    --highlight-selection: "#51515155"
+    --highlight-foreground: "#c9d1d9"
+    --highlight-comment: "#8b949e"
+    --highlight-red: "#ff7b72"
+    --highlight-orange: "#ffa657"
+    --highlight-yellow: "#ffcc66"
+    --highlight-green: "#7ee787"
+    --highlight-aqua: "#a5d6ff"
+    --highlight-blue: "#79c0ff"
+    --highlight-purple: "#d2a8ff"
+    --highlight-deletion: "#ffa198"
+    --highlight-deletion-bg: "#490202"
+    --highlight-addition: "#7ee787"
+    --highlight-addition-bg: "#04260f"
 ```
 
 #### 自定义字体
@@ -1157,7 +1470,7 @@ v1.0.0 经过大量重构，向用户暴露了许多配置用于改变原有的�
 
 ##### 头部 / 侧边栏图标
 
-v1.0.0 的 `menu` 配置的结构发生了变化，允许用户自定义 icon。icon 为空时默认使用太极图标，你可以填写一个十六进制的数字来自定义 icon，同时支持 fontawesome 和 icon font。
+v1.0.0 的 `menu` 配置的结构发生了变化，允许用户自定义 icon。icon 为空时默认使用太极图标，你可以填写一个十六进制的数字来自定义 icon，同时支持 fontawesome, icon font 和 `false`。
 
 v1.8.4 icon 支持图片路径，如 `/avatar/avatar.webp`。
 
@@ -1168,7 +1481,7 @@ menu:
     icon: # 不填默认使用太极图标
   - name: archives
     url: /archives
-    icon: f0c1 # 你可以填写一个十六进制的数字来自定义 icon，支持 fontawesome 和 icon font
+    icon: f0c1 # 你可以填写一个十六进制的数字来自定义 icon，支持 fontawesome 和 icon font，如果填写 false 则不显示图标
   - name: about
     url: /about
     icon:
@@ -1188,7 +1501,7 @@ v1.0.0 的 `footer`、`top`、`sponsor` 配置均增加了 `icon` 配置用于�
 ```yaml
 footer:
   icon:
-    url: "../images/taichi.png" # 相对于 css/style.css 的路径，所以需要向上一级才能找到 images 文件夹
+    url: "../images/taichi.png" # 相对于 css/style.css 的路径，所以需要向上一级才能找到 images 文件夹，支持 false 以隐藏图标
     rotate: true
     mask: true
 
@@ -1200,7 +1513,7 @@ top:
 
 sponsor:
   icon:
-    url: "../images/taichi.png"
+    url: "../images/taichi.png" # 支持 false 以隐藏图标
     rotate: true
     mask: true
 ```
@@ -1214,8 +1527,13 @@ v1.0.0 的 `preloader` 配置增加了 `icon` 配置用于自定义图标。icon
 ```yaml
 preloader:
   enable: true
-  text: 少女祈祷中...
+  text:
+    zh-CN: 少女祈祷中...
+    zh-TW: 少女祈禱中...
+    en: Loading...
+    ja: 少女祈祷中...
   icon: # 不填默认使用内链的svg（保证首屏加载速度），你可以填入一个链接来自定义加载图标，如 '/images/taichi.png'
+  rotate: true
 ```
 
 ##### 锚点图标
@@ -1241,6 +1559,36 @@ reimu_cursor:
     text: ../images/cursor/reimu-cursor-text.png
 ```
 
+#### 自定义滚动动画
+
+基于 [AOS.js](https://github.com/D-Sketon/aos.js) 实现的滚动动画效果，默认为 `true`，可以通过以下配置开启或关闭，并为不同页面设置不同的动画效果。
+
+```yaml
+animation:
+  enable: true
+  options:
+    header:
+    home:
+    article:
+    archive:
+```
+
+**可用动画效果：**
+
+- **Fade**: fade, fade-up, fade-down, fade-left, fade-right, fade-up-right, fade-up-left, fade-down-right, fade-down-left
+- **Flip**: flip-up, flip-down, flip-left, flip-right
+- **Slide**: slide-up, slide-down, slide-left, slide-right
+- **Zoom**: zoom-in, zoom-in-up, zoom-in-down, zoom-in-left, zoom-in-right, zoom-out, zoom-out-up, zoom-out-down, zoom-out-left, zoom-out-right
+
+#### 自定义样式
+
+可以通过修改 `layout.max_width` 来定制主要内容区域的最大宽度，默认为 `1350px`。
+
+```yaml
+layout:
+  max_width: 1350px # 主要内容区域的最大宽度
+```
+
 </details>
 
 <details>
@@ -1262,7 +1610,7 @@ hexo-theme-reimu 的 `vendor` 结构非常灵活，其支持以下几种形式�
   webcache: https://npm.webcache.cn/ # 仅针对npm加速
   ```
   用户可根据网络状况自行切换 CDN 源。
-- `https://` 开头：直接使用绝对链接，如 `https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.css` 
+- `https://` 开头：直接使用绝对链接，如 `https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.css`
 - `/` 开头：本地资源，你可以把资源放在 `source` 文件夹下和 `_posts` 同级，然后使用诸如 `/katex.min.css` 的路径引用
 
 此外，`vendor` 还支持 SRI 校验，你可以在 `vendor` 中使用 `SHA-384` 用于校验资源的完整性，如：
@@ -1276,6 +1624,39 @@ js:
 ```
 
 以上两种形式均支持，建议对外部 CDN 资源使用 SRI 校验，以确保资源的完整性。
+
+</details>
+
+<details>
+<summary>Front-matter 字段</summary>
+
+### Front-matter 字段
+
+| meta        | 描述                                            | 类型                                               | 取值逻辑           | 版本      |
+| ----------- | ----------------------------------------------- | -------------------------------------------------- | ------------------ | --------- |
+| title       | 标题                                            | `string`                                           | 文章的文件名       | Hexo 内置 |
+| date        | 创建日期                                        | `date`                                             | 文件的创建日期     | Hexo 内置 |
+| updated     | 更新日期                                        | `date`                                             | 文件的更新日期     | Hexo 内置 |
+| tags        | 标签                                            | `string[] \| string[][]`                           | -                  | Hexo 内置 |
+| categories  | 分类                                            | `string[] \| string[][]`                           | -                  | Hexo 内置 |
+| permalink   | 覆盖文章的永久链接                              | `string`                                           | -                  | Hexo 内置 |
+| excerpt     | 文章摘要                                        | `string`                                           | -                  | Hexo 内置 |
+| description | 文章描述                                        | `string`                                           | -                  | 0.0.1     |
+| link        | 用于文章直接指向外部链接                        | `string`                                           | -                  | 0.0.1     |
+| sticky      | 是否置顶文章                                    | `boolean`                                          | `false`            | 0.0.1     |
+| photos      | 文章照片墙                                      | `string[]`                                         | -                  | 0.0.1     |
+| cover       | 文章封面                                        | `https://example.com \| false \| rgb(255,117,117)` | 不传默认走全局配置 | 0.0.7     |
+| mermaid     | 是否开启 mermaid，需配合 `mermaid` 配置一起使用 | `boolean`                                          | `false`            | 0.2.0     |
+| copyright   | 是否开启文章版权声明                            | `boolean`                                          | 不传默认走全局配置 | 0.3.1     |
+| sponsor     | 是否开启文章赞助                                | `boolean`                                          | 不传默认走全局配置 | 0.3.2     |
+| comments    | 是否开启文章评论                                | `boolean`                                          | 不传默认走全局配置 | 0.3.2     |
+| sidebar     | 文章侧边栏位置                                  | `false \| 'left' \| 'right'`                       | 不传默认走全局配置 | 1.3.0     |
+| lang        | 文章语言，需配合 `i18n` 配置一起使用            | `string`                                           | -                  | 1.4.0     |
+| toc         | 是否开启文章目录                                | `boolean`                                          | 不传默认走全局配置 | 1.6.0     |
+| outdated    | 文章是否过期                                    | `boolean`                                          | 不传默认走全局配置 | 1.10.1    |
+| author      | 文章作者，用于文章版权和分享卡片                | `string`                                           | 不传默认走全局配置 | 1.10.2    |
+| keywords    | 文章关键词                                      | `string[] \| string`                               | 不传默认走全局配置 | 1.10.4    |
+| banner      | 文章头图                                        | `https://example.com \| false \| rgb(255,117,117)` | -                  | 1.12.2    |
 </details>
 
 ## 贡献者
@@ -1285,6 +1666,24 @@ js:
 ## 赞助 💘
 
 [爱发电-afdian](https://afdian.tv/a/dsketon)
+
+## 相关项目
+
+| 包名                                                                                                  | 版本                                                                                 | npm                                                                                     | jsdelivr                                                                                         |
+| ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| [hexo-theme-reimu](https://github.com/D-Sketon/hexo-theme-reimu)                                      | ![NPM Version](https://img.shields.io/npm/v/hexo-theme-reimu)                        | ![NPM Downloads](https://img.shields.io/npm/dm/hexo-theme-reimu)                        | ![jsDelivr Hits](https://img.shields.io/jsdelivr/npm/hm/hexo-theme-reimu)                        |
+| [theme-shokax-pjax](https://github.com/theme-shoka-x/theme-shokax-pjax)                               | ![NPM Version](https://img.shields.io/npm/v/theme-shokax-pjax)                       | ![NPM Downloads](https://img.shields.io/npm/dm/theme-shokax-pjax)                       | ![jsDelivr Hits](https://img.shields.io/jsdelivr/npm/hm/theme-shokax-pjax)                       |
+| [theme-shokax-anime](https://github.com/theme-shoka-x/theme-shokax-anime)                             | ![NPM Version](https://img.shields.io/npm/v/theme-shokax-anime)                      | ![NPM Downloads](https://img.shields.io/npm/dm/theme-shokax-anime)                      | ![jsDelivr Hits](https://img.shields.io/jsdelivr/npm/hm/theme-shokax-anime)                      |
+| [mouse-firework](https://github.com/D-Sketon/mouse-firework)                                          | ![NPM Version](https://img.shields.io/npm/v/mouse-firework)                          | ![NPM Downloads](https://img.shields.io/npm/dm/mouse-firework)                          | ![jsDelivr Hits](https://img.shields.io/jsdelivr/npm/hm/mouse-firework)                          |
+| [@reimujs/aos](https://github.com/D-Sketon/aos.js)                                                    | ![NPM Version](https://img.shields.io/npm/v/@reimujs/aos)                            | ![NPM Downloads](https://img.shields.io/npm/dm/@reimujs/aos)                            | ![jsDelivr Hits](https://img.shields.io/jsdelivr/npm/hm/@reimujs/aos)                            |
+| [@reimujs/hexo-algoliasearch](https://github.com/D-Sketon/hexo-algoliasearch)                         | ![NPM Version](https://img.shields.io/npm/v/@reimujs/hexo-algoliasearch)             | ![NPM Downloads](https://img.shields.io/npm/dm/@reimujs/hexo-algoliasearch)             | ![jsDelivr Hits](https://img.shields.io/jsdelivr/npm/hm/@reimujs/hexo-algoliasearch)             |
+| [@reimujs/hexo-renderer-markdown-it-plus](https://github.com/D-Sketon/hexo-renderer-markdown-it-plus) | ![NPM Version](https://img.shields.io/npm/v/@reimujs/hexo-renderer-markdown-it-plus) | ![NPM Downloads](https://img.shields.io/npm/dm/@reimujs/hexo-renderer-markdown-it-plus) | ![jsDelivr Hits](https://img.shields.io/jsdelivr/npm/hm/@reimujs/hexo-renderer-markdown-it-plus) |
+| [@reimujs/instantsearch.js](https://github.com/D-Sketon/instantsearch)                                | ![NPM Version](https://img.shields.io/npm/v/@reimujs/instantsearch.js)               | ![NPM Downloads](https://img.shields.io/npm/dm/@reimujs/instantsearch.js)               | ![jsDelivr Hits](https://img.shields.io/jsdelivr/npm/hm/@reimujs/instantsearch.js)               |
+| [plugin-live2d](https://github.com/D-Sketon/plugin-live2d)                                            | -                                                                                    | -                                                                                       | ![jsDelivr hits (GitHub)](https://img.shields.io/jsdelivr/gh/hm/D-Sketon/plugin-live2d)          |
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=D-Sketon/hexo-theme-reimu&type=date&legend=top-left)](https://www.star-history.com/#D-Sketon/hexo-theme-reimu&type=date&legend=top-left)
 
 ## 许可
 
