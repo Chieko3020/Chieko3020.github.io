@@ -45,6 +45,84 @@
 <meta name="generator" content="Hexo 8.1.1"></head>
 
   <body>
+    <script>
+      (function () {
+        // Prevent duplicate initialization under PJAX / repeated script execution.
+        if (window.__customLive2dBooted) return;
+        window.__customLive2dBooted = true;
+
+        const cdnPath = "/live2d";
+        const live2dConfig = {
+          path: {
+            homePath: "/",
+            modelPath: cdnPath + "/Resources/",
+            cssPath: cdnPath + "/waifu.css",
+            tipsJsonPath: cdnPath + "/waifu-tips.json",
+            tipsJsPath: cdnPath + "/waifu-tips.js",
+            live2dCorePath: cdnPath + "/Core/live2dcubismcore.js",
+            live2dSdkPath: cdnPath + "/live2d-sdk.js",
+          },
+          tools: [
+            "hitokoto",
+            "express",
+            "switch-model",
+            "switch-texture",
+            "photo",
+            "info",
+            "quit",
+          ],
+          drag: {
+            enable: true,
+            direction: ["x", "y"],
+          },
+          switchType: "order",
+        };
+
+        function loadExternalResource(url, type) {
+          return new Promise((resolve, reject) => {
+            let tag;
+            if (type === "css") {
+              tag = document.createElement("link");
+              tag.rel = "stylesheet";
+              tag.href = url;
+            } else if (type === "js") {
+              tag = document.createElement("script");
+              tag.src = url;
+            }
+            if (!tag) return reject(new Error("Unsupported resource type"));
+            tag.onload = () => resolve(url);
+            tag.onerror = () => reject(new Error("Failed to load: " + url));
+            document.head.appendChild(tag);
+          });
+        }
+
+        // Keep original behavior: desktop only.
+        if (window.screen.width >= 768) {
+          Promise.all([
+            loadExternalResource(live2dConfig.path.cssPath, "css"),
+            loadExternalResource(live2dConfig.path.live2dCorePath, "js"),
+            loadExternalResource(live2dConfig.path.live2dSdkPath, "js"),
+            loadExternalResource(live2dConfig.path.tipsJsPath, "js"),
+          ])
+            .then(() => {
+              if (typeof initWidget === "function") {
+                initWidget({
+                  homePath: live2dConfig.path.homePath,
+                  waifuPath: live2dConfig.path.tipsJsonPath,
+                  cdnPath: live2dConfig.path.modelPath,
+                  tools: live2dConfig.tools,
+                  dragEnable: live2dConfig.drag.enable,
+                  dragDirection: live2dConfig.drag.direction,
+                  switchType: live2dConfig.switchType,
+                });
+              } else {
+                console.warn("[live2d] initWidget not found after script load");
+              }
+            })
+            .catch((err) => console.error("[live2d] Failed to initialize:", err));
+        }
+      })();
+    </script>
       <div id='loader'>
     <div class="loading-left-bg loading-bg"></div>
     <div class="loading-right-bg loading-bg"></div>
@@ -285,7 +363,7 @@
   </div>
     <nav id="article-nav" aria-label="Article navigation" data-aos="fade-up">
       <div class="article-nav-link-wrap left">
-            <img data-src="/images/4-7.webp" data-sizes="auto" alt="进程分配内存空间的方式" class="lazyload">
+            <img data-src="/images/Still_250_001.webp" data-sizes="auto" alt="进程分配内存空间的方式" class="lazyload">
         <a href="/2025/11/02/%E8%BF%9B%E7%A8%8B%E5%88%86%E9%85%8D%E5%86%85%E5%AD%98%E7%A9%BA%E9%97%B4%E7%9A%84%E6%96%B9%E5%BC%8F/" aria-label="前一篇: 进程分配内存空间的方式" title="前一篇: 进程分配内存空间的方式"></a>
         <div class="article-nav-caption">前一篇</div>
         <h3 class="article-nav-title">
@@ -293,7 +371,7 @@
         </h3>
       </div>
     <div class="article-nav-link-wrap right">
-          <img data-src="/images/Still_190_001.webp" data-sizes="auto" alt="一些神秘小网站" class="lazyload">
+          <img data-src="/images/Last3_epilogue.webp" data-sizes="auto" alt="一些神秘小网站" class="lazyload">
       <a href="/2025/10/12/%E4%B8%80%E4%BA%9B%E7%A5%9E%E7%A7%98%E5%B0%8F%E7%BD%91%E7%AB%99/" aria-label="后一篇: 一些神秘小网站"  title="后一篇: 一些神秘小网站"></a>
       <div class="article-nav-caption">后一篇</div>
       <h3 class="article-nav-title">
@@ -461,7 +539,7 @@
             <div id="reimu-hits"></div>
             <div id="reimu-pagination" class="reimu-pagination"></div>
           </div>
-          <img class="reimu-bg" src="/images/reimu.png" loading="lazy" decoding="async" fetchpriority="low"/>
+          <img class="reimu-bg" src="/images/Background_scenery_default.webp" loading="lazy" decoding="async" fetchpriority="low"/>
         </div>
       </div>
     
@@ -608,7 +686,7 @@
               envId: 'https://twikoo.chieko3020.xyz',
               region: '',
               urls: [
-                '/about/index.html'
+                '/friend/index.html'
               ],
               includeReply: false
             }).then((res) => {

@@ -44,6 +44,84 @@
 <meta name="generator" content="Hexo 8.1.1"></head>
 
   <body>
+    <script>
+      (function () {
+        // Prevent duplicate initialization under PJAX / repeated script execution.
+        if (window.__customLive2dBooted) return;
+        window.__customLive2dBooted = true;
+
+        const cdnPath = "/live2d";
+        const live2dConfig = {
+          path: {
+            homePath: "/",
+            modelPath: cdnPath + "/Resources/",
+            cssPath: cdnPath + "/waifu.css",
+            tipsJsonPath: cdnPath + "/waifu-tips.json",
+            tipsJsPath: cdnPath + "/waifu-tips.js",
+            live2dCorePath: cdnPath + "/Core/live2dcubismcore.js",
+            live2dSdkPath: cdnPath + "/live2d-sdk.js",
+          },
+          tools: [
+            "hitokoto",
+            "express",
+            "switch-model",
+            "switch-texture",
+            "photo",
+            "info",
+            "quit",
+          ],
+          drag: {
+            enable: true,
+            direction: ["x", "y"],
+          },
+          switchType: "order",
+        };
+
+        function loadExternalResource(url, type) {
+          return new Promise((resolve, reject) => {
+            let tag;
+            if (type === "css") {
+              tag = document.createElement("link");
+              tag.rel = "stylesheet";
+              tag.href = url;
+            } else if (type === "js") {
+              tag = document.createElement("script");
+              tag.src = url;
+            }
+            if (!tag) return reject(new Error("Unsupported resource type"));
+            tag.onload = () => resolve(url);
+            tag.onerror = () => reject(new Error("Failed to load: " + url));
+            document.head.appendChild(tag);
+          });
+        }
+
+        // Keep original behavior: desktop only.
+        if (window.screen.width >= 768) {
+          Promise.all([
+            loadExternalResource(live2dConfig.path.cssPath, "css"),
+            loadExternalResource(live2dConfig.path.live2dCorePath, "js"),
+            loadExternalResource(live2dConfig.path.live2dSdkPath, "js"),
+            loadExternalResource(live2dConfig.path.tipsJsPath, "js"),
+          ])
+            .then(() => {
+              if (typeof initWidget === "function") {
+                initWidget({
+                  homePath: live2dConfig.path.homePath,
+                  waifuPath: live2dConfig.path.tipsJsonPath,
+                  cdnPath: live2dConfig.path.modelPath,
+                  tools: live2dConfig.tools,
+                  dragEnable: live2dConfig.drag.enable,
+                  dragDirection: live2dConfig.drag.direction,
+                  switchType: live2dConfig.switchType,
+                });
+              } else {
+                console.warn("[live2d] initWidget not found after script load");
+              }
+            })
+            .catch((err) => console.error("[live2d] Failed to initialize:", err));
+        }
+      })();
+    </script>
       <div id='loader'>
     <div class="loading-left-bg loading-bg"></div>
     <div class="loading-right-bg loading-bg"></div>
@@ -440,7 +518,7 @@
             <div id="reimu-hits"></div>
             <div id="reimu-pagination" class="reimu-pagination"></div>
           </div>
-          <img class="reimu-bg" src="/images/reimu.png" loading="lazy" decoding="async" fetchpriority="low"/>
+          <img class="reimu-bg" src="/images/Background_scenery_default.webp" loading="lazy" decoding="async" fetchpriority="low"/>
         </div>
       </div>
     
