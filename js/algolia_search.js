@@ -47,13 +47,30 @@ const algoliaHandler = () => {
       container: "#reimu-hits",
       templates: {
         item: (data) => {
+          let title = data.title;
+          let highlightTitle = data._highlightResult?.title?.value;
+          if (!title && data.type) {
+            // try DocSearch-compatible fields
+            if (data.type === "content" && data.content) {
+              title = data.content;
+              highlightTitle = data._highlightResult?.content?.value;
+            } else if (data.type.startsWith("lvl") && data.hierarchy) {
+              title = Object.values(data.hierarchy).join(" > ");
+              highlightTitle = Object.values(
+                data._highlightResult?.hierarchy || {}
+              )
+                .map((v) => v?.value)
+                .filter(Boolean)
+                .join(" > ");
+            }
+          }
           return (
             '<a href="' +
-            data.permalink +
+            (data.permalink ?? data.url) +
             '" class="reimu-hit-item-link" title="' +
-            (data.title || '') +
+            (title || "") +
             '">' +
-            data._highlightResult.title.value +
+            highlightTitle +
             "</a>"
           );
         },
@@ -123,12 +140,10 @@ const algoliaHandler = () => {
       _$("#mask").classList.remove("hide");
       document.body.style.overflow = "hidden";
       setTimeout(() => {
-        (_$("#reimu-search-input input"))?.focus();
+        _$("#reimu-search-input input")?.focus();
       }, 100);
       const keydownHandler = (e) => {
-        const focusables = popup.querySelectorAll(
-          "input, [href]"
-        );
+        const focusables = popup.querySelectorAll("input, [href]");
         const firstFocusable = focusables[0];
         const lastFocusable = focusables[focusables.length - 1];
         if (e.key === "Escape") {

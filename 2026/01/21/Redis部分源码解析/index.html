@@ -1,40 +1,22 @@
-
   <!DOCTYPE html>
   <html lang="zh-CN"  
-    
       data-theme-mode="auto"
-    
   >
   <head>
-  
   <meta charset="utf-8">
   
-
   
-
   
-
   <script>window.REIMU_CONFIG = {};window.REIMU_CONFIG.icon_font = '4552607_4k4bc36ef96';window.REIMU_CONFIG.clipboard_tips = {"success":{"zh-CN":"复制成功 (*^▽^*)"},"fail":{"zh-CN":"复制失败 (ﾟ⊿ﾟ)ﾂ"},"copyright":{"enable":false,"count":50,"license_type":"by-nc-sa"}};window.REIMU_CONFIG.clipboard_tips.copyright.content = '本博客所有文章除特别声明外，均采用 BY-NC-SA 许可协议。转载请注明出处！';window.REIMU_CONFIG.outdate = {"enable":true,"daysAgo":30,"message":{"en":"This article was last updated on {time}. Please note that the content may no longer be applicable.","zh-CN":"本文最后更新于 {time}，请注意文中内容可能已不适用。","zh-TW":"本文最後更新於 {time}，請注意文中內容可能已不適用。","ja":"この記事は最終更新日：{time}。記載内容が現在有効でない可能性がありますのでご注意ください。","pt-BR":"Este artigo foi atualizado pela última vez em {time}. Observe que o conteúdo pode não ser mais aplicável."}};window.REIMU_CONFIG.code_block = {"expand":true};window.REIMU_CONFIG.base = 'https://chieko3020.xyz';</script>
-  
   <title>
-    Redis部分源码解析 |
-    
-    Chieko3020 | Nostalgia
+    Redis部分源码解析 | Chieko3020 | Nostalgia
   </title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  
-  
-    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin><link rel="preload" as="style" href="https://fonts.googleapis.com/css?family=Mulish:400,400italic,700,700italic%7CNoto%20Serif%20SC:400,400italic,700,700italic&display=swap"><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Mulish:400,400italic,700,700italic%7CNoto%20Serif%20SC:400,400italic,700,700italic&display=swap" media="print" onload="this.media&#x3D;&#39;all&#39;">
-  
-  
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="preload" as="style" href="https://fonts.googleapis.com/css?family=Mulish:400,400italic,700,700italic|Noto Serif SC:400,400italic,700,700italic&display=swap"><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Mulish:400,400italic,700,700italic|Noto Serif SC:400,400italic,700,700italic&display=swap" media="print" onload="this.media='all'">
     <link rel="preload" href="//at.alicdn.com/t/c/font_4552607_4k4bc36ef96.woff2" as="font" type="font/woff2" crossorigin="anonymous">
-  
-  
     
 <link rel="stylesheet" href="/css/loader.css">
 
-  
-  
     <meta name="description" content="Redis &#x3D; Ready + Start——如何开始 阅读源码绝非易事，整个目录包含上百个代码文件，每个文件动辄上千行代码，如果没有比较好的阅读方法和学习技巧容易无从下手 阅读源码前应当先对全局的源码结构有所了解，先忽略功能的实现细节，对整体有个初步的认识 而不是刚上来就盯着某个文件看，被各种定义声明，函数调用跳转，复杂实现逻辑的代码淹没 这就像是刚到一个新城市,上来应该先看地图而不是">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Redis部分源码解析">
@@ -43,133 +25,35 @@
 <meta property="og:description" content="Redis &#x3D; Ready + Start——如何开始 阅读源码绝非易事，整个目录包含上百个代码文件，每个文件动辄上千行代码，如果没有比较好的阅读方法和学习技巧容易无从下手 阅读源码前应当先对全局的源码结构有所了解，先忽略功能的实现细节，对整体有个初步的认识 而不是刚上来就盯着某个文件看，被各种定义声明，函数调用跳转，复杂实现逻辑的代码淹没 这就像是刚到一个新城市,上来应该先看地图而不是">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2026-01-21T05:16:21.000Z">
-<meta property="article:modified_time" content="2026-02-10T11:36:51.599Z">
+<meta property="article:modified_time" content="2026-04-06T17:36:12.062Z">
 <meta property="article:author" content="Chieko3020">
 <meta property="article:tag" content="你知道吗">
 <meta name="twitter:card" content="summary">
-  
-  
     <link rel="alternate" href="/atom.xml" title="Chieko3020 | Nostalgia" type="application/atom+xml">
-  
-  
     <link rel="shortcut icon" href="/images/favi.ico">
-  
   
 <link rel="stylesheet" href="/css/style.css">
 
-  <link rel="preload" as="style" onload="this.onload&#x3D;null;this.rel&#x3D;&#39;stylesheet&#39;" href="https://npm.webcache.cn/photoswipe@5.4.4/dist/photoswipe.css" integrity="sha384-IfxC36XL&#x2F;toUyJ939C73PcgMuRzAZuIzZxE38drsmO5p6jD7ei+Zx&#x2F;1oA&#x2F;0l8ysE" crossorigin="anonymous">
-  
-  
-  
-  
+  <link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="https://npm.webcache.cn/photoswipe@5.4.4/dist/photoswipe.css" integrity="sha384-IfxC36XL/toUyJ939C73PcgMuRzAZuIzZxE38drsmO5p6jD7ei+Zx/1oA/0l8ysE" crossorigin="anonymous">
     
 <script src="https://npm.webcache.cn/pace-js@1.2.4/pace.min.js" integrity="sha384-k6YtvFUEIuEFBdrLKJ3YAUbBki333tj1CSUisai5Cswsg9wcLNaPzsTHDswp4Az8" crossorigin="anonymous"></script>
 
-  
-  
     
 <link rel="stylesheet" href="https://npm.webcache.cn/@reimujs/aos@0.1.2/dist/aos.css" integrity="sha384-GMRP93c6Hkz9JVKGAuRR3nTS7M07RwPgTFenXiosjq2VbVgvdDNcz1g6Mkj8AONa" crossorigin="anonymous">
 
-  
-  
-    <link rel="preload" as="style" onload="this.onload&#x3D;null;this.rel&#x3D;&#39;stylesheet&#39;" href="https://npm.webcache.cn/aplayer@1.10.1/dist/APlayer.min.css" integrity="sha384-tLMkTWh2pfXNWGFlUS0w1TFtRG5xZ9lPWFOooj+vDDLIL+xBGQU&#x2F;voDBY5XE2lVh" crossorigin="anonymous">
-  
-  
-<meta name="generator" content="Hexo 8.0.0"></head>
+    <link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="https://npm.webcache.cn/aplayer@1.10.1/dist/APlayer.min.css" integrity="sha384-tLMkTWh2pfXNWGFlUS0w1TFtRG5xZ9lPWFOooj+vDDLIL+xBGQU/voDBY5XE2lVh" crossorigin="anonymous">
+<meta name="generator" content="Hexo 8.1.1"></head>
 
   <body>
-    
-    <script>
-      const cdnPath = "/live2d";
-        // "https://cdn.jsdelivr.net/gh/Chieko3020/Chieko3020.github.io@main/source/live2d";
-      const config = {
-        // 资源路径
-        path: {
-          homePath: "/",
-          modelPath: cdnPath + "/Resources/",
-          cssPath: cdnPath + "/waifu.css",
-          tipsJsonPath: cdnPath + "/waifu-tips.json",
-          tipsJsPath: cdnPath + "/waifu-tips.js",
-          live2dCorePath: cdnPath + "/Core/live2dcubismcore.js",
-          live2dSdkPath: cdnPath + "/live2d-sdk.js",
-        },
-        // 工具栏
-        tools: [
-          "hitokoto",
-          // "asteroids",
-          "express",
-          "switch-model",
-          "switch-texture",
-          "photo",
-          "info",
-          "quit",
-        ],
-        // 模型拖拽
-        drag: {
-          enable: true,
-          direction: ["x", "y"],
-        },
-        // 模型切换(order: 顺序切换，random: 随机切换)
-        switchType: "order",
-      };
-
-      // 加载资源并初始化
-      if (screen.width >= 768) {
-        Promise.all([
-          loadExternalResource(config.path.cssPath, "css"),
-          loadExternalResource(config.path.live2dCorePath, "js"),
-          loadExternalResource(config.path.live2dSdkPath, "js"),
-          loadExternalResource(config.path.tipsJsPath, "js"),
-        ]).then(() => {
-          initWidget({
-            homePath: config.path.homePath,
-            waifuPath: config.path.tipsJsonPath,
-            cdnPath: config.path.modelPath,
-            tools: config.tools,
-            dragEnable: config.drag.enable,
-            dragDirection: config.drag.direction,
-            switchType: config.switchType,
-          });
-        });
-      }
-
-      // 异步加载资源
-      function loadExternalResource(url, type) {
-        return new Promise((resolve, reject) => {
-          let tag;
-          if (type === "css") {
-            tag = document.createElement("link");
-            tag.rel = "stylesheet";
-            tag.href = url;
-          } else if (type === "js") {
-            tag = document.createElement("script");
-            tag.src = url;
-          }
-          if (tag) {
-            tag.onload = () => resolve(url);
-            tag.onerror = () => reject(url);
-            document.head.appendChild(tag);
-          }
-        });
-      }
-    </script>
-    
-  <div id='loader'>
+      <div id='loader'>
     <div class="loading-left-bg loading-bg"></div>
     <div class="loading-right-bg loading-bg"></div>
     <div class="spinner-box">
       <div class="loading-taichi rotate">
-        
           <img src="/images/loading.webp" alt="loading" />
-        
       </div>
-      
-      
-        
-      
       <div class="loading-word">加载中...</div>
     </div>
-  </div>
   </div>
   <script>
     var time = null;
@@ -199,7 +83,6 @@
     window.addEventListener('DOMContentLoaded', endLoading);
     loaderEl.addEventListener('click', endLoading);
   </script>
-
 <div id="copy-tooltip"></div>
 <div id="heatmap-tooltip"></div>
 
@@ -208,103 +91,54 @@
       <div id="wrap">
         <div id="header-nav">
   <nav id="main-nav" aria-label="Primary navigation">
-    
-      
-        <span class="main-nav-link-wrap">
-          <div class="main-nav-icon icon ">
-             
-              
-                <img src="/images/loading.webp" alt="home icon" style="height: 1em;">
-              
-             
-          </div>
-          <a class="main-nav-link" href="/">首页</a>
-        </span>
-      
-        <span class="main-nav-link-wrap">
-          <div class="main-nav-icon icon ">
-             
-              
-                <img src="/images/loading.webp" alt="archives icon" style="height: 1em;">
-              
-             
-          </div>
-          <a class="main-nav-link" href="/archives">归档</a>
-        </span>
-      
-        <span class="main-nav-link-wrap">
-          <div class="main-nav-icon icon ">
-             
-              
-                <img src="/images/loading.webp" alt="about icon" style="height: 1em;">
-              
-             
-          </div>
-          <a class="main-nav-link" href="/about">关于</a>
-        </span>
-      
-        <span class="main-nav-link-wrap">
-          <div class="main-nav-icon icon ">
-             
-              
-                <img src="/images/loading.webp" alt="friend icon" style="height: 1em;">
-              
-             
-          </div>
-          <a class="main-nav-link" href="/friend">友链</a>
-        </span>
-      
-    
+        <a class="main-nav-link-wrap" href="/">
+            <div class="main-nav-icon icon ">
+                  <img src="/images/loading.webp" alt="home icon" style="height: 1em;">
+            </div>
+          <span class="main-nav-link">首页</span>
+        </a>
+        <a class="main-nav-link-wrap" href="/archives">
+            <div class="main-nav-icon icon ">
+                  <img src="/images/loading.webp" alt="archives icon" style="height: 1em;">
+            </div>
+          <span class="main-nav-link">归档</span>
+        </a>
+        <a class="main-nav-link-wrap" href="/about">
+            <div class="main-nav-icon icon ">
+                  <img src="/images/loading.webp" alt="about icon" style="height: 1em;">
+            </div>
+          <span class="main-nav-link">关于</span>
+        </a>
+        <a class="main-nav-link-wrap" href="/friend">
+            <div class="main-nav-icon icon ">
+                  <img src="/images/loading.webp" alt="friend icon" style="height: 1em;">
+            </div>
+          <span class="main-nav-link">友链</span>
+        </a>
     <a id="main-nav-toggle" class="nav-icon" aria-label="Toggle navigation" role="button"></a>
   </nav>
   <nav id="sub-nav" aria-label="Secondary navigation">
-    
-    
       <a id="nav-search-btn" class="nav-icon popup-trigger" title="搜索" aria-label="搜索"></a>
-    
   </nav>
-  
 </div>
 <header id="header" aria-label="Site header">
-  
-    
-      
         <picture>
-          
         </picture>
-        
           <img crossorigin="anonymous" fetchpriority="high" src="/images/bg.webp" alt="Redis部分源码解析">
-        
-      
-    
-  
   <div id="header-outer">
     <div id="header-title">
-      
-        
-        
           <span id="logo">
             <h1 data-aos="slide-up">Redis部分源码解析</h1>
           </span>
-        
-      
-      
-        
         <h2 id="subtitle-wrap" data-aos="slide-down">
-          
         </h2>
-      
     </div>
   </div>
 </header>
 
         <div id="content" aria-label="Page content"  class="sidebar-right" >
           <aside id="sidebar" aria-label="Sidebar">
-  
   <div class="sidebar-wrapper-container sticky">
-  
-    
-    
       <meting-js
         theme="var(--color-link)"
         id="2265921590"
@@ -321,24 +155,17 @@
         list-folded="false"
         
       ></meting-js>
-    
-  
- 
   <div class="sidebar-wrapper">
     <div class="sidebar-wrap" data-aos="fade-up">
-      
-        
           <div class="sidebar-toc-sidebar"><h3 class="toc-title">文章目录</h3>
 <div class="sidebar-toc-wrapper toc-div-class" >
-  
     <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Redis-Ready-Start%E2%80%94%E2%80%94%E5%A6%82%E4%BD%95%E5%BC%80%E5%A7%8B"><span class="toc-number">1.</span> <span class="toc-text">Redis &#x3D; Ready + Start——如何开始</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Redis-5-0-8-%E4%B8%BB%E8%A6%81%E7%BB%93%E6%9E%84"><span class="toc-number">1.1.</span> <span class="toc-text">Redis-5.0.8 主要结构</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Redis-%E7%9A%84%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="toc-number">2.</span> <span class="toc-text">Redis 的数据结构</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%BE%E8%AE%A1%E7%90%86%E5%BF%B5"><span class="toc-number">2.1.</span> <span class="toc-text">设计理念</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E6%95%B0%E6%8D%AE%E5%AF%B9%E8%B1%A1"><span class="toc-number">2.2.</span> <span class="toc-text">基本数据对象</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#sds"><span class="toc-number">2.3.</span> <span class="toc-text">sds</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#C%E5%AD%97%E7%AC%A6%E4%B8%B2%E4%B8%8D%E5%8F%AF%E4%BB%A5%E7%9B%B4%E6%8E%A5%E7%94%A8%E5%90%97%EF%BC%9F"><span class="toc-number">2.3.1.</span> <span class="toc-text">C字符串不可以直接用吗？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#sds-%E8%AE%BE%E8%AE%A1"><span class="toc-number">2.3.2.</span> <span class="toc-text">sds 设计</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#flags-%E4%B8%8E-sds-%E7%B1%BB%E5%9E%8B"><span class="toc-number">2.3.2.1.</span> <span class="toc-text">flags 与 sds 类型</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#sdshdr5-%E4%B8%8E-%E5%B5%8C%E5%85%A5%E5%BC%8F%E5%AD%97%E7%AC%A6%E4%B8%B2"><span class="toc-number">2.3.2.2.</span> <span class="toc-text">sdshdr5 与 嵌入式字符串</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E8%A2%AB%E5%BC%83%E7%94%A8%E7%9A%84sdshdr5"><span class="toc-number">2.3.2.2.1.</span> <span class="toc-text">被弃用的sdshdr5</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#sdshdr5%E7%9A%84%E6%9B%BF%E4%BB%A3%E5%93%81"><span class="toc-number">2.3.2.2.2.</span> <span class="toc-text">sdshdr5的替代品</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%B5%8C%E5%85%A5%E5%BC%8F%E5%AD%97%E7%AC%A6%E4%B8%B2-%E4%B8%8E-sdshdr5%E7%B1%BB%E5%9E%8B%E7%9A%84key"><span class="toc-number">2.3.2.2.3.</span> <span class="toc-text">嵌入式字符串 与 sdshdr5类型的key</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#sds-%E6%96%B9%E6%B3%95"><span class="toc-number">2.3.3.</span> <span class="toc-text">sds 方法</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%9B%E5%BB%BAsds"><span class="toc-number">2.3.3.1.</span> <span class="toc-text">创建sds</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%87%8A%E6%94%BE"><span class="toc-number">2.3.3.2.</span> <span class="toc-text">释放</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%89%A9%E5%AE%B9"><span class="toc-number">2.3.3.3.</span> <span class="toc-text">扩容</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8B%BC%E6%8E%A5"><span class="toc-number">2.3.3.4.</span> <span class="toc-text">拼接</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A4%8D%E5%88%B6"><span class="toc-number">2.3.3.5.</span> <span class="toc-text">复制</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%A6%86%E7%9B%96"><span class="toc-number">2.3.3.6.</span> <span class="toc-text">覆盖</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%89%A9%E5%AE%B9%E5%A1%AB%E5%85%85"><span class="toc-number">2.3.3.7.</span> <span class="toc-text">扩容填充</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#dict"><span class="toc-number">2.4.</span> <span class="toc-text">dict</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#dict-%E8%AE%BE%E8%AE%A1"><span class="toc-number">2.4.1.</span> <span class="toc-text">dict 设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#dict-%E6%96%B9%E6%B3%95"><span class="toc-number">2.4.2.</span> <span class="toc-text">dict 方法</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA"><span class="toc-number">2.4.2.1.</span> <span class="toc-text">创建</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B7%BB%E5%8A%A0"><span class="toc-number">2.4.2.2.</span> <span class="toc-text">添加</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9F%A5%E6%89%BE"><span class="toc-number">2.4.2.3.</span> <span class="toc-text">查找</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%87%8D%E5%86%99"><span class="toc-number">2.4.2.4.</span> <span class="toc-text">重写</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%A0%E9%99%A4"><span class="toc-number">2.4.2.5.</span> <span class="toc-text">删除</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%89%A9%E5%AE%B9-1"><span class="toc-number">2.4.2.6.</span> <span class="toc-text">扩容</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%87%8D%E5%93%88%E5%B8%8C"><span class="toc-number">2.4.2.7.</span> <span class="toc-text">重哈希</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#skiplist"><span class="toc-number">2.5.</span> <span class="toc-text">skiplist</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#skiplist-%E8%AE%BE%E8%AE%A1"><span class="toc-number">2.5.1.</span> <span class="toc-text">skiplist 设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#skiplist-%E6%96%B9%E6%B3%95"><span class="toc-number">2.5.2.</span> <span class="toc-text">skiplist 方法</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA-1"><span class="toc-number">2.5.2.1.</span> <span class="toc-text">创建</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8F%92%E5%85%A5"><span class="toc-number">2.5.2.2.</span> <span class="toc-text">插入</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%A0%E9%99%A4%E8%8A%82%E7%82%B9"><span class="toc-number">2.5.2.3.</span> <span class="toc-text">删除节点</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9B%B4%E6%96%B0"><span class="toc-number">2.5.2.4.</span> <span class="toc-text">更新</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%A0%E9%99%A4%E8%B7%B3%E8%A1%A8"><span class="toc-number">2.5.2.5.</span> <span class="toc-text">删除跳表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9F%A5%E6%89%BE-1"><span class="toc-number">2.5.2.6.</span> <span class="toc-text">查找</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Sort-Set%E4%B8%AD%E7%9A%84skiplist%E4%B8%8Eziplist"><span class="toc-number">2.5.3.</span> <span class="toc-text">Sort Set中的skiplist与ziplist</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ziplist"><span class="toc-number">2.6.</span> <span class="toc-text">ziplist</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ziplist-%E8%AE%BE%E8%AE%A1"><span class="toc-number">2.6.1.</span> <span class="toc-text">ziplist 设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ziplist-%E6%96%B9%E6%B3%95"><span class="toc-number">2.6.2.</span> <span class="toc-text">ziplist 方法</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA-2"><span class="toc-number">2.6.2.1.</span> <span class="toc-text">创建</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8F%92%E5%85%A5-1"><span class="toc-number">2.6.2.2.</span> <span class="toc-text">插入</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%A0%E9%99%A4-1"><span class="toc-number">2.6.2.3.</span> <span class="toc-text">删除</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9F%A5%E6%89%BE%E5%85%83%E7%B4%A0"><span class="toc-number">2.6.2.4.</span> <span class="toc-text">查找元素</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%81%8D%E5%8E%86%E6%93%8D%E4%BD%9C"><span class="toc-number">2.6.2.5.</span> <span class="toc-text">遍历操作</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BA%A7%E8%81%94%E6%9B%B4%E6%96%B0"><span class="toc-number">2.6.2.6.</span> <span class="toc-text">级联更新</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#quicklist"><span class="toc-number">2.7.</span> <span class="toc-text">quicklist</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#quicklist-%E8%AE%BE%E8%AE%A1"><span class="toc-number">2.7.1.</span> <span class="toc-text">quicklist 设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#quicklist-%E6%96%B9%E6%B3%95"><span class="toc-number">2.7.2.</span> <span class="toc-text">quicklist 方法</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA-3"><span class="toc-number">2.7.2.1.</span> <span class="toc-text">创建</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8F%92%E5%85%A5-2"><span class="toc-number">2.7.2.2.</span> <span class="toc-text">插入</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%A0%E9%99%A4-2"><span class="toc-number">2.7.2.3.</span> <span class="toc-text">删除</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9F%A5%E6%89%BE-2"><span class="toc-number">2.7.2.4.</span> <span class="toc-text">查找</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BF%AD%E4%BB%A3"><span class="toc-number">2.7.2.5.</span> <span class="toc-text">迭代</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%87%8A%E6%94%BE-1"><span class="toc-number">2.7.2.6.</span> <span class="toc-text">释放</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#intset"><span class="toc-number">2.8.</span> <span class="toc-text">intset</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#intset-%E8%AE%BE%E8%AE%A1"><span class="toc-number">2.8.1.</span> <span class="toc-text">intset 设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#intset-%E6%96%B9%E6%B3%95"><span class="toc-number">2.8.2.</span> <span class="toc-text">intset 方法</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA-4"><span class="toc-number">2.8.2.1.</span> <span class="toc-text">创建</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B7%BB%E5%8A%A0-1"><span class="toc-number">2.8.2.2.</span> <span class="toc-text">添加</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%A0%E9%99%A4-3"><span class="toc-number">2.8.2.3.</span> <span class="toc-text">删除</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9F%A5%E6%89%BE-3"><span class="toc-number">2.8.2.4.</span> <span class="toc-text">查找</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96%E5%85%83%E7%B4%A0"><span class="toc-number">2.8.2.5.</span> <span class="toc-text">获取元素</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BE%85%E5%8A%A9%E5%87%BD%E6%95%B0"><span class="toc-number">2.8.2.6.</span> <span class="toc-text">辅助函数</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Redis-%E7%9A%84%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86"><span class="toc-number">3.</span> <span class="toc-text">Redis 的内存管理</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E4%B8%8E%E9%87%8A%E6%94%BE"><span class="toc-number">3.1.</span> <span class="toc-text">内存分配与释放</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E7%BB%9F%E8%AE%A1%E6%9C%BA%E5%88%B6"><span class="toc-number">3.1.1.</span> <span class="toc-text">内存统计机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E5%87%BD%E6%95%B0"><span class="toc-number">3.1.2.</span> <span class="toc-text">内存分配函数</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#zmalloc"><span class="toc-number">3.1.2.1.</span> <span class="toc-text">zmalloc</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#zcalloc"><span class="toc-number">3.1.2.2.</span> <span class="toc-text">zcalloc</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#zrealloc"><span class="toc-number">3.1.2.3.</span> <span class="toc-text">zrealloc</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E9%87%8A%E6%94%BE%E5%87%BD%E6%95%B0"><span class="toc-number">3.1.3.</span> <span class="toc-text">内存释放函数</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#zfree"><span class="toc-number">3.1.3.1.</span> <span class="toc-text">zfree</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E5%A4%A7%E5%B0%8F%E8%8E%B7%E5%8F%96"><span class="toc-number">3.1.4.</span> <span class="toc-text">内存大小获取</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#OOM-%E5%A4%84%E7%90%86%E6%9C%BA%E5%88%B6"><span class="toc-number">3.1.5.</span> <span class="toc-text">OOM 处理机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E7%BB%9F%E8%AE%A1%E6%9F%A5%E8%AF%A2"><span class="toc-number">3.1.6.</span> <span class="toc-text">内存统计查询</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#zmalloc-used-memory"><span class="toc-number">3.1.6.1.</span> <span class="toc-text">zmalloc_used_memory</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#zmalloc-get-rss"><span class="toc-number">3.1.6.2.</span> <span class="toc-text">zmalloc_get_rss</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#zmalloc-get-allocator-info"><span class="toc-number">3.1.6.3.</span> <span class="toc-text">zmalloc_get_allocator_info</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BE%85%E5%8A%A9%E5%87%BD%E6%95%B0-1"><span class="toc-number">3.1.7.</span> <span class="toc-text">辅助函数</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#zstrdup"><span class="toc-number">3.1.7.1.</span> <span class="toc-text">zstrdup</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#zlibc-free"><span class="toc-number">3.1.7.2.</span> <span class="toc-text">zlibc_free</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#jemalloc-%E5%86%85%E5%AD%98%E6%B1%A0%E7%89%B9%E6%80%A7%E5%88%A9%E7%94%A8"><span class="toc-number">3.1.8.</span> <span class="toc-text">jemalloc 内存池特性利用</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#set-jemalloc-bg-thread"><span class="toc-number">3.1.8.1.</span> <span class="toc-text">set_jemalloc_bg_thread</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%87%E6%9C%9F%E9%94%AE%E5%A4%84%E7%90%86"><span class="toc-number">3.2.</span> <span class="toc-text">过期键处理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%87%E6%9C%9F%E9%94%AE%E7%9A%84%E5%AD%98%E5%82%A8%E6%9C%BA%E5%88%B6"><span class="toc-number">3.2.1.</span> <span class="toc-text">过期键的存储机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%BE%E7%BD%AE%E5%92%8C%E6%9F%A5%E8%AF%A2%E8%BF%87%E6%9C%9F%E6%97%B6%E9%97%B4"><span class="toc-number">3.2.2.</span> <span class="toc-text">设置和查询过期时间</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#setExpire"><span class="toc-number">3.2.2.1.</span> <span class="toc-text">setExpire</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#getExpire"><span class="toc-number">3.2.2.2.</span> <span class="toc-text">getExpire</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#removeExpire"><span class="toc-number">3.2.2.3.</span> <span class="toc-text">removeExpire</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A2%AB%E5%8A%A8%E8%BF%87%E6%9C%9F%EF%BC%88%E6%83%B0%E6%80%A7%E5%88%A0%E9%99%A4%EF%BC%89"><span class="toc-number">3.2.3.</span> <span class="toc-text">被动过期（惰性删除）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#keyIsExpired"><span class="toc-number">3.2.3.1.</span> <span class="toc-text">keyIsExpired</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#expireIfNeeded"><span class="toc-number">3.2.3.2.</span> <span class="toc-text">expireIfNeeded</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BB%E5%8A%A8%E8%BF%87%E6%9C%9F%EF%BC%88%E5%AE%9A%E6%9C%9F%E5%88%A0%E9%99%A4%EF%BC%89"><span class="toc-number">3.2.4.</span> <span class="toc-text">主动过期（定期删除）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#activeExpireCycle"><span class="toc-number">3.2.4.1.</span> <span class="toc-text">activeExpireCycle</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#activeExpireCycleTryExpire"><span class="toc-number">3.2.4.2.</span> <span class="toc-text">activeExpireCycleTryExpire</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BB%E5%8A%A8%E8%BF%87%E6%9C%9F%E7%9A%84%E4%B8%A4%E7%A7%8D%E6%A8%A1%E5%BC%8F"><span class="toc-number">3.2.5.</span> <span class="toc-text">主动过期的两种模式</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#SLOW-%E6%A8%A1%E5%BC%8F"><span class="toc-number">3.2.5.1.</span> <span class="toc-text">SLOW 模式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#FAST-%E6%A8%A1%E5%BC%8F"><span class="toc-number">3.2.5.2.</span> <span class="toc-text">FAST 模式</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%87%E6%9C%9F%E9%94%AE%E7%9A%84%E4%BC%A0%E6%92%AD"><span class="toc-number">3.2.6.</span> <span class="toc-text">过期键的传播</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#propagateExpire"><span class="toc-number">3.2.6.1.</span> <span class="toc-text">propagateExpire</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%87%E6%9C%9F%E5%91%BD%E4%BB%A4%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="toc-number">3.2.7.</span> <span class="toc-text">过期命令的实现</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#expireGenericCommand"><span class="toc-number">3.2.7.1.</span> <span class="toc-text">expireGenericCommand</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%83%B0%E6%80%A7%E5%88%A0%E9%99%A4"><span class="toc-number">3.3.</span> <span class="toc-text">惰性删除</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE%E9%80%89%E9%A1%B9"><span class="toc-number">3.3.1.</span> <span class="toc-text">配置选项</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%83%B0%E6%80%A7%E5%88%A0%E9%99%A4%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%80%9D%E6%83%B3"><span class="toc-number">3.3.2.</span> <span class="toc-text">惰性删除的设计思想</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%A0%E9%99%A4%E6%88%90%E6%9C%AC%E8%AF%84%E4%BC%B0"><span class="toc-number">3.3.3.</span> <span class="toc-text">删除成本评估</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#lazyfreeGetFreeEffort"><span class="toc-number">3.3.3.1.</span> <span class="toc-text">lazyfreeGetFreeEffort</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%8C%E6%AD%A5%E5%88%A0%E9%99%A4%E4%B8%8E%E5%BC%82%E6%AD%A5%E5%88%A0%E9%99%A4"><span class="toc-number">3.3.4.</span> <span class="toc-text">同步删除与异步删除</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#dbSyncDelete"><span class="toc-number">3.3.4.1.</span> <span class="toc-text">dbSyncDelete</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#dbAsyncDelete"><span class="toc-number">3.3.4.2.</span> <span class="toc-text">dbAsyncDelete</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#dbDelete"><span class="toc-number">3.3.4.3.</span> <span class="toc-text">dbDelete</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%8E%E5%8F%B0%E7%BA%BF%E7%A8%8B%E5%A4%84%E7%90%86%EF%BC%88BIO%EF%BC%89"><span class="toc-number">3.3.5.</span> <span class="toc-text">后台线程处理（BIO）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#BIO-%E7%BA%BF%E7%A8%8B%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-number">3.3.5.1.</span> <span class="toc-text">BIO 线程初始化</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E5%90%8E%E5%8F%B0%E4%BB%BB%E5%8A%A1"><span class="toc-number">3.3.5.2.</span> <span class="toc-text">创建后台任务</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%90%8E%E5%8F%B0%E7%BA%BF%E7%A8%8B%E5%A4%84%E7%90%86%E4%BB%BB%E5%8A%A1"><span class="toc-number">3.3.5.3.</span> <span class="toc-text">后台线程处理任务</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%8E%E5%8F%B0%E7%BA%BF%E7%A8%8B%E9%87%8A%E6%94%BE%E5%87%BD%E6%95%B0"><span class="toc-number">3.3.6.</span> <span class="toc-text">后台线程释放函数</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#lazyfreeFreeObjectFromBioThread"><span class="toc-number">3.3.6.1.</span> <span class="toc-text">lazyfreeFreeObjectFromBioThread</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#lazyfreeFreeDatabaseFromBioThread"><span class="toc-number">3.3.6.2.</span> <span class="toc-text">lazyfreeFreeDatabaseFromBioThread</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#lazyfreeFreeSlotsMapFromBioThread"><span class="toc-number">3.3.6.3.</span> <span class="toc-text">lazyfreeFreeSlotsMapFromBioThread</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B6%E4%BB%96%E5%BC%82%E6%AD%A5%E5%88%A0%E9%99%A4%E5%9C%BA%E6%99%AF"><span class="toc-number">3.3.7.</span> <span class="toc-text">其他异步删除场景</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#freeObjAsync"><span class="toc-number">3.3.7.1.</span> <span class="toc-text">freeObjAsync</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#emptyDbAsync"><span class="toc-number">3.3.7.2.</span> <span class="toc-text">emptyDbAsync</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#slotToKeyFlushAsync"><span class="toc-number">3.3.7.3.</span> <span class="toc-text">slotToKeyFlushAsync</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%83%B0%E6%80%A7%E5%88%A0%E9%99%A4%E7%9A%84%E7%BB%9F%E8%AE%A1%E5%92%8C%E7%9B%91%E6%8E%A7"><span class="toc-number">3.3.8.</span> <span class="toc-text">惰性删除的统计和监控</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#lazyfreeGetPendingObjectsCount"><span class="toc-number">3.3.8.1.</span> <span class="toc-text">lazyfreeGetPendingObjectsCount</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E7%BD%AE%E6%8D%A2"><span class="toc-number">3.4.</span> <span class="toc-text">内存置换</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE%E9%80%89%E9%A1%B9-1"><span class="toc-number">3.4.1.</span> <span class="toc-text">配置选项</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E6%B7%98%E6%B1%B0%E7%AD%96%E7%95%A5"><span class="toc-number">3.4.2.</span> <span class="toc-text">内存淘汰策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#LRU-%E5%AE%9E%E7%8E%B0"><span class="toc-number">3.4.3.</span> <span class="toc-text">LRU 实现</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%85%A8%E5%B1%80-LRU-%E6%97%B6%E9%92%9F%E5%80%BC%E7%9A%84%E8%AE%A1%E7%AE%97"><span class="toc-number">3.4.3.1.</span> <span class="toc-text">全局 LRU 时钟值的计算</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#LRU-%E6%97%B6%E9%92%9F"><span class="toc-number">3.4.3.1.1.</span> <span class="toc-text">LRU 时钟</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#serverCron-%E6%9B%B4%E6%96%B0%E5%85%A8%E5%B1%80-LRU-%E6%97%B6%E9%92%9F"><span class="toc-number">3.4.3.1.2.</span> <span class="toc-text">serverCron 更新全局 LRU 时钟</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#LRU-CLOCK-%E8%8E%B7%E5%8F%96%E5%85%A8%E5%B1%80-LRU-%E6%97%B6%E9%92%9F"><span class="toc-number">3.4.3.1.3.</span> <span class="toc-text">LRU_CLOCK 获取全局 LRU 时钟</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%94%AE%E5%80%BC%E5%AF%B9-LRU-%E6%97%B6%E9%92%9F%E5%80%BC%E7%9A%84%E5%88%9D%E5%A7%8B%E5%8C%96%E4%B8%8E%E6%9B%B4%E6%96%B0"><span class="toc-number">3.4.3.2.</span> <span class="toc-text">键值对 LRU 时钟值的初始化与更新</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#createObject-%E5%88%9D%E5%A7%8B%E5%8C%96-LRU-%E6%97%B6%E9%92%9F"><span class="toc-number">3.4.3.2.1.</span> <span class="toc-text">createObject 初始化 LRU 时钟</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#lookupKey-%E6%9B%B4%E6%96%B0-LRU-%E6%97%B6%E9%92%9F"><span class="toc-number">3.4.3.2.2.</span> <span class="toc-text">lookupKey 更新 LRU 时钟</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BF%91%E4%BC%BC-LRU-%E7%AE%97%E6%B3%95%E7%9A%84%E5%AE%9E%E9%99%85%E6%89%A7%E8%A1%8C"><span class="toc-number">3.4.3.3.</span> <span class="toc-text">近似 LRU 算法的实际执行</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#freeMemoryIfNeeded-%E8%A7%A6%E5%8F%91%E5%86%85%E5%AD%98%E6%B7%98%E6%B1%B0"><span class="toc-number">3.4.3.3.1.</span> <span class="toc-text">freeMemoryIfNeeded 触发内存淘汰</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#evictionPoolPopulate-%E5%A1%AB%E5%85%85%E6%B7%98%E6%B1%B0%E6%B1%A0"><span class="toc-number">3.4.3.3.2.</span> <span class="toc-text">evictionPoolPopulate 填充淘汰池</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#estimateObjectIdleTime-%E8%AE%A1%E7%AE%97%E7%A9%BA%E9%97%B2%E6%97%B6%E9%97%B4"><span class="toc-number">3.4.3.3.3.</span> <span class="toc-text">estimateObjectIdleTime 计算空闲时间</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#LFU-%E5%AE%9E%E7%8E%B0"><span class="toc-number">3.4.4.</span> <span class="toc-text">LFU 实现</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%94%AE%E5%80%BC%E5%AF%B9%E8%AE%BF%E9%97%AE%E9%A2%91%E7%8E%87%E8%AE%B0%E5%BD%95"><span class="toc-number">3.4.4.1.</span> <span class="toc-text">键值对访问频率记录</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#LFU-%E5%AD%97%E6%AE%B5%E5%B8%83%E5%B1%80"><span class="toc-number">3.4.4.1.1.</span> <span class="toc-text">LFU 字段布局</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%94%AE%E5%80%BC%E5%AF%B9%E8%AE%BF%E9%97%AE%E9%A2%91%E7%8E%87%E5%88%9D%E5%A7%8B%E5%8C%96%E5%92%8C%E6%9B%B4%E6%96%B0"><span class="toc-number">3.4.4.2.</span> <span class="toc-text">键值对访问频率初始化和更新</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#createObject-%E5%88%9D%E5%A7%8B%E5%8C%96-LFU-%E4%BF%A1%E6%81%AF"><span class="toc-number">3.4.4.2.1.</span> <span class="toc-text">createObject 初始化 LFU 信息</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#updateLFU-%E6%9B%B4%E6%96%B0-LFU-%E4%BF%A1%E6%81%AF"><span class="toc-number">3.4.4.2.2.</span> <span class="toc-text">updateLFU 更新 LFU 信息</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#lookupKey-%E8%B0%83%E7%94%A8-updateLFU"><span class="toc-number">3.4.4.2.3.</span> <span class="toc-text">lookupKey 调用 updateLFU</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#LFUGetTimeInMinutes"><span class="toc-number">3.4.4.2.4.</span> <span class="toc-text">LFUGetTimeInMinutes</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#LFUTimeElapsed"><span class="toc-number">3.4.4.2.5.</span> <span class="toc-text">LFUTimeElapsed</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#LFULogIncr"><span class="toc-number">3.4.4.2.6.</span> <span class="toc-text">LFULogIncr</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#LFUDecrAndReturn"><span class="toc-number">3.4.4.2.7.</span> <span class="toc-text">LFUDecrAndReturn</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#LFU-%E7%AE%97%E6%B3%95%E6%B7%98%E6%B1%B0%E6%95%B0%E6%8D%AE"><span class="toc-number">3.4.4.3.</span> <span class="toc-text">LFU 算法淘汰数据</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#evictionPoolPopulate-%E4%B8%AD%E7%9A%84-LFU-%E8%AE%A1%E7%AE%97"><span class="toc-number">3.4.4.3.1.</span> <span class="toc-text">evictionPoolPopulate 中的 LFU 计算</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#LFU-%E4%B8%8E-LRU-%E6%B7%98%E6%B1%B0%E6%B5%81%E7%A8%8B%E7%9A%84%E7%9B%B8%E5%90%8C%E7%82%B9"><span class="toc-number">3.4.4.3.2.</span> <span class="toc-text">LFU 与 LRU 淘汰流程的相同点</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#LFU-%E4%B8%8E-LRU-%E6%B7%98%E6%B1%B0%E6%B5%81%E7%A8%8B%E7%9A%84%E4%B8%8D%E5%90%8C%E7%82%B9"><span class="toc-number">3.4.4.3.3.</span> <span class="toc-text">LFU 与 LRU 淘汰流程的不同点</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B7%98%E6%B1%B0%E6%B1%A0%EF%BC%88Eviction-Pool%EF%BC%89"><span class="toc-number">3.4.5.</span> <span class="toc-text">淘汰池（Eviction Pool）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B7%98%E6%B1%B0%E6%B1%A0%E7%BB%93%E6%9E%84"><span class="toc-number">3.4.5.1.</span> <span class="toc-text">淘汰池结构</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#evictionPoolAlloc"><span class="toc-number">3.4.5.2.</span> <span class="toc-text">evictionPoolAlloc</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#evictionPoolPopulate"><span class="toc-number">3.4.5.3.</span> <span class="toc-text">evictionPoolPopulate</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E7%8A%B6%E6%80%81%E6%A3%80%E6%9F%A5"><span class="toc-number">3.4.6.</span> <span class="toc-text">内存状态检查</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#freeMemoryGetNotCountedMemory"><span class="toc-number">3.4.6.1.</span> <span class="toc-text">freeMemoryGetNotCountedMemory</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#getMaxmemoryState"><span class="toc-number">3.4.6.2.</span> <span class="toc-text">getMaxmemoryState</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E9%87%8A%E6%94%BE%E6%A0%B8%E5%BF%83%E5%87%BD%E6%95%B0"><span class="toc-number">3.4.7.</span> <span class="toc-text">内存释放核心函数</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#freeMemoryIfNeeded"><span class="toc-number">3.4.7.1.</span> <span class="toc-text">freeMemoryIfNeeded</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#freeMemoryIfNeededAndSafe"><span class="toc-number">3.4.7.2.</span> <span class="toc-text">freeMemoryIfNeededAndSafe</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Redis-%E7%9A%84%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1"><span class="toc-number">4.</span> <span class="toc-text">Redis 的网络通信</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#main-%E5%87%BD%E6%95%B0"><span class="toc-number">4.1.</span> <span class="toc-text">main 函数</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-number">4.1.1.</span> <span class="toc-text">基本初始化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A3%80%E6%9F%A5%E5%93%A8%E5%85%B5%E6%A8%A1%E5%BC%8F%EF%BC%8C%E5%B9%B6%E6%A3%80%E6%9F%A5%E6%98%AF%E5%90%A6%E8%A6%81%E6%89%A7%E8%A1%8C-RDB-%E6%A3%80%E6%B5%8B%E6%88%96-AOF-%E6%A3%80%E6%B5%8B"><span class="toc-number">4.1.2.</span> <span class="toc-text">检查哨兵模式，并检查是否要执行 RDB 检测或 AOF 检测</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%90%E8%A1%8C%E5%8F%82%E6%95%B0%E8%A7%A3%E6%9E%90"><span class="toc-number">4.1.3.</span> <span class="toc-text">运行参数解析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96-server"><span class="toc-number">4.1.4.</span> <span class="toc-text">初始化 server</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%A7%E8%A1%8C%E4%BA%8B%E4%BB%B6%E9%A9%B1%E5%8A%A8%E6%A1%86%E6%9E%B6"><span class="toc-number">4.1.5.</span> <span class="toc-text">执行事件驱动框架</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#IO-%E5%A4%9A%E8%B7%AF%E5%A4%8D%E7%94%A8%E5%9F%BA%E7%A1%80"><span class="toc-number">4.2.</span> <span class="toc-text">IO 多路复用基础</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81-IO-%E5%A4%9A%E8%B7%AF%E5%A4%8D%E7%94%A8%EF%BC%9F"><span class="toc-number">4.2.1.</span> <span class="toc-text">为什么需要 IO 多路复用？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#IO-%E5%A4%9A%E8%B7%AF%E5%A4%8D%E7%94%A8%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="toc-number">4.2.2.</span> <span class="toc-text">IO 多路复用的基本概念</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#select%E3%80%81poll%E3%80%81epoll-%E8%AF%A6%E8%A7%A3"><span class="toc-number">4.2.3.</span> <span class="toc-text">select、poll、epoll 详解</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#select"><span class="toc-number">4.2.3.1.</span> <span class="toc-text">select</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#poll"><span class="toc-number">4.2.3.2.</span> <span class="toc-text">poll</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#epoll"><span class="toc-number">4.2.3.3.</span> <span class="toc-text">epoll</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Reactor-%E5%92%8C-Proactor-%E6%A8%A1%E5%BC%8F"><span class="toc-number">4.2.4.</span> <span class="toc-text">Reactor 和 Proactor 模式</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Reactor-%E6%A8%A1%E5%BC%8F"><span class="toc-number">4.2.4.1.</span> <span class="toc-text">Reactor 模式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Proactor-%E6%A8%A1%E5%BC%8F"><span class="toc-number">4.2.4.2.</span> <span class="toc-text">Proactor 模式</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88-Redis-%E4%B8%8D%E4%BD%BF%E7%94%A8-poll%EF%BC%9F"><span class="toc-number">4.2.5.</span> <span class="toc-text">为什么 Redis 不使用 poll？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88-Redis-%E4%B8%8D%E4%BD%BF%E7%94%A8-Proactor%EF%BC%9F"><span class="toc-number">4.2.6.</span> <span class="toc-text">为什么 Redis 不使用 Proactor？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Redis-ae-%E4%BA%8B%E4%BB%B6%E9%A9%B1%E5%8A%A8%E6%A1%86%E6%9E%B6"><span class="toc-number">4.3.</span> <span class="toc-text">Redis ae 事件驱动框架</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ae-%E6%A1%86%E6%9E%B6%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%80%9D%E6%83%B3"><span class="toc-number">4.3.1.</span> <span class="toc-text">ae 框架的设计思想</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ae-%E6%A1%86%E6%9E%B6%E7%9A%84%E6%A0%B8%E5%BF%83%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="toc-number">4.3.2.</span> <span class="toc-text">ae 框架的核心数据结构</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#aeEventLoop-%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF"><span class="toc-number">4.3.2.1.</span> <span class="toc-text">aeEventLoop 事件循环</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#aeCreateEventLoop-%E5%88%9D%E5%A7%8B%E5%8C%96%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF"><span class="toc-number">4.3.2.2.</span> <span class="toc-text">aeCreateEventLoop 初始化事件循环</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#aeFileEvent-%E6%96%87%E4%BB%B6%E4%BA%8B%E4%BB%B6"><span class="toc-number">4.3.2.3.</span> <span class="toc-text">aeFileEvent 文件事件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E4%BA%8B%E4%BB%B6%E7%9A%84%E5%A4%84%E7%90%86%E5%87%BD%E6%95%B0"><span class="toc-number">4.3.2.4.</span> <span class="toc-text">文件事件的处理函数</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#aeCreateFileEvent-%E4%BA%8B%E4%BB%B6%E6%B3%A8%E5%86%8C"><span class="toc-number">4.3.2.4.1.</span> <span class="toc-text">aeCreateFileEvent 事件注册</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#aeDeleteFileEvent-%E5%88%A0%E9%99%A4%E6%96%87%E4%BB%B6%E4%BA%8B%E4%BB%B6"><span class="toc-number">4.3.2.4.2.</span> <span class="toc-text">aeDeleteFileEvent 删除文件事件</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#aeGetFileEvents-%E8%8E%B7%E5%8F%96%E6%96%87%E4%BB%B6%E4%BA%8B%E4%BB%B6"><span class="toc-number">4.3.2.4.3.</span> <span class="toc-text">aeGetFileEvents 获取文件事件</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Redis-%E4%B8%AD%E7%9A%84-IO-%E4%BA%8B%E4%BB%B6%E5%A4%84%E7%90%86%E5%87%BD%E6%95%B0"><span class="toc-number">4.3.2.5.</span> <span class="toc-text">Redis 中的 IO 事件处理函数</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#acceptTcpHandler-%E8%BF%9E%E6%8E%A5%E4%BA%8B%E4%BB%B6"><span class="toc-number">4.3.2.5.1.</span> <span class="toc-text">acceptTcpHandler 连接事件</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#readQueryFromClient-%E8%AF%BB%E4%BA%8B%E4%BB%B6"><span class="toc-number">4.3.2.5.2.</span> <span class="toc-text">readQueryFromClient 读事件</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#sendReplyToClient-%E5%8F%91%E9%80%81%E5%9B%9E%E5%A4%8D%E7%BB%99%E5%AE%A2%E6%88%B7%E7%AB%AF"><span class="toc-number">4.3.2.5.3.</span> <span class="toc-text">sendReplyToClient 发送回复给客户端</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#writeToClient-%E5%AE%9E%E9%99%85%E5%8F%91%E9%80%81%E6%95%B0%E6%8D%AE"><span class="toc-number">4.3.2.5.4.</span> <span class="toc-text">writeToClient 实际发送数据</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#aeTimeEvent-%E6%97%B6%E9%97%B4%E4%BA%8B%E4%BB%B6"><span class="toc-number">4.3.2.6.</span> <span class="toc-text">aeTimeEvent 时间事件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%97%B6%E9%97%B4%E4%BA%8B%E4%BB%B6%E7%9A%84%E5%A4%84%E7%90%86%E5%87%BD%E6%95%B0"><span class="toc-number">4.3.2.7.</span> <span class="toc-text">时间事件的处理函数</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#aeCreateTimeEvent-%E5%88%9B%E5%BB%BA%E6%97%B6%E9%97%B4%E4%BA%8B%E4%BB%B6"><span class="toc-number">4.3.2.7.1.</span> <span class="toc-text">aeCreateTimeEvent 创建时间事件</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#aeDeleteTimeEvent-%E5%88%A0%E9%99%A4%E6%97%B6%E9%97%B4%E4%BA%8B%E4%BB%B6"><span class="toc-number">4.3.2.7.2.</span> <span class="toc-text">aeDeleteTimeEvent 删除时间事件</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#processTimeEvents-%E5%A4%84%E7%90%86%E6%97%B6%E9%97%B4%E4%BA%8B%E4%BB%B6"><span class="toc-number">4.3.2.7.3.</span> <span class="toc-text">processTimeEvents 处理时间事件</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#aeMain-%E4%B8%BB%E5%BE%AA%E7%8E%AF"><span class="toc-number">4.3.3.</span> <span class="toc-text">aeMain 主循环</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#beforeSleep-%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF%E5%89%8D%E7%BD%AE%E5%9B%9E%E8%B0%83"><span class="toc-number">4.3.4.</span> <span class="toc-text">beforeSleep 事件循环前置回调</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#handleClientsWithPendingWrites-%E5%A4%84%E7%90%86%E5%BE%85%E5%86%99%E5%85%A5%E5%AE%A2%E6%88%B7%E7%AB%AF"><span class="toc-number">4.3.5.</span> <span class="toc-text">handleClientsWithPendingWrites 处理待写入客户端</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#aeProcessEvents-%E4%BA%8B%E4%BB%B6%E6%8D%95%E8%8E%B7%E4%B8%8E%E5%88%86%E5%8F%91"><span class="toc-number">4.3.6.</span> <span class="toc-text">aeProcessEvents 事件捕获与分发</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ae-%E6%A1%86%E6%9E%B6%E7%9A%84-IO-%E5%A4%9A%E8%B7%AF%E5%A4%8D%E7%94%A8%E5%B0%81%E8%A3%85"><span class="toc-number">4.3.7.</span> <span class="toc-text">ae 框架的 IO 多路复用封装</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BB%9F%E4%B8%80%E7%9A%84%E5%87%BD%E6%95%B0%E6%8E%A5%E5%8F%A3"><span class="toc-number">4.3.7.1.</span> <span class="toc-text">统一的函数接口</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#epoll-%E5%B0%81%E8%A3%85%E5%AE%9E%E7%8E%B0"><span class="toc-number">4.3.7.2.</span> <span class="toc-text">epoll 封装实现</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#aeApiCreate-%E5%88%9B%E5%BB%BA-epoll-%E5%AE%9E%E4%BE%8B"><span class="toc-number">4.3.7.2.1.</span> <span class="toc-text">aeApiCreate 创建 epoll 实例</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#aeApiAddEvent-%E6%B7%BB%E5%8A%A0%E4%BA%8B%E4%BB%B6"><span class="toc-number">4.3.7.2.2.</span> <span class="toc-text">aeApiAddEvent 添加事件</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#aeApiDelEvent-%E5%88%A0%E9%99%A4%E4%BA%8B%E4%BB%B6"><span class="toc-number">4.3.7.2.3.</span> <span class="toc-text">aeApiDelEvent 删除事件</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#aeApiPoll-%E7%AD%89%E5%BE%85%E4%BA%8B%E4%BB%B6"><span class="toc-number">4.3.7.2.4.</span> <span class="toc-text">aeApiPoll 等待事件</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#select-%E5%B0%81%E8%A3%85%E5%AE%9E%E7%8E%B0"><span class="toc-number">4.3.7.3.</span> <span class="toc-text">select 封装实现</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#aeApiCreate-%E5%88%9B%E5%BB%BA-select-%E7%8A%B6%E6%80%81"><span class="toc-number">4.3.7.3.1.</span> <span class="toc-text">aeApiCreate 创建 select 状态</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#aeApiAddEvent-%E6%B7%BB%E5%8A%A0%E4%BA%8B%E4%BB%B6-1"><span class="toc-number">4.3.7.3.2.</span> <span class="toc-text">aeApiAddEvent 添加事件</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#aeApiDelEvent-%E5%88%A0%E9%99%A4%E4%BA%8B%E4%BB%B6-1"><span class="toc-number">4.3.7.3.3.</span> <span class="toc-text">aeApiDelEvent 删除事件</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#aeApiPoll-%E7%AD%89%E5%BE%85%E4%BA%8B%E4%BB%B6-1"><span class="toc-number">4.3.7.3.4.</span> <span class="toc-text">aeApiPoll 等待事件</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ae-%E6%A1%86%E6%9E%B6%E7%9A%84%E8%87%AA%E5%8A%A8%E9%80%89%E6%8B%A9%E6%9C%BA%E5%88%B6"><span class="toc-number">4.3.8.</span> <span class="toc-text">ae 框架的自动选择机制</span></a></li></ol></li></ol></li></ol>
-  
 </div>
 </div>
           <div class="sidebar-common-sidebar hidden"><div class="sidebar-author">
   <img data-src="/avatar/avatar.webp" data-sizes="auto" alt="Chieko3020" class="lazyload">
   <div class="sidebar-author-name">Chieko3020</div>
-  <div class="sidebar-description">这并非约束我的规则<br>而是我对她的礼仪</div>
+  <div class="sidebar-description">这并非约束我的规则&lt;br&gt;而是我对她的礼仪</div>
 </div>
 <div class="sidebar-state">
   <div class="sidebar-state-article">
@@ -354,90 +181,54 @@
     <div class="sidebar-state-number">2</div>
   </div>
 </div>
-<div class="sidebar-social">
-  
+<div class="sidebar-social" >
     <div class="icon-github sidebar-social-icon">
       <a href=https://github.com/Chieko3020 itemprop="url" target="_blank" aria-label="github" rel="noopener nofollow noreferrer"></a>
     </div>
-  
     <div class="icon-bilibili sidebar-social-icon">
       <a href=https://space.bilibili.com/165313953 itemprop="url" target="_blank" aria-label="bilibili" rel="noopener nofollow noreferrer"></a>
     </div>
-  
 </div>
 <div class="sidebar-menu">
-  
-    
       <div class="sidebar-menu-link-wrap">
         <a class="sidebar-menu-link-dummy" href="/" aria-label="首页"></a>
-        <div class="sidebar-menu-icon icon ">
-          
-            
-              <img src="/images/loading.webp" alt="home icon" style="width: 1em;">
-            
-          
-        </div>
+          <div class="sidebar-menu-icon icon ">
+                <img src="/images/loading.webp" alt="home icon" style="width: 1em;">
+          </div>
         <div class="sidebar-menu-link">首页</div>
       </div>
-    
       <div class="sidebar-menu-link-wrap">
         <a class="sidebar-menu-link-dummy" href="/archives" aria-label="归档"></a>
-        <div class="sidebar-menu-icon icon ">
-          
-            
-              <img src="/images/loading.webp" alt="archives icon" style="width: 1em;">
-            
-          
-        </div>
+          <div class="sidebar-menu-icon icon ">
+                <img src="/images/loading.webp" alt="archives icon" style="width: 1em;">
+          </div>
         <div class="sidebar-menu-link">归档</div>
       </div>
-    
       <div class="sidebar-menu-link-wrap">
         <a class="sidebar-menu-link-dummy" href="/about" aria-label="关于"></a>
-        <div class="sidebar-menu-icon icon ">
-          
-            
-              <img src="/images/loading.webp" alt="about icon" style="width: 1em;">
-            
-          
-        </div>
+          <div class="sidebar-menu-icon icon ">
+                <img src="/images/loading.webp" alt="about icon" style="width: 1em;">
+          </div>
         <div class="sidebar-menu-link">关于</div>
       </div>
-    
       <div class="sidebar-menu-link-wrap">
         <a class="sidebar-menu-link-dummy" href="/friend" aria-label="友链"></a>
-        <div class="sidebar-menu-icon icon ">
-          
-            
-              <img src="/images/loading.webp" alt="friend icon" style="width: 1em;">
-            
-          
-        </div>
+          <div class="sidebar-menu-icon icon ">
+                <img src="/images/loading.webp" alt="friend icon" style="width: 1em;">
+          </div>
         <div class="sidebar-menu-link">友链</div>
       </div>
-    
-  
 </div>
 </div>
-        
-      
-      
-        
           <div class="sidebar-btn-wrapper" style="position:static">
             <div class="sidebar-toc-btn current"></div>
             <div class="sidebar-common-btn"></div>
           </div>
-        
-      
     </div>
   </div>
-  
   <div class="sidebar-widget">
-  
   </div>
-  
   </div>
-  
 </aside>
 
           <section id="main" aria-label="Main content"><article id="post-Redis部分源码解析" class="h-entry article" itemscope itemtype="https://schema.org/BlogPosting">
@@ -446,34 +237,22 @@
       <div class="article-date">
   <span class="article-date-link icon-calendar" data-aos="zoom-in">
     <time datetime="2026-01-21T05:16:21.000Z" itemprop="datePublished">2026-01-21</time>
-    <time style="display: none;" id="post-update-time">2026-02-10</time>
+    <time style="display: none;" id="post-update-time">2026-04-07</time>
   </span>
-  
     <span class="article-date-link icon-calendar-plus" data-aos="zoom-in">
-      <time datetime="2026-02-10T11:36:51.599Z" itemprop="dateModified">2026-02-10</time>
+      <time datetime="2026-04-06T17:36:12.062Z" itemprop="dateModified">2026-04-07</time>
     </span>
-  
 </div>
-
-      
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/%E5%8F%AA%E5%B1%9E%E4%BA%8E%E4%BD%A0%E7%9A%84%E5%B0%8F%E5%A6%99%E6%8B%9B-br-%E7%9C%8B%E4%BC%BC%E6%9C%89%E7%94%A8%E5%AE%9E%E5%88%99%E6%B2%A1%E7%94%A8/" title="只属于你的小妙招 <br> 看似有用实则没用">只属于你的小妙招 <br> 看似有用实则没用</a>
-  </div>
-
 
     </div>
     
     <div class="hr-line"></div>
     
-
     <div class="e-content article-entry" itemprop="articleBody">
-      
         <div class="warning custom-block" id="outdate-blockquote" style="display: none;">
           <p class="custom-block-title">WARNING</p>
           <p></p>
         </div>
-      
-      
         <h1 id="Redis-Ready-Start——如何开始"><a href="#Redis-Ready-Start——如何开始" class="headerlink" title="Redis &#x3D; Ready + Start——如何开始"></a>Redis &#x3D; Ready + Start——如何开始</h1><ul>
 <li>阅读源码绝非易事，整个目录包含上百个代码文件，每个文件动辄上千行代码，如果没有比较好的阅读方法和学习技巧容易无从下手</li>
 <li>阅读源码前应当先对全局的源码结构有所了解，先忽略功能的实现细节，对整体有个初步的认识<ul>
@@ -5778,115 +5557,66 @@
 </li>
 </ul>
 
-      
     </div>
     <footer class="article-footer">
-      
         <blockquote class="article-copyright">
-    <p><strong><span class="icon-user icon"></span>本文作者：</strong>Chieko3020 @ Chieko3020 | Nostalgia</p>
+    <p><strong><span class="icon-user icon"></span>本文作者：</strong>Chieko3020</p>
     <p><strong><span class="icon-link icon"></span>本文链接：</strong><a href="https://chieko3020.xyz/2026/01/21/Redis%E9%83%A8%E5%88%86%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90/">https://chieko3020.xyz/2026/01/21/Redis%E9%83%A8%E5%88%86%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90/</a></p>
     <p><strong><span class="icon-pencil icon"></span>本文标题：</strong>「Redis部分源码解析」</p>
     <p><strong><span class="icon-calendar icon"></span>本文发布时间：</strong>2026-01-21 13:16:21</p>
-    <p><strong><span class="icon-calendar icon"></span>本文更新时间：</strong>2026-02-10 19:36:51</p>
+    <p><strong><span class="icon-calendar icon"></span>本文更新时间：</strong>2026-04-07 01:36:12</p>
     <p><strong><span class="icon-copyright icon"></span>本文版权：</strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" rel="noopener nofollow noreferrer" target="_blank"><span class="icon-creative-commons"></span>BY-NC-SA</a> 许可协议。转载请注明出处！</p>
     <span class="icon-creative-commons article-copyright-bg"></span>
   </blockquote>
-      
-      
-      
-      
-      
-      
         <a data-aos="zoom-in" href="/2026/01/21/Redis%E9%83%A8%E5%88%86%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90/#comments" class="article-comment-link">
           <span class="post-comments-count twikoo-comment-count" data-path="/2026/01/21/Redis%E9%83%A8%E5%88%86%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90/" itemprop="commentCount"></span>
           留言
         </a>
-      
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item" data-aos="zoom-in"><a class="article-tag-list-link" href="/tags/%E4%BD%A0%E7%9F%A5%E9%81%93%E5%90%97/" rel="tag" title="你知道吗">你知道吗</a></li></ul>
+        <a class="article-category-link" href="/categories/%E5%8F%AA%E5%B1%9E%E4%BA%8E%E4%BD%A0%E7%9A%84%E5%B0%8F%E5%A6%99%E6%8B%9B-br-%E7%9C%8B%E4%BC%BC%E6%9C%89%E7%94%A8%E5%AE%9E%E5%88%99%E6%B2%A1%E7%94%A8/" title="只属于你的小妙招 <br> 看似有用实则没用" data-aos="zoom-in">只属于你的小妙招 <br> 看似有用实则没用</a>
 
+        <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item" data-aos="zoom-in"><a class="article-tag-list-link" href="/tags/%E4%BD%A0%E7%9F%A5%E9%81%93%E5%90%97/" rel="tag" title="你知道吗">你知道吗</a></li></ul>
 
     </footer>
   </div>
-  
-  <nav id="article-nav" aria-label="Article navigation" data-aos="fade-up">
-    
-      
+    <nav id="article-nav" aria-label="Article navigation" data-aos="fade-up">
       <div class="article-nav-link-wrap left">
-        
-          
-          
-            <img data-src="/images/1-8.webp" data-sizes="auto" alt="Android音频框架开发部分知识点" class="lazyload">
-          
-        
+            <img data-src="/images/4-1.webp" data-sizes="auto" alt="Android音频框架开发部分知识点" class="lazyload">
         <a href="/2026/02/04/Android%E9%9F%B3%E9%A2%91%E6%A1%86%E6%9E%B6%E5%BC%80%E5%8F%91%E9%83%A8%E5%88%86%E7%9F%A5%E8%AF%86%E7%82%B9/" aria-label="前一篇: Android音频框架开发部分知识点" title="前一篇: Android音频框架开发部分知识点"></a>
         <div class="article-nav-caption">前一篇</div>
         <h3 class="article-nav-title">
-          
             Android音频框架开发部分知识点
-          
         </h3>
       </div>
-    
-    
-    
     <div class="article-nav-link-wrap right">
-      
-        
-        
-          <img data-src="/images/31A_x4_g4A.webp" data-sizes="auto" alt="4天速通MongoDB基础" class="lazyload">
-        
-      
+          <img data-src="/images/Still_030_001.webp" data-sizes="auto" alt="4天速通MongoDB基础" class="lazyload">
       <a href="/2026/01/15/4%E5%A4%A9%E9%80%9F%E9%80%9AMongoDB%E5%9F%BA%E7%A1%80/" aria-label="后一篇: 4天速通MongoDB基础"  title="后一篇: 4天速通MongoDB基础"></a>
       <div class="article-nav-caption">后一篇</div>
       <h3 class="article-nav-title">
-        
           4天速通MongoDB基础
-        
       </h3>
     </div>
-    
   </nav>
-
 
 </article>
 
-
-
-
-
-
-
-
-
   <section id="comments" data-aos="fade-up">
     <div class="comment-header">
-      
-      
         
-      
       <h2 class="comment-title"></h2>
       <div class="comment-selector">
         <div class="comment-selector-wrap">
-            
             <div class="selector-item" data-selector="twikoo">
               <span>twikoo</span>
             </div>
-            
         </div>
       </div>
     </div>
     <div class="comment-content">
-      
-        <div class="comment twikoo-comment" data-aos="fade-up"
-          id="twikoo-comment">
-        </div>
-      
+          <div class="comment twikoo-comment" data-aos="fade-up"
+            id="twikoo-comment">
+          </div>
     </div>
   </section>
-
 
 </section>
         </div>
@@ -5895,39 +5625,26 @@
     <div class="footer-line"></div>
   </div>
   <div id="footer-info">
-    
     <div>
       <span class="icon-copyright"></span>
-      
-      
-      
         2025-2026
-      
-      <span class="footer-info-sep rotate"></span>
+        <span class="footer-info-sep rotate"></span>
       Chieko3020
     </div>
-    
       <div>
         基于&nbsp;<a href="https://hexo.io/" rel="noopener nofollow noreferrer" target="_blank">Hexo</a>&nbsp;
         Theme.<a href="https://github.com/D-Sketon/hexo-theme-reimu" rel="noopener nofollow noreferrer" target="_blank">Reimu</a>
       </div>
-    
-    
       <div>
         <span class="icon-brush"></span>
-        224.8k
+        158.2k
         &nbsp;|&nbsp;
         <span class="icon-coffee"></span>
-        14:31
+        10:02
       </div>
-    
-    
       <div class="footer-beian">
         <a target="_blank" rel="noopener nofollow noreferrer" href="https://beian.miit.gov.cn">闽ICP备2025117501号</a>
       </div>
-    
-    
-    
       <div class="footer-beian">
         <img
           style="object-fit: contain;margin-right: 2px;"
@@ -5938,8 +5655,6 @@
         />
         <a target="_blank" rel="noopener nofollow noreferrer" href="https://icp.gov.moe/?keyword=20258787">萌ICP备20258787号</a>
       </div>
-    
-    
       <div>
         <span class="icon-eye"></span>
         <span id="busuanzi_container_site_pv">总访问量&nbsp;<span id="busuanzi_value_site_pv"></span></span>
@@ -5947,33 +5662,26 @@
         <span class="icon-user"></span>
         <span id="busuanzi_container_site_uv">总访客量&nbsp;<span id="busuanzi_value_site_uv"></span></span>
       </div>
-    
   </div>
 </footer>
 
-        
           <div class="sidebar-top">
             <div class="sidebar-top-taichi rotate"></div>
             <div class="arrow-up"></div>
           </div>
-        
         <div id="mask" class="hide"></div>
       </div>
       <nav id="mobile-nav" aria-label="Mobile navigation">
   <div class="sidebar-wrap">
-    
-      
         <div class="sidebar-toc-sidebar"><h3 class="toc-title">文章目录</h3>
 <div class="sidebar-toc-wrapper toc-div-class" >
-  
     <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Redis-Ready-Start%E2%80%94%E2%80%94%E5%A6%82%E4%BD%95%E5%BC%80%E5%A7%8B"><span class="toc-number">1.</span> <span class="toc-text">Redis &#x3D; Ready + Start——如何开始</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Redis-5-0-8-%E4%B8%BB%E8%A6%81%E7%BB%93%E6%9E%84"><span class="toc-number">1.1.</span> <span class="toc-text">Redis-5.0.8 主要结构</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Redis-%E7%9A%84%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="toc-number">2.</span> <span class="toc-text">Redis 的数据结构</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%BE%E8%AE%A1%E7%90%86%E5%BF%B5"><span class="toc-number">2.1.</span> <span class="toc-text">设计理念</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E6%95%B0%E6%8D%AE%E5%AF%B9%E8%B1%A1"><span class="toc-number">2.2.</span> <span class="toc-text">基本数据对象</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#sds"><span class="toc-number">2.3.</span> <span class="toc-text">sds</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#C%E5%AD%97%E7%AC%A6%E4%B8%B2%E4%B8%8D%E5%8F%AF%E4%BB%A5%E7%9B%B4%E6%8E%A5%E7%94%A8%E5%90%97%EF%BC%9F"><span class="toc-number">2.3.1.</span> <span class="toc-text">C字符串不可以直接用吗？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#sds-%E8%AE%BE%E8%AE%A1"><span class="toc-number">2.3.2.</span> <span class="toc-text">sds 设计</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#flags-%E4%B8%8E-sds-%E7%B1%BB%E5%9E%8B"><span class="toc-number">2.3.2.1.</span> <span class="toc-text">flags 与 sds 类型</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#sdshdr5-%E4%B8%8E-%E5%B5%8C%E5%85%A5%E5%BC%8F%E5%AD%97%E7%AC%A6%E4%B8%B2"><span class="toc-number">2.3.2.2.</span> <span class="toc-text">sdshdr5 与 嵌入式字符串</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E8%A2%AB%E5%BC%83%E7%94%A8%E7%9A%84sdshdr5"><span class="toc-number">2.3.2.2.1.</span> <span class="toc-text">被弃用的sdshdr5</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#sdshdr5%E7%9A%84%E6%9B%BF%E4%BB%A3%E5%93%81"><span class="toc-number">2.3.2.2.2.</span> <span class="toc-text">sdshdr5的替代品</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%B5%8C%E5%85%A5%E5%BC%8F%E5%AD%97%E7%AC%A6%E4%B8%B2-%E4%B8%8E-sdshdr5%E7%B1%BB%E5%9E%8B%E7%9A%84key"><span class="toc-number">2.3.2.2.3.</span> <span class="toc-text">嵌入式字符串 与 sdshdr5类型的key</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#sds-%E6%96%B9%E6%B3%95"><span class="toc-number">2.3.3.</span> <span class="toc-text">sds 方法</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%9B%E5%BB%BAsds"><span class="toc-number">2.3.3.1.</span> <span class="toc-text">创建sds</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%87%8A%E6%94%BE"><span class="toc-number">2.3.3.2.</span> <span class="toc-text">释放</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%89%A9%E5%AE%B9"><span class="toc-number">2.3.3.3.</span> <span class="toc-text">扩容</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8B%BC%E6%8E%A5"><span class="toc-number">2.3.3.4.</span> <span class="toc-text">拼接</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A4%8D%E5%88%B6"><span class="toc-number">2.3.3.5.</span> <span class="toc-text">复制</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%A6%86%E7%9B%96"><span class="toc-number">2.3.3.6.</span> <span class="toc-text">覆盖</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%89%A9%E5%AE%B9%E5%A1%AB%E5%85%85"><span class="toc-number">2.3.3.7.</span> <span class="toc-text">扩容填充</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#dict"><span class="toc-number">2.4.</span> <span class="toc-text">dict</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#dict-%E8%AE%BE%E8%AE%A1"><span class="toc-number">2.4.1.</span> <span class="toc-text">dict 设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#dict-%E6%96%B9%E6%B3%95"><span class="toc-number">2.4.2.</span> <span class="toc-text">dict 方法</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA"><span class="toc-number">2.4.2.1.</span> <span class="toc-text">创建</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B7%BB%E5%8A%A0"><span class="toc-number">2.4.2.2.</span> <span class="toc-text">添加</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9F%A5%E6%89%BE"><span class="toc-number">2.4.2.3.</span> <span class="toc-text">查找</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%87%8D%E5%86%99"><span class="toc-number">2.4.2.4.</span> <span class="toc-text">重写</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%A0%E9%99%A4"><span class="toc-number">2.4.2.5.</span> <span class="toc-text">删除</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%89%A9%E5%AE%B9-1"><span class="toc-number">2.4.2.6.</span> <span class="toc-text">扩容</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%87%8D%E5%93%88%E5%B8%8C"><span class="toc-number">2.4.2.7.</span> <span class="toc-text">重哈希</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#skiplist"><span class="toc-number">2.5.</span> <span class="toc-text">skiplist</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#skiplist-%E8%AE%BE%E8%AE%A1"><span class="toc-number">2.5.1.</span> <span class="toc-text">skiplist 设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#skiplist-%E6%96%B9%E6%B3%95"><span class="toc-number">2.5.2.</span> <span class="toc-text">skiplist 方法</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA-1"><span class="toc-number">2.5.2.1.</span> <span class="toc-text">创建</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8F%92%E5%85%A5"><span class="toc-number">2.5.2.2.</span> <span class="toc-text">插入</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%A0%E9%99%A4%E8%8A%82%E7%82%B9"><span class="toc-number">2.5.2.3.</span> <span class="toc-text">删除节点</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9B%B4%E6%96%B0"><span class="toc-number">2.5.2.4.</span> <span class="toc-text">更新</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%A0%E9%99%A4%E8%B7%B3%E8%A1%A8"><span class="toc-number">2.5.2.5.</span> <span class="toc-text">删除跳表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9F%A5%E6%89%BE-1"><span class="toc-number">2.5.2.6.</span> <span class="toc-text">查找</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Sort-Set%E4%B8%AD%E7%9A%84skiplist%E4%B8%8Eziplist"><span class="toc-number">2.5.3.</span> <span class="toc-text">Sort Set中的skiplist与ziplist</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ziplist"><span class="toc-number">2.6.</span> <span class="toc-text">ziplist</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ziplist-%E8%AE%BE%E8%AE%A1"><span class="toc-number">2.6.1.</span> <span class="toc-text">ziplist 设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ziplist-%E6%96%B9%E6%B3%95"><span class="toc-number">2.6.2.</span> <span class="toc-text">ziplist 方法</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA-2"><span class="toc-number">2.6.2.1.</span> <span class="toc-text">创建</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8F%92%E5%85%A5-1"><span class="toc-number">2.6.2.2.</span> <span class="toc-text">插入</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%A0%E9%99%A4-1"><span class="toc-number">2.6.2.3.</span> <span class="toc-text">删除</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9F%A5%E6%89%BE%E5%85%83%E7%B4%A0"><span class="toc-number">2.6.2.4.</span> <span class="toc-text">查找元素</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%81%8D%E5%8E%86%E6%93%8D%E4%BD%9C"><span class="toc-number">2.6.2.5.</span> <span class="toc-text">遍历操作</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BA%A7%E8%81%94%E6%9B%B4%E6%96%B0"><span class="toc-number">2.6.2.6.</span> <span class="toc-text">级联更新</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#quicklist"><span class="toc-number">2.7.</span> <span class="toc-text">quicklist</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#quicklist-%E8%AE%BE%E8%AE%A1"><span class="toc-number">2.7.1.</span> <span class="toc-text">quicklist 设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#quicklist-%E6%96%B9%E6%B3%95"><span class="toc-number">2.7.2.</span> <span class="toc-text">quicklist 方法</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA-3"><span class="toc-number">2.7.2.1.</span> <span class="toc-text">创建</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8F%92%E5%85%A5-2"><span class="toc-number">2.7.2.2.</span> <span class="toc-text">插入</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%A0%E9%99%A4-2"><span class="toc-number">2.7.2.3.</span> <span class="toc-text">删除</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9F%A5%E6%89%BE-2"><span class="toc-number">2.7.2.4.</span> <span class="toc-text">查找</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BF%AD%E4%BB%A3"><span class="toc-number">2.7.2.5.</span> <span class="toc-text">迭代</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%87%8A%E6%94%BE-1"><span class="toc-number">2.7.2.6.</span> <span class="toc-text">释放</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#intset"><span class="toc-number">2.8.</span> <span class="toc-text">intset</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#intset-%E8%AE%BE%E8%AE%A1"><span class="toc-number">2.8.1.</span> <span class="toc-text">intset 设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#intset-%E6%96%B9%E6%B3%95"><span class="toc-number">2.8.2.</span> <span class="toc-text">intset 方法</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA-4"><span class="toc-number">2.8.2.1.</span> <span class="toc-text">创建</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B7%BB%E5%8A%A0-1"><span class="toc-number">2.8.2.2.</span> <span class="toc-text">添加</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%A0%E9%99%A4-3"><span class="toc-number">2.8.2.3.</span> <span class="toc-text">删除</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9F%A5%E6%89%BE-3"><span class="toc-number">2.8.2.4.</span> <span class="toc-text">查找</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96%E5%85%83%E7%B4%A0"><span class="toc-number">2.8.2.5.</span> <span class="toc-text">获取元素</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BE%85%E5%8A%A9%E5%87%BD%E6%95%B0"><span class="toc-number">2.8.2.6.</span> <span class="toc-text">辅助函数</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Redis-%E7%9A%84%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86"><span class="toc-number">3.</span> <span class="toc-text">Redis 的内存管理</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E4%B8%8E%E9%87%8A%E6%94%BE"><span class="toc-number">3.1.</span> <span class="toc-text">内存分配与释放</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E7%BB%9F%E8%AE%A1%E6%9C%BA%E5%88%B6"><span class="toc-number">3.1.1.</span> <span class="toc-text">内存统计机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E5%87%BD%E6%95%B0"><span class="toc-number">3.1.2.</span> <span class="toc-text">内存分配函数</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#zmalloc"><span class="toc-number">3.1.2.1.</span> <span class="toc-text">zmalloc</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#zcalloc"><span class="toc-number">3.1.2.2.</span> <span class="toc-text">zcalloc</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#zrealloc"><span class="toc-number">3.1.2.3.</span> <span class="toc-text">zrealloc</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E9%87%8A%E6%94%BE%E5%87%BD%E6%95%B0"><span class="toc-number">3.1.3.</span> <span class="toc-text">内存释放函数</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#zfree"><span class="toc-number">3.1.3.1.</span> <span class="toc-text">zfree</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E5%A4%A7%E5%B0%8F%E8%8E%B7%E5%8F%96"><span class="toc-number">3.1.4.</span> <span class="toc-text">内存大小获取</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#OOM-%E5%A4%84%E7%90%86%E6%9C%BA%E5%88%B6"><span class="toc-number">3.1.5.</span> <span class="toc-text">OOM 处理机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E7%BB%9F%E8%AE%A1%E6%9F%A5%E8%AF%A2"><span class="toc-number">3.1.6.</span> <span class="toc-text">内存统计查询</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#zmalloc-used-memory"><span class="toc-number">3.1.6.1.</span> <span class="toc-text">zmalloc_used_memory</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#zmalloc-get-rss"><span class="toc-number">3.1.6.2.</span> <span class="toc-text">zmalloc_get_rss</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#zmalloc-get-allocator-info"><span class="toc-number">3.1.6.3.</span> <span class="toc-text">zmalloc_get_allocator_info</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BE%85%E5%8A%A9%E5%87%BD%E6%95%B0-1"><span class="toc-number">3.1.7.</span> <span class="toc-text">辅助函数</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#zstrdup"><span class="toc-number">3.1.7.1.</span> <span class="toc-text">zstrdup</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#zlibc-free"><span class="toc-number">3.1.7.2.</span> <span class="toc-text">zlibc_free</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#jemalloc-%E5%86%85%E5%AD%98%E6%B1%A0%E7%89%B9%E6%80%A7%E5%88%A9%E7%94%A8"><span class="toc-number">3.1.8.</span> <span class="toc-text">jemalloc 内存池特性利用</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#set-jemalloc-bg-thread"><span class="toc-number">3.1.8.1.</span> <span class="toc-text">set_jemalloc_bg_thread</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%87%E6%9C%9F%E9%94%AE%E5%A4%84%E7%90%86"><span class="toc-number">3.2.</span> <span class="toc-text">过期键处理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%87%E6%9C%9F%E9%94%AE%E7%9A%84%E5%AD%98%E5%82%A8%E6%9C%BA%E5%88%B6"><span class="toc-number">3.2.1.</span> <span class="toc-text">过期键的存储机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%BE%E7%BD%AE%E5%92%8C%E6%9F%A5%E8%AF%A2%E8%BF%87%E6%9C%9F%E6%97%B6%E9%97%B4"><span class="toc-number">3.2.2.</span> <span class="toc-text">设置和查询过期时间</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#setExpire"><span class="toc-number">3.2.2.1.</span> <span class="toc-text">setExpire</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#getExpire"><span class="toc-number">3.2.2.2.</span> <span class="toc-text">getExpire</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#removeExpire"><span class="toc-number">3.2.2.3.</span> <span class="toc-text">removeExpire</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A2%AB%E5%8A%A8%E8%BF%87%E6%9C%9F%EF%BC%88%E6%83%B0%E6%80%A7%E5%88%A0%E9%99%A4%EF%BC%89"><span class="toc-number">3.2.3.</span> <span class="toc-text">被动过期（惰性删除）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#keyIsExpired"><span class="toc-number">3.2.3.1.</span> <span class="toc-text">keyIsExpired</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#expireIfNeeded"><span class="toc-number">3.2.3.2.</span> <span class="toc-text">expireIfNeeded</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BB%E5%8A%A8%E8%BF%87%E6%9C%9F%EF%BC%88%E5%AE%9A%E6%9C%9F%E5%88%A0%E9%99%A4%EF%BC%89"><span class="toc-number">3.2.4.</span> <span class="toc-text">主动过期（定期删除）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#activeExpireCycle"><span class="toc-number">3.2.4.1.</span> <span class="toc-text">activeExpireCycle</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#activeExpireCycleTryExpire"><span class="toc-number">3.2.4.2.</span> <span class="toc-text">activeExpireCycleTryExpire</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BB%E5%8A%A8%E8%BF%87%E6%9C%9F%E7%9A%84%E4%B8%A4%E7%A7%8D%E6%A8%A1%E5%BC%8F"><span class="toc-number">3.2.5.</span> <span class="toc-text">主动过期的两种模式</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#SLOW-%E6%A8%A1%E5%BC%8F"><span class="toc-number">3.2.5.1.</span> <span class="toc-text">SLOW 模式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#FAST-%E6%A8%A1%E5%BC%8F"><span class="toc-number">3.2.5.2.</span> <span class="toc-text">FAST 模式</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%87%E6%9C%9F%E9%94%AE%E7%9A%84%E4%BC%A0%E6%92%AD"><span class="toc-number">3.2.6.</span> <span class="toc-text">过期键的传播</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#propagateExpire"><span class="toc-number">3.2.6.1.</span> <span class="toc-text">propagateExpire</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%87%E6%9C%9F%E5%91%BD%E4%BB%A4%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="toc-number">3.2.7.</span> <span class="toc-text">过期命令的实现</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#expireGenericCommand"><span class="toc-number">3.2.7.1.</span> <span class="toc-text">expireGenericCommand</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%83%B0%E6%80%A7%E5%88%A0%E9%99%A4"><span class="toc-number">3.3.</span> <span class="toc-text">惰性删除</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE%E9%80%89%E9%A1%B9"><span class="toc-number">3.3.1.</span> <span class="toc-text">配置选项</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%83%B0%E6%80%A7%E5%88%A0%E9%99%A4%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%80%9D%E6%83%B3"><span class="toc-number">3.3.2.</span> <span class="toc-text">惰性删除的设计思想</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%A0%E9%99%A4%E6%88%90%E6%9C%AC%E8%AF%84%E4%BC%B0"><span class="toc-number">3.3.3.</span> <span class="toc-text">删除成本评估</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#lazyfreeGetFreeEffort"><span class="toc-number">3.3.3.1.</span> <span class="toc-text">lazyfreeGetFreeEffort</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%8C%E6%AD%A5%E5%88%A0%E9%99%A4%E4%B8%8E%E5%BC%82%E6%AD%A5%E5%88%A0%E9%99%A4"><span class="toc-number">3.3.4.</span> <span class="toc-text">同步删除与异步删除</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#dbSyncDelete"><span class="toc-number">3.3.4.1.</span> <span class="toc-text">dbSyncDelete</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#dbAsyncDelete"><span class="toc-number">3.3.4.2.</span> <span class="toc-text">dbAsyncDelete</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#dbDelete"><span class="toc-number">3.3.4.3.</span> <span class="toc-text">dbDelete</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%8E%E5%8F%B0%E7%BA%BF%E7%A8%8B%E5%A4%84%E7%90%86%EF%BC%88BIO%EF%BC%89"><span class="toc-number">3.3.5.</span> <span class="toc-text">后台线程处理（BIO）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#BIO-%E7%BA%BF%E7%A8%8B%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-number">3.3.5.1.</span> <span class="toc-text">BIO 线程初始化</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E5%90%8E%E5%8F%B0%E4%BB%BB%E5%8A%A1"><span class="toc-number">3.3.5.2.</span> <span class="toc-text">创建后台任务</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%90%8E%E5%8F%B0%E7%BA%BF%E7%A8%8B%E5%A4%84%E7%90%86%E4%BB%BB%E5%8A%A1"><span class="toc-number">3.3.5.3.</span> <span class="toc-text">后台线程处理任务</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%8E%E5%8F%B0%E7%BA%BF%E7%A8%8B%E9%87%8A%E6%94%BE%E5%87%BD%E6%95%B0"><span class="toc-number">3.3.6.</span> <span class="toc-text">后台线程释放函数</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#lazyfreeFreeObjectFromBioThread"><span class="toc-number">3.3.6.1.</span> <span class="toc-text">lazyfreeFreeObjectFromBioThread</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#lazyfreeFreeDatabaseFromBioThread"><span class="toc-number">3.3.6.2.</span> <span class="toc-text">lazyfreeFreeDatabaseFromBioThread</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#lazyfreeFreeSlotsMapFromBioThread"><span class="toc-number">3.3.6.3.</span> <span class="toc-text">lazyfreeFreeSlotsMapFromBioThread</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B6%E4%BB%96%E5%BC%82%E6%AD%A5%E5%88%A0%E9%99%A4%E5%9C%BA%E6%99%AF"><span class="toc-number">3.3.7.</span> <span class="toc-text">其他异步删除场景</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#freeObjAsync"><span class="toc-number">3.3.7.1.</span> <span class="toc-text">freeObjAsync</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#emptyDbAsync"><span class="toc-number">3.3.7.2.</span> <span class="toc-text">emptyDbAsync</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#slotToKeyFlushAsync"><span class="toc-number">3.3.7.3.</span> <span class="toc-text">slotToKeyFlushAsync</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%83%B0%E6%80%A7%E5%88%A0%E9%99%A4%E7%9A%84%E7%BB%9F%E8%AE%A1%E5%92%8C%E7%9B%91%E6%8E%A7"><span class="toc-number">3.3.8.</span> <span class="toc-text">惰性删除的统计和监控</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#lazyfreeGetPendingObjectsCount"><span class="toc-number">3.3.8.1.</span> <span class="toc-text">lazyfreeGetPendingObjectsCount</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E7%BD%AE%E6%8D%A2"><span class="toc-number">3.4.</span> <span class="toc-text">内存置换</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE%E9%80%89%E9%A1%B9-1"><span class="toc-number">3.4.1.</span> <span class="toc-text">配置选项</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E6%B7%98%E6%B1%B0%E7%AD%96%E7%95%A5"><span class="toc-number">3.4.2.</span> <span class="toc-text">内存淘汰策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#LRU-%E5%AE%9E%E7%8E%B0"><span class="toc-number">3.4.3.</span> <span class="toc-text">LRU 实现</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%85%A8%E5%B1%80-LRU-%E6%97%B6%E9%92%9F%E5%80%BC%E7%9A%84%E8%AE%A1%E7%AE%97"><span class="toc-number">3.4.3.1.</span> <span class="toc-text">全局 LRU 时钟值的计算</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#LRU-%E6%97%B6%E9%92%9F"><span class="toc-number">3.4.3.1.1.</span> <span class="toc-text">LRU 时钟</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#serverCron-%E6%9B%B4%E6%96%B0%E5%85%A8%E5%B1%80-LRU-%E6%97%B6%E9%92%9F"><span class="toc-number">3.4.3.1.2.</span> <span class="toc-text">serverCron 更新全局 LRU 时钟</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#LRU-CLOCK-%E8%8E%B7%E5%8F%96%E5%85%A8%E5%B1%80-LRU-%E6%97%B6%E9%92%9F"><span class="toc-number">3.4.3.1.3.</span> <span class="toc-text">LRU_CLOCK 获取全局 LRU 时钟</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%94%AE%E5%80%BC%E5%AF%B9-LRU-%E6%97%B6%E9%92%9F%E5%80%BC%E7%9A%84%E5%88%9D%E5%A7%8B%E5%8C%96%E4%B8%8E%E6%9B%B4%E6%96%B0"><span class="toc-number">3.4.3.2.</span> <span class="toc-text">键值对 LRU 时钟值的初始化与更新</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#createObject-%E5%88%9D%E5%A7%8B%E5%8C%96-LRU-%E6%97%B6%E9%92%9F"><span class="toc-number">3.4.3.2.1.</span> <span class="toc-text">createObject 初始化 LRU 时钟</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#lookupKey-%E6%9B%B4%E6%96%B0-LRU-%E6%97%B6%E9%92%9F"><span class="toc-number">3.4.3.2.2.</span> <span class="toc-text">lookupKey 更新 LRU 时钟</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BF%91%E4%BC%BC-LRU-%E7%AE%97%E6%B3%95%E7%9A%84%E5%AE%9E%E9%99%85%E6%89%A7%E8%A1%8C"><span class="toc-number">3.4.3.3.</span> <span class="toc-text">近似 LRU 算法的实际执行</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#freeMemoryIfNeeded-%E8%A7%A6%E5%8F%91%E5%86%85%E5%AD%98%E6%B7%98%E6%B1%B0"><span class="toc-number">3.4.3.3.1.</span> <span class="toc-text">freeMemoryIfNeeded 触发内存淘汰</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#evictionPoolPopulate-%E5%A1%AB%E5%85%85%E6%B7%98%E6%B1%B0%E6%B1%A0"><span class="toc-number">3.4.3.3.2.</span> <span class="toc-text">evictionPoolPopulate 填充淘汰池</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#estimateObjectIdleTime-%E8%AE%A1%E7%AE%97%E7%A9%BA%E9%97%B2%E6%97%B6%E9%97%B4"><span class="toc-number">3.4.3.3.3.</span> <span class="toc-text">estimateObjectIdleTime 计算空闲时间</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#LFU-%E5%AE%9E%E7%8E%B0"><span class="toc-number">3.4.4.</span> <span class="toc-text">LFU 实现</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%94%AE%E5%80%BC%E5%AF%B9%E8%AE%BF%E9%97%AE%E9%A2%91%E7%8E%87%E8%AE%B0%E5%BD%95"><span class="toc-number">3.4.4.1.</span> <span class="toc-text">键值对访问频率记录</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#LFU-%E5%AD%97%E6%AE%B5%E5%B8%83%E5%B1%80"><span class="toc-number">3.4.4.1.1.</span> <span class="toc-text">LFU 字段布局</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%94%AE%E5%80%BC%E5%AF%B9%E8%AE%BF%E9%97%AE%E9%A2%91%E7%8E%87%E5%88%9D%E5%A7%8B%E5%8C%96%E5%92%8C%E6%9B%B4%E6%96%B0"><span class="toc-number">3.4.4.2.</span> <span class="toc-text">键值对访问频率初始化和更新</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#createObject-%E5%88%9D%E5%A7%8B%E5%8C%96-LFU-%E4%BF%A1%E6%81%AF"><span class="toc-number">3.4.4.2.1.</span> <span class="toc-text">createObject 初始化 LFU 信息</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#updateLFU-%E6%9B%B4%E6%96%B0-LFU-%E4%BF%A1%E6%81%AF"><span class="toc-number">3.4.4.2.2.</span> <span class="toc-text">updateLFU 更新 LFU 信息</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#lookupKey-%E8%B0%83%E7%94%A8-updateLFU"><span class="toc-number">3.4.4.2.3.</span> <span class="toc-text">lookupKey 调用 updateLFU</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#LFUGetTimeInMinutes"><span class="toc-number">3.4.4.2.4.</span> <span class="toc-text">LFUGetTimeInMinutes</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#LFUTimeElapsed"><span class="toc-number">3.4.4.2.5.</span> <span class="toc-text">LFUTimeElapsed</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#LFULogIncr"><span class="toc-number">3.4.4.2.6.</span> <span class="toc-text">LFULogIncr</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#LFUDecrAndReturn"><span class="toc-number">3.4.4.2.7.</span> <span class="toc-text">LFUDecrAndReturn</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#LFU-%E7%AE%97%E6%B3%95%E6%B7%98%E6%B1%B0%E6%95%B0%E6%8D%AE"><span class="toc-number">3.4.4.3.</span> <span class="toc-text">LFU 算法淘汰数据</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#evictionPoolPopulate-%E4%B8%AD%E7%9A%84-LFU-%E8%AE%A1%E7%AE%97"><span class="toc-number">3.4.4.3.1.</span> <span class="toc-text">evictionPoolPopulate 中的 LFU 计算</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#LFU-%E4%B8%8E-LRU-%E6%B7%98%E6%B1%B0%E6%B5%81%E7%A8%8B%E7%9A%84%E7%9B%B8%E5%90%8C%E7%82%B9"><span class="toc-number">3.4.4.3.2.</span> <span class="toc-text">LFU 与 LRU 淘汰流程的相同点</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#LFU-%E4%B8%8E-LRU-%E6%B7%98%E6%B1%B0%E6%B5%81%E7%A8%8B%E7%9A%84%E4%B8%8D%E5%90%8C%E7%82%B9"><span class="toc-number">3.4.4.3.3.</span> <span class="toc-text">LFU 与 LRU 淘汰流程的不同点</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B7%98%E6%B1%B0%E6%B1%A0%EF%BC%88Eviction-Pool%EF%BC%89"><span class="toc-number">3.4.5.</span> <span class="toc-text">淘汰池（Eviction Pool）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B7%98%E6%B1%B0%E6%B1%A0%E7%BB%93%E6%9E%84"><span class="toc-number">3.4.5.1.</span> <span class="toc-text">淘汰池结构</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#evictionPoolAlloc"><span class="toc-number">3.4.5.2.</span> <span class="toc-text">evictionPoolAlloc</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#evictionPoolPopulate"><span class="toc-number">3.4.5.3.</span> <span class="toc-text">evictionPoolPopulate</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E7%8A%B6%E6%80%81%E6%A3%80%E6%9F%A5"><span class="toc-number">3.4.6.</span> <span class="toc-text">内存状态检查</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#freeMemoryGetNotCountedMemory"><span class="toc-number">3.4.6.1.</span> <span class="toc-text">freeMemoryGetNotCountedMemory</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#getMaxmemoryState"><span class="toc-number">3.4.6.2.</span> <span class="toc-text">getMaxmemoryState</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E9%87%8A%E6%94%BE%E6%A0%B8%E5%BF%83%E5%87%BD%E6%95%B0"><span class="toc-number">3.4.7.</span> <span class="toc-text">内存释放核心函数</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#freeMemoryIfNeeded"><span class="toc-number">3.4.7.1.</span> <span class="toc-text">freeMemoryIfNeeded</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#freeMemoryIfNeededAndSafe"><span class="toc-number">3.4.7.2.</span> <span class="toc-text">freeMemoryIfNeededAndSafe</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Redis-%E7%9A%84%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1"><span class="toc-number">4.</span> <span class="toc-text">Redis 的网络通信</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#main-%E5%87%BD%E6%95%B0"><span class="toc-number">4.1.</span> <span class="toc-text">main 函数</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-number">4.1.1.</span> <span class="toc-text">基本初始化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A3%80%E6%9F%A5%E5%93%A8%E5%85%B5%E6%A8%A1%E5%BC%8F%EF%BC%8C%E5%B9%B6%E6%A3%80%E6%9F%A5%E6%98%AF%E5%90%A6%E8%A6%81%E6%89%A7%E8%A1%8C-RDB-%E6%A3%80%E6%B5%8B%E6%88%96-AOF-%E6%A3%80%E6%B5%8B"><span class="toc-number">4.1.2.</span> <span class="toc-text">检查哨兵模式，并检查是否要执行 RDB 检测或 AOF 检测</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%90%E8%A1%8C%E5%8F%82%E6%95%B0%E8%A7%A3%E6%9E%90"><span class="toc-number">4.1.3.</span> <span class="toc-text">运行参数解析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96-server"><span class="toc-number">4.1.4.</span> <span class="toc-text">初始化 server</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%A7%E8%A1%8C%E4%BA%8B%E4%BB%B6%E9%A9%B1%E5%8A%A8%E6%A1%86%E6%9E%B6"><span class="toc-number">4.1.5.</span> <span class="toc-text">执行事件驱动框架</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#IO-%E5%A4%9A%E8%B7%AF%E5%A4%8D%E7%94%A8%E5%9F%BA%E7%A1%80"><span class="toc-number">4.2.</span> <span class="toc-text">IO 多路复用基础</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81-IO-%E5%A4%9A%E8%B7%AF%E5%A4%8D%E7%94%A8%EF%BC%9F"><span class="toc-number">4.2.1.</span> <span class="toc-text">为什么需要 IO 多路复用？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#IO-%E5%A4%9A%E8%B7%AF%E5%A4%8D%E7%94%A8%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="toc-number">4.2.2.</span> <span class="toc-text">IO 多路复用的基本概念</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#select%E3%80%81poll%E3%80%81epoll-%E8%AF%A6%E8%A7%A3"><span class="toc-number">4.2.3.</span> <span class="toc-text">select、poll、epoll 详解</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#select"><span class="toc-number">4.2.3.1.</span> <span class="toc-text">select</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#poll"><span class="toc-number">4.2.3.2.</span> <span class="toc-text">poll</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#epoll"><span class="toc-number">4.2.3.3.</span> <span class="toc-text">epoll</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Reactor-%E5%92%8C-Proactor-%E6%A8%A1%E5%BC%8F"><span class="toc-number">4.2.4.</span> <span class="toc-text">Reactor 和 Proactor 模式</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Reactor-%E6%A8%A1%E5%BC%8F"><span class="toc-number">4.2.4.1.</span> <span class="toc-text">Reactor 模式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Proactor-%E6%A8%A1%E5%BC%8F"><span class="toc-number">4.2.4.2.</span> <span class="toc-text">Proactor 模式</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88-Redis-%E4%B8%8D%E4%BD%BF%E7%94%A8-poll%EF%BC%9F"><span class="toc-number">4.2.5.</span> <span class="toc-text">为什么 Redis 不使用 poll？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88-Redis-%E4%B8%8D%E4%BD%BF%E7%94%A8-Proactor%EF%BC%9F"><span class="toc-number">4.2.6.</span> <span class="toc-text">为什么 Redis 不使用 Proactor？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Redis-ae-%E4%BA%8B%E4%BB%B6%E9%A9%B1%E5%8A%A8%E6%A1%86%E6%9E%B6"><span class="toc-number">4.3.</span> <span class="toc-text">Redis ae 事件驱动框架</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ae-%E6%A1%86%E6%9E%B6%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%80%9D%E6%83%B3"><span class="toc-number">4.3.1.</span> <span class="toc-text">ae 框架的设计思想</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ae-%E6%A1%86%E6%9E%B6%E7%9A%84%E6%A0%B8%E5%BF%83%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="toc-number">4.3.2.</span> <span class="toc-text">ae 框架的核心数据结构</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#aeEventLoop-%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF"><span class="toc-number">4.3.2.1.</span> <span class="toc-text">aeEventLoop 事件循环</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#aeCreateEventLoop-%E5%88%9D%E5%A7%8B%E5%8C%96%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF"><span class="toc-number">4.3.2.2.</span> <span class="toc-text">aeCreateEventLoop 初始化事件循环</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#aeFileEvent-%E6%96%87%E4%BB%B6%E4%BA%8B%E4%BB%B6"><span class="toc-number">4.3.2.3.</span> <span class="toc-text">aeFileEvent 文件事件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E4%BA%8B%E4%BB%B6%E7%9A%84%E5%A4%84%E7%90%86%E5%87%BD%E6%95%B0"><span class="toc-number">4.3.2.4.</span> <span class="toc-text">文件事件的处理函数</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#aeCreateFileEvent-%E4%BA%8B%E4%BB%B6%E6%B3%A8%E5%86%8C"><span class="toc-number">4.3.2.4.1.</span> <span class="toc-text">aeCreateFileEvent 事件注册</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#aeDeleteFileEvent-%E5%88%A0%E9%99%A4%E6%96%87%E4%BB%B6%E4%BA%8B%E4%BB%B6"><span class="toc-number">4.3.2.4.2.</span> <span class="toc-text">aeDeleteFileEvent 删除文件事件</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#aeGetFileEvents-%E8%8E%B7%E5%8F%96%E6%96%87%E4%BB%B6%E4%BA%8B%E4%BB%B6"><span class="toc-number">4.3.2.4.3.</span> <span class="toc-text">aeGetFileEvents 获取文件事件</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Redis-%E4%B8%AD%E7%9A%84-IO-%E4%BA%8B%E4%BB%B6%E5%A4%84%E7%90%86%E5%87%BD%E6%95%B0"><span class="toc-number">4.3.2.5.</span> <span class="toc-text">Redis 中的 IO 事件处理函数</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#acceptTcpHandler-%E8%BF%9E%E6%8E%A5%E4%BA%8B%E4%BB%B6"><span class="toc-number">4.3.2.5.1.</span> <span class="toc-text">acceptTcpHandler 连接事件</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#readQueryFromClient-%E8%AF%BB%E4%BA%8B%E4%BB%B6"><span class="toc-number">4.3.2.5.2.</span> <span class="toc-text">readQueryFromClient 读事件</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#sendReplyToClient-%E5%8F%91%E9%80%81%E5%9B%9E%E5%A4%8D%E7%BB%99%E5%AE%A2%E6%88%B7%E7%AB%AF"><span class="toc-number">4.3.2.5.3.</span> <span class="toc-text">sendReplyToClient 发送回复给客户端</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#writeToClient-%E5%AE%9E%E9%99%85%E5%8F%91%E9%80%81%E6%95%B0%E6%8D%AE"><span class="toc-number">4.3.2.5.4.</span> <span class="toc-text">writeToClient 实际发送数据</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#aeTimeEvent-%E6%97%B6%E9%97%B4%E4%BA%8B%E4%BB%B6"><span class="toc-number">4.3.2.6.</span> <span class="toc-text">aeTimeEvent 时间事件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%97%B6%E9%97%B4%E4%BA%8B%E4%BB%B6%E7%9A%84%E5%A4%84%E7%90%86%E5%87%BD%E6%95%B0"><span class="toc-number">4.3.2.7.</span> <span class="toc-text">时间事件的处理函数</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#aeCreateTimeEvent-%E5%88%9B%E5%BB%BA%E6%97%B6%E9%97%B4%E4%BA%8B%E4%BB%B6"><span class="toc-number">4.3.2.7.1.</span> <span class="toc-text">aeCreateTimeEvent 创建时间事件</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#aeDeleteTimeEvent-%E5%88%A0%E9%99%A4%E6%97%B6%E9%97%B4%E4%BA%8B%E4%BB%B6"><span class="toc-number">4.3.2.7.2.</span> <span class="toc-text">aeDeleteTimeEvent 删除时间事件</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#processTimeEvents-%E5%A4%84%E7%90%86%E6%97%B6%E9%97%B4%E4%BA%8B%E4%BB%B6"><span class="toc-number">4.3.2.7.3.</span> <span class="toc-text">processTimeEvents 处理时间事件</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#aeMain-%E4%B8%BB%E5%BE%AA%E7%8E%AF"><span class="toc-number">4.3.3.</span> <span class="toc-text">aeMain 主循环</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#beforeSleep-%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF%E5%89%8D%E7%BD%AE%E5%9B%9E%E8%B0%83"><span class="toc-number">4.3.4.</span> <span class="toc-text">beforeSleep 事件循环前置回调</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#handleClientsWithPendingWrites-%E5%A4%84%E7%90%86%E5%BE%85%E5%86%99%E5%85%A5%E5%AE%A2%E6%88%B7%E7%AB%AF"><span class="toc-number">4.3.5.</span> <span class="toc-text">handleClientsWithPendingWrites 处理待写入客户端</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#aeProcessEvents-%E4%BA%8B%E4%BB%B6%E6%8D%95%E8%8E%B7%E4%B8%8E%E5%88%86%E5%8F%91"><span class="toc-number">4.3.6.</span> <span class="toc-text">aeProcessEvents 事件捕获与分发</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ae-%E6%A1%86%E6%9E%B6%E7%9A%84-IO-%E5%A4%9A%E8%B7%AF%E5%A4%8D%E7%94%A8%E5%B0%81%E8%A3%85"><span class="toc-number">4.3.7.</span> <span class="toc-text">ae 框架的 IO 多路复用封装</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BB%9F%E4%B8%80%E7%9A%84%E5%87%BD%E6%95%B0%E6%8E%A5%E5%8F%A3"><span class="toc-number">4.3.7.1.</span> <span class="toc-text">统一的函数接口</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#epoll-%E5%B0%81%E8%A3%85%E5%AE%9E%E7%8E%B0"><span class="toc-number">4.3.7.2.</span> <span class="toc-text">epoll 封装实现</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#aeApiCreate-%E5%88%9B%E5%BB%BA-epoll-%E5%AE%9E%E4%BE%8B"><span class="toc-number">4.3.7.2.1.</span> <span class="toc-text">aeApiCreate 创建 epoll 实例</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#aeApiAddEvent-%E6%B7%BB%E5%8A%A0%E4%BA%8B%E4%BB%B6"><span class="toc-number">4.3.7.2.2.</span> <span class="toc-text">aeApiAddEvent 添加事件</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#aeApiDelEvent-%E5%88%A0%E9%99%A4%E4%BA%8B%E4%BB%B6"><span class="toc-number">4.3.7.2.3.</span> <span class="toc-text">aeApiDelEvent 删除事件</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#aeApiPoll-%E7%AD%89%E5%BE%85%E4%BA%8B%E4%BB%B6"><span class="toc-number">4.3.7.2.4.</span> <span class="toc-text">aeApiPoll 等待事件</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#select-%E5%B0%81%E8%A3%85%E5%AE%9E%E7%8E%B0"><span class="toc-number">4.3.7.3.</span> <span class="toc-text">select 封装实现</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#aeApiCreate-%E5%88%9B%E5%BB%BA-select-%E7%8A%B6%E6%80%81"><span class="toc-number">4.3.7.3.1.</span> <span class="toc-text">aeApiCreate 创建 select 状态</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#aeApiAddEvent-%E6%B7%BB%E5%8A%A0%E4%BA%8B%E4%BB%B6-1"><span class="toc-number">4.3.7.3.2.</span> <span class="toc-text">aeApiAddEvent 添加事件</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#aeApiDelEvent-%E5%88%A0%E9%99%A4%E4%BA%8B%E4%BB%B6-1"><span class="toc-number">4.3.7.3.3.</span> <span class="toc-text">aeApiDelEvent 删除事件</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#aeApiPoll-%E7%AD%89%E5%BE%85%E4%BA%8B%E4%BB%B6-1"><span class="toc-number">4.3.7.3.4.</span> <span class="toc-text">aeApiPoll 等待事件</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ae-%E6%A1%86%E6%9E%B6%E7%9A%84%E8%87%AA%E5%8A%A8%E9%80%89%E6%8B%A9%E6%9C%BA%E5%88%B6"><span class="toc-number">4.3.8.</span> <span class="toc-text">ae 框架的自动选择机制</span></a></li></ol></li></ol></li></ol>
-  
 </div>
 </div>
         <div class="sidebar-common-sidebar hidden"><div class="sidebar-author">
   <img data-src="/avatar/avatar.webp" data-sizes="auto" alt="Chieko3020" class="lazyload">
   <div class="sidebar-author-name">Chieko3020</div>
-  <div class="sidebar-description">这并非约束我的规则<br>而是我对她的礼仪</div>
+  <div class="sidebar-description">这并非约束我的规则&lt;br&gt;而是我对她的礼仪</div>
 </div>
 <div class="sidebar-state">
   <div class="sidebar-state-article">
@@ -5989,86 +5697,53 @@
     <div class="sidebar-state-number">2</div>
   </div>
 </div>
-<div class="sidebar-social">
-  
+<div class="sidebar-social" >
     <div class="icon-github sidebar-social-icon">
       <a href=https://github.com/Chieko3020 itemprop="url" target="_blank" aria-label="github" rel="noopener nofollow noreferrer"></a>
     </div>
-  
     <div class="icon-bilibili sidebar-social-icon">
       <a href=https://space.bilibili.com/165313953 itemprop="url" target="_blank" aria-label="bilibili" rel="noopener nofollow noreferrer"></a>
     </div>
-  
 </div>
 <div class="sidebar-menu">
-  
-    
       <div class="sidebar-menu-link-wrap">
         <a class="sidebar-menu-link-dummy" href="/" aria-label="首页"></a>
-        <div class="sidebar-menu-icon icon ">
-          
-            
-              <img src="/images/loading.webp" alt="home icon" style="width: 1em;">
-            
-          
-        </div>
+          <div class="sidebar-menu-icon icon ">
+                <img src="/images/loading.webp" alt="home icon" style="width: 1em;">
+          </div>
         <div class="sidebar-menu-link">首页</div>
       </div>
-    
       <div class="sidebar-menu-link-wrap">
         <a class="sidebar-menu-link-dummy" href="/archives" aria-label="归档"></a>
-        <div class="sidebar-menu-icon icon ">
-          
-            
-              <img src="/images/loading.webp" alt="archives icon" style="width: 1em;">
-            
-          
-        </div>
+          <div class="sidebar-menu-icon icon ">
+                <img src="/images/loading.webp" alt="archives icon" style="width: 1em;">
+          </div>
         <div class="sidebar-menu-link">归档</div>
       </div>
-    
       <div class="sidebar-menu-link-wrap">
         <a class="sidebar-menu-link-dummy" href="/about" aria-label="关于"></a>
-        <div class="sidebar-menu-icon icon ">
-          
-            
-              <img src="/images/loading.webp" alt="about icon" style="width: 1em;">
-            
-          
-        </div>
+          <div class="sidebar-menu-icon icon ">
+                <img src="/images/loading.webp" alt="about icon" style="width: 1em;">
+          </div>
         <div class="sidebar-menu-link">关于</div>
       </div>
-    
       <div class="sidebar-menu-link-wrap">
         <a class="sidebar-menu-link-dummy" href="/friend" aria-label="友链"></a>
-        <div class="sidebar-menu-icon icon ">
-          
-            
-              <img src="/images/loading.webp" alt="friend icon" style="width: 1em;">
-            
-          
-        </div>
+          <div class="sidebar-menu-icon icon ">
+                <img src="/images/loading.webp" alt="friend icon" style="width: 1em;">
+          </div>
         <div class="sidebar-menu-link">友链</div>
       </div>
-    
-  
 </div>
 </div>
-      
-    
   </div>
-  
-    
       <div class="sidebar-btn-wrapper">
         <div class="sidebar-toc-btn current"></div>
         <div class="sidebar-common-btn"></div>
       </div>
-    
-  
 </nav>
 
     </div>
-    
       <div class="site-search">
         <div class="reimu-popup popup">
           <div class="reimu-search">
@@ -6081,16 +5756,9 @@
             <div id="reimu-hits"></div>
             <div id="reimu-pagination" class="reimu-pagination"></div>
           </div>
-          <img class="reimu-bg" src="/images/Background_scenery_default.webp"/>
+          <img class="reimu-bg" src="/images/reimu.png" loading="lazy" decoding="async" fetchpriority="low"/>
         </div>
       </div>
-    
-    
-    
-    <!-- Preset OML2D status to sleep before OML2D script loads -->
-    <script>
-      try { localStorage.setItem('oml2d-status', 'sleep') } catch (e) {}
-    </script>
     
 <script src="https://npm.webcache.cn/lazysizes@5.3.2/lazysizes.min.js" integrity="sha384-3gT&#x2F;vsepWkfz&#x2F;ff7PpWNUeMzeWoH3cDhm&#x2F;A8jM7ouoAK0&#x2F;fP&#x2F;9bcHHR5kHq2nf+e" crossorigin="anonymous"></script>
 
@@ -6098,15 +5766,12 @@
 <script src="https://npm.webcache.cn/clipboard@2.0.11/dist/clipboard.min.js" integrity="sha384-J08i8An&#x2F;QeARD9ExYpvphB8BsyOj3Gh2TSh1aLINKO3L0cMSH2dN3E22zFoXEi0Q" crossorigin="anonymous"></script>
 
 
-
   
 <script src="https://npm.webcache.cn/material-theme@1.0.0/dist/material-theme.umd.js" integrity="sha384-vLev0II0HKFaxkcm+&#x2F;7kX5IGwVFBASkGchU311wmU&#x2F;veIj2bB0UcBkQbW6yw2asK" crossorigin="anonymous"></script>
 
 
 
-
 <script src="/js/script.js"></script>
-
 
 
   
@@ -6129,9 +5794,7 @@
   </script>
 
 
-
 <script src="/js/pjax_script.js" data-pjax></script>
-
 
 
   
@@ -6139,16 +5802,15 @@
 
 
 
-
-
-
-  
-<script src="https://npm.webcache.cn/mouse-firework@0.1.1/dist/index.umd.js" integrity="sha384-8LyaidD9GPxQQgLJO&#x2F;WRw&#x2F;O2h3BoNq&#x2F;ApI&#x2F;ecpvM6RsrCz2qP2ppBXUKihP4V&#x2F;2d" crossorigin="anonymous"></script>
-
   <script>
-    window.firework && window.firework(JSON.parse('{"excludeElements":["a","button"],"particles":[{"shape":"circle","move":["emit"],"easing":"easeOutExpo","colors":["var(--red-1)","var(--red-2)","var(--red-3)","var(--red-4)"],"number":20,"duration":[1200,1800],"shapeOptions":{"radius":[16,32],"alpha":[0.3,0.5]}},{"shape":"circle","move":["diffuse"],"easing":"easeOutExpo","colors":["var(--red-0)"],"number":1,"duration":[1200,1800],"shapeOptions":{"radius":20,"alpha":[0.2,0.5],"lineWidth":6}}]}'))
+    var setupFirework = () => {
+      if (!false || !window.matchMedia('(max-width: 768px)').matches) {
+        window.firework && window.firework(JSON.parse('{"excludeElements":["a","button"],"particles":[{"shape":"circle","move":["emit"],"easing":"easeOutExpo","colors":["var(--red-1)","var(--red-2)","var(--red-3)","var(--red-4)"],"number":20,"duration":[1200,1800],"shapeOptions":{"radius":[16,32],"alpha":[0.3,0.5]}},{"shape":"circle","move":["diffuse"],"easing":"easeOutExpo","colors":["var(--red-0)"],"number":1,"duration":[1200,1800],"shapeOptions":{"radius":20,"alpha":[0.2,0.5],"lineWidth":6}}]}'));
+      }
+    }
   </script>
-
+  
+<script src="https://npm.webcache.cn/mouse-firework@0.1.1/dist/index.umd.js" integrity="sha384-8LyaidD9GPxQQgLJO&#x2F;WRw&#x2F;O2h3BoNq&#x2F;ApI&#x2F;ecpvM6RsrCz2qP2ppBXUKihP4V&#x2F;2d" crossorigin="anonymous" onload="setupFirework()" defer></script>
 
 
   
@@ -6161,13 +5823,8 @@
 
 
 
-
-
-
-
 <div id="lazy-script">
   <div>
-    
       
       
       <script data-pjax>
@@ -6179,53 +5836,36 @@
           description: "",
           stripContent: "Redis &amp;#x3D; Ready + Start——如何开始 阅读源码绝非易事，整个目录包含上百个代码文件，每个文件动辄上千行代码，如果没有比较好的阅读方法和学习技巧容易无从下手 阅读源码前应当先对全局的源码结构有所了解，先忽略功能的实现细节，对整体有个初步的认识 而不是刚上来就盯着某个文件看，被各种定义声明，函数调用跳转，复杂实现逻辑的代码淹没 这就像是刚到一个新城市,上来应该先看地图而不是一头扎进某条巷子里，容易迷路   阅读源码时先梳理出代码的主线逻辑，再详细学习分支细节，依照代码结构",
           date: "Wed Jan 21 2026 13:16:21 GMT+0800",
-          updated: "Tue Feb 10 2026 19:36:51 GMT+0800",
+          updated: "Tue Apr 07 2026 01:36:12 GMT+0800",
           cover: "/images/bg.webp",
         };
       </script>
-       
-    
-    
-      
         
 <script src="/js/insert_highlight.js" data-pjax></script>
 
-        
       
-    
-    
+<script src="/js/tabs.js" data-pjax defer></script>
+
       <script type="module" data-pjax>
-        const PhotoSwipeLightbox = (await safeImport("https://npm.webcache.cn/photoswipe@5.4.4/dist/photoswipe-lightbox.esm.min.js", "sha384-DiL6M/gG+wmTxmCRZyD1zee6lIhawn5TGvED0FOh7fXcN9B0aZ9dexSF/N6lrZi/")).default;
-        const initPswp = (gallery, children) => {
-          if (_$$(`${gallery} ${children}`).length > 0) {
-            new PhotoSwipeLightbox({
-              gallery,
-              children,
-              pswpModule: () => safeImport("https://npm.webcache.cn/photoswipe@5.4.4/dist/photoswipe.esm.min.js", "sha384-WkkO3GCmgkC3VQWpaV8DqhKJqpzpF9JoByxDmnV8+oTJ7m3DfYEWX1fu1scuS4+s")
-            }).init();
+        (async () => {
+          const PhotoSwipeLightbox = (await safeImport("https://npm.webcache.cn/photoswipe@5.4.4/dist/photoswipe-lightbox.esm.min.js", "sha384-DiL6M/gG+wmTxmCRZyD1zee6lIhawn5TGvED0FOh7fXcN9B0aZ9dexSF/N6lrZi/")).default;
+          const initPswp = (gallery, children) => {
+            if (_$$(`${gallery} ${children}`).length > 0) {
+              new PhotoSwipeLightbox({
+                gallery,
+                children,
+                pswpModule: () => safeImport("https://npm.webcache.cn/photoswipe@5.4.4/dist/photoswipe.esm.min.js", "sha384-WkkO3GCmgkC3VQWpaV8DqhKJqpzpF9JoByxDmnV8+oTJ7m3DfYEWX1fu1scuS4+s")
+              }).init();
+            }
           }
-        }
-        const pswp = () => {
-          initPswp('.article-entry', 'a.article-gallery-item');
-          initPswp('.article-gallery', 'a.article-gallery-item');
-          window.lightboxStatus = 'done';
-          window.removeEventListener('lightbox:ready', pswp);
-        }
-        if(window.lightboxStatus === 'ready') {
-          pswp()
-        } else {
-          window.addEventListener('lightbox:ready', pswp);
-        }
+          const pswp = () => {
+            initPswp('.article-entry', 'a.article-gallery-item');
+            initPswp('.article-gallery', 'a.article-gallery-item');
+          }
+          pswp();
+        })();
       </script>
-      
         
-
-
-
-
-
-
-
 
 <script data-pjax>
   var loadScript = (src, integrity) => {
@@ -6238,12 +5878,9 @@
 
   var commentConfigKeys = ["twikoo"];
   var commentConfig = {
-    
-    
-    
     twikoo: {
       enable: true,
-      load: () => {
+      load: async () => {
         const container = document.querySelector('.twikoo-comment');
         if (!container) return;
         container.style.display = 'block';
@@ -6279,9 +5916,6 @@
         document.head.appendChild(script);
       }
     },
-    
-    
-    
   }
   commentConfig.enable = commentConfigKeys.some(key => commentConfig[key].enable);
 
@@ -6391,8 +6025,6 @@
   loadComments();
 </script>
 
-      
-    
   </div>
 </div>
 
@@ -6406,7 +6038,7 @@
   \/_/ /_/   \/_____/   \/_/   \/_/  \/_/   \/_____/ 
                                                   
 `,'color: #ff5252;')
-    console.log('%c Theme.Reimu v' + '1.10.1' + ' %c https://github.com/D-Sketon/hexo-theme-reimu ', 'color: white; background: #ff5252; padding:5px 0;', 'padding:4px;border:1px solid #ff5252;')
+    console.log('%c Theme.Reimu v' + '1.12.3' + ' %c https://github.com/D-Sketon/hexo-theme-reimu ', 'color: white; background: #ff5252; padding:5px 0;', 'padding:4px;border:1px solid #ff5252;')
   </script>
   
 
@@ -6439,11 +6071,8 @@
   }
 </script>
 
-
   
 <script src="https://npm.webcache.cn/busuanzi@2.3.0/bsz.pure.mini.js" integrity="sha384-0M75wtSkhjIInv4coYlaJU83+OypaRCIq2SukQVQX04eGTCBXJDuWAbJet56id+S" crossorigin="anonymous" async></script>
-
-
 
 
 <script>
@@ -6457,41 +6086,31 @@
 </script>
 
 
-
-
-
-  
-<script src="https://npm.webcache.cn/aplayer@1.10.1/dist/APlayer.min.js" integrity="sha384-gdGYZwHnfJM54evoZhpO0s6ZF5BQiybkiyW7VXr+h5UfruuRL&#x2F;aORyw+5+HZoU6e" crossorigin="anonymous"></script>
-
-  
-
-
-
-  
     <script>
-      var meting_api = "https://music-api.chieko3020.xyz/?type=radio&id=1228381556";
+      var setupAPlayer = () => {
+        if (!false || !window.matchMedia('(max-width: 768px)').matches) {
+          if (window.matchMedia('(max-width: 959px)').matches) {
+            const meting = _$('meting-js');
+            if (meting) {
+              meting.setAttribute('fixed', 'true');
+              const aside = meting.parentNode?.parentNode;
+              if (aside?.tagName === 'ASIDE') {
+                meting.parentNode.removeChild(meting);
+                document.body.appendChild(meting);
+              }
+            }
+          }
+        }
+      };
+        var meting_api = "https://music-api.chieko3020.xyz/?type=radio&id=1228381556";
     </script>
   
-  <script>
-    if (window.matchMedia('(max-width: 959px)').matches) {
-      const meting = _$('meting-js');
-      if (meting) {
-        meting.setAttribute('fixed', 'true');
-        const aside = meting.parentNode?.parentNode;
-        if (aside?.tagName === 'ASIDE') {
-          meting.parentNode.removeChild(meting);
-          document.body.appendChild(meting);
-        }
-      }
-    }
-  </script>
-  
-<script src="https://npm.webcache.cn/meting@2.0.1/dist/Meting.min.js" integrity="sha384-ASVlpKF80A22OXTK3tfEjZm1EL6uFMKIC4p8+0maanw1S&#x2F;IyB+Y4JG+ZDU7GpKE8" crossorigin="anonymous"></script>
-
-
-
+<script src="https://npm.webcache.cn/aplayer@1.10.1/dist/APlayer.min.js" integrity="sha384-gdGYZwHnfJM54evoZhpO0s6ZF5BQiybkiyW7VXr+h5UfruuRL&#x2F;aORyw+5+HZoU6e" crossorigin="anonymous" defer onload="setupAPlayer()"></script>
 
     
-  <!-- hexo injector body_end start --><script data-pjax src="https://registry.npmmirror.com/oh-my-live2d/latest/files"></script><script>const oml2d = OML2D.loadOml2d({libraryUrls:{"complete":"https://registry.npmmirror.com/oh-my-live2d/latest/files/lib/complete.js","cubism2":"https://registry.npmmirror.com/oh-my-live2d/latest/files/lib/cubism2.js","cubism5":"https://registry.npmmirror.com/oh-my-live2d/latest/files/lib/cubism5.js"},mobileDisplay:true,models:[{"path":"/live2d/Resources/model/March7th/March7th.model3.json","mobilePosition":[-10,23],"mobileScale":0.1,"mobileStageStyle":{"width":180,"height":166},"motionPreloadStrategy":"ALL","position":[-2,-6],"scale":0.08,"stageStyle":{"width":250,"height":250}},{"path":"/live2d/Resources/model/EverNight/EverNight.model3.json","mobilePosition":[-10,23],"mobileScale":0.1,"mobileStageStyle":{"width":180,"height":166},"motionPreloadStrategy":"ALL","position":[-20,0],"scale":0.12,"stageStyle":{"width":250,"height":250}}],parentElement:document.body,primaryColor:"var(--btn-bg)",sayHello:false,initialStatus:"sleep",tips:{style: {"width":300,"height":100,"left":"calc(50% - -40px)","top":"-80px","fontSize":"13px","lineHeight":1.3,"padding":"8px","textAlign":"left","maxHeight":"200px","overflowY":"auto","wordWrap":"break-word","whiteSpace":"normal"},mobileStyle: {"width":250,"height":150,"left":"calc(50% - -125px)","top":"-100px","fontSize":"12px","lineHeight":1.2,"padding":"6px","textAlign":"left","maxHeight":"150px","overflowY":"auto","wordWrap":"break-word","whiteSpace":"normal"},idleTips:{interval:500,message:["你好，欢迎入职星穹列车，我是三月七，星穹列车的乘员，也是你的同事。现在，请先拍摄入职照…瞧把你吓的，咱是在开玩笑啦~","名字是我自己取的，大家也叫我三月、小三月…你呢？你想叫我什么？","我的过去，或许不在从前，而是在我的未来里。所以我一定会一站站走下去，哪怕有一天…没有列车。","果汁…一说就觉得馋，一馋就忒想喝，一喝就…停不下来……","要是没人和我聊天，我就闷得要命。但在列车上的时候，姬子很忙，杨叔很忙，帕姆很忙，丹恒倒是不忙，可他不喜欢聊天……","每次坐在书桌前整理完相册，抬头看向窗外，即使那一幕已经见过千遍万遍，我总是想再拍一张照片…现在咱能坐在列车里，像这样看着星星，真的很幸福。","我平时很喜欢仙舟幻戏嘛，心里一直有点剑侠情结。等我真正开始学剑之后，才发现比起幻戏里飞天遁地的大侠，还是教我一招一式的两位小师父更厉害！","即使看起来很「黑暗」的料理，也要拿出「开拓」的精神来面对！但，实话实说，砂鳗冻和姬子泡的咖啡真不太好……","丹恒…他在我之前上的车，从没透露过自己的来历…你要是有机会，也帮我打探打探？","美丽的姬子姐姐，成熟，可靠，又优雅，还是列车的领航员…以后，我也可以成为那样的大人吧！不过咱现在这样也很好~","听说杨叔曾经是秘密组织的首领，拯救过星球，当过老师，还画过动画的原画！哎，简直是外星人了……","列车长就是最棒的！","即使知道了他的神秘过去，他还是我们认识的那个丹恒呀！","彦卿师父的教学风格非常严谨，也一直把「将军当年是这么教我的」挂在嘴边…看来，景元将军教给他的，他都记得清清楚楚。","云璃师父的教学风格非常自由，她最常和我说的话是：「这是一种感觉！」…也许这就是「体验式教学」吧？","如果让列车长听到那段「七休日」的主张，不知道会是什么反应呀。","翁法罗斯的三月，是属于永夜之帷的时间…就请以「长夜月」这个称呼，将我放进你的回忆中吧。若能躲进岁月的罅隙，属于我们的时间还有很多，很多♭","我是被遗忘的过去，是陪伴「她」的长夜。那些残酷的往事由我来代劳，而我也将看护她的前路…不惜任何代价♭","「三月七」，多么美妙、可爱、活泼、有趣的名字，还带着一丝生日的甜蜜。所以，她应当也会喜欢「长夜月」这个称号……","三月抵达翁法罗斯的时间坐标比你们早许多，她已如烛火熄灭，但我是那烛火的影，藏进岁月的狭间，等待你们的到来。","为什么随身带伞？因为美好的记忆就像连绵的雨，一度落在伞上又悄无痕迹地滑落…当然，也因为拍照出片。","翁法罗斯，一颗悲剧的宝石，它与神相争的光芒吸引了那些觊觎记忆的窃贼。但那些伤痕累累的「岁月」，分明向我诉说着对「忘却」的渴求。","与你们一起旅行的日子，早在他身上留下了不可磨灭的烙印。","对她来说，最好的未来，就是我可以彻底消失的那一天。","能在我面前保持镇定的忆者，不超过一掌之数。难道说…她看过更可怕的东西？","这位优秀的裁衣师本该为翁法罗斯编织出更多的回忆，若是我的话，一定会为自己无法亲眼见证翁法罗斯的未来而感到遗憾。","「明天见」，无论对谁来说，都是个简单而又奢侈的愿望。","身为王储的他，还是身为战士的他，都肩负着太多关于仇恨的记忆。但当他履行自己的职责时，却从未将过往与未来混为一谈。","以前她种下的那片花海，是否能挺过感官之雨的洗礼呢？","我一直都想问他一个问题：「大地兽和世界真理的真相都掉到了海里，你先捡哪个？」","晴天让人烦躁，但不得不说，她洒下的光，连我也觉得柔和舒适。","一个美好的谎言，的确胜过万千残酷的真相。","每个轮回里，他都在空白的起点出发，却又总是走向同一个结局。我和三月七的命运，是否会有所不同？","能把那位「天才」拉下马，果然不能小看擅长益智游戏的人…有机会好想和她过过招呀。","她就像那美丽的泡沫，即便破裂时，也像弦上落下的颤音一样令人动容。","我能看到，过往的英雄之火仍在他的心中燃烧。有这样经验丰富的前辈引路，让人放心多了。","成熟、优雅、如玫瑰般馥郁…三月一直在努力向她学习呢。当列车驶向更深邃的星空，未来…她又会以怎样的姿态绽放？","好想摸摸它呀。可惜，这位神秘莫测的「列车长」，一看就不会乖乖就范呢~","何物能使生灵长存？是记忆么？不，记忆只能保存腐朽的过去。而它却甘愿成为后世的基石，为这个世界留下了生生不息的传承。","希望我带来的这一场意料之外的「雨」，能让荒芜的岁月盛开…如她所愿的百花♭"]}},then:"(oml2d)=>{\ntry { localStorage.removeItem('oml2d-status') } catch(e){}\ntry { oml2d && oml2d.sleep && oml2d.sleep() } catch(e){}\ntry { oml2d && oml2d.statusBar && oml2d.statusBar.setRest && oml2d.statusBar.setRest('看板娘休息中', '💤') } catch(e){}\n}\n"});</script><!-- hexo injector body_end end --></body>
-  </html>
+<script src="https://npm.webcache.cn/meting@2.0.1/dist/Meting.min.js" integrity="sha384-ASVlpKF80A22OXTK3tfEjZm1EL6uFMKIC4p8+0maanw1S&#x2F;IyB+Y4JG+ZDU7GpKE8" crossorigin="anonymous" defer></script>
 
+
+
+  <!-- hexo injector body_end start --><script data-pjax src="https://registry.npmmirror.com/oh-my-live2d/latest/files"></script><script>const oml2d = OML2D.loadOml2d({libraryUrls:{"complete":"https://registry.npmmirror.com/oh-my-live2d/latest/files/lib/complete.js","cubism2":"https://registry.npmmirror.com/oh-my-live2d/latest/files/lib/cubism2.js","cubism5":"https://registry.npmmirror.com/oh-my-live2d/latest/files/lib/cubism5.js"},mobileDisplay:true,models:[{"path":"/live2d/Resources/model/March7th/March7th.model3.json","mobilePosition":[-10,23],"mobileScale":0.1,"mobileStageStyle":{"width":180,"height":166},"motionPreloadStrategy":"ALL","position":[-2,-6],"scale":0.08,"stageStyle":{"width":250,"height":250}},{"path":"/live2d/Resources/model/EverNight/EverNight.model3.json","mobilePosition":[-10,23],"mobileScale":0.1,"mobileStageStyle":{"width":180,"height":166},"motionPreloadStrategy":"ALL","position":[-20,0],"scale":0.12,"stageStyle":{"width":250,"height":250}}],parentElement:document.body,primaryColor:"var(--btn-bg)",sayHello:false,initialStatus:"sleep",tips:{style: {"width":300,"height":100,"left":"calc(50% - -40px)","top":"-80px","fontSize":"13px","lineHeight":1.3,"padding":"8px","textAlign":"left","maxHeight":"200px","overflowY":"auto","wordWrap":"break-word","whiteSpace":"normal"},mobileStyle: {"width":250,"height":150,"left":"calc(50% - -125px)","top":"-100px","fontSize":"12px","lineHeight":1.2,"padding":"6px","textAlign":"left","maxHeight":"150px","overflowY":"auto","wordWrap":"break-word","whiteSpace":"normal"},idleTips:{interval:20000,message:["你好，欢迎入职星穹列车，我是三月七，星穹列车的乘员，也是你的同事。现在，请先拍摄入职照…瞧把你吓的，咱是在开玩笑啦~","名字是我自己取的，大家也叫我三月、小三月…你呢？你想叫我什么？","我的过去，或许不在从前，而是在我的未来里。所以我一定会一站站走下去，哪怕有一天…没有列车。","果汁…一说就觉得馋，一馋就忒想喝，一喝就…停不下来……","要是没人和我聊天，我就闷得要命。但在列车上的时候，姬子很忙，杨叔很忙，帕姆很忙，丹恒倒是不忙，可他不喜欢聊天……","每次坐在书桌前整理完相册，抬头看向窗外，即使那一幕已经见过千遍万遍，我总是想再拍一张照片…现在咱能坐在列车里，像这样看着星星，真的很幸福。","我平时很喜欢仙舟幻戏嘛，心里一直有点剑侠情结。等我真正开始学剑之后，才发现比起幻戏里飞天遁地的大侠，还是教我一招一式的两位小师父更厉害！","即使看起来很「黑暗」的料理，也要拿出「开拓」的精神来面对！但，实话实说，砂鳗冻和姬子泡的咖啡真不太好……","丹恒…他在我之前上的车，从没透露过自己的来历…你要是有机会，也帮我打探打探？","美丽的姬子姐姐，成熟，可靠，又优雅，还是列车的领航员…以后，我也可以成为那样的大人吧！不过咱现在这样也很好~","听说杨叔曾经是秘密组织的首领，拯救过星球，当过老师，还画过动画的原画！哎，简直是外星人了……","列车长就是最棒的！","即使知道了他的神秘过去，他还是我们认识的那个丹恒呀！","彦卿师父的教学风格非常严谨，也一直把「将军当年是这么教我的」挂在嘴边…看来，景元将军教给他的，他都记得清清楚楚。","云璃师父的教学风格非常自由，她最常和我说的话是：「这是一种感觉！」…也许这就是「体验式教学」吧？","如果让列车长听到那段「七休日」的主张，不知道会是什么反应呀。","翁法罗斯的三月，是属于永夜之帷的时间…就请以「长夜月」这个称呼，将我放进你的回忆中吧。若能躲进岁月的罅隙，属于我们的时间还有很多，很多♭","我是被遗忘的过去，是陪伴「她」的长夜。那些残酷的往事由我来代劳，而我也将看护她的前路…不惜任何代价♭","「三月七」，多么美妙、可爱、活泼、有趣的名字，还带着一丝生日的甜蜜。所以，她应当也会喜欢「长夜月」这个称号……","三月抵达翁法罗斯的时间坐标比你们早许多，她已如烛火熄灭，但我是那烛火的影，藏进岁月的狭间，等待你们的到来。","为什么随身带伞？因为美好的记忆就像连绵的雨，一度落在伞上又悄无痕迹地滑落…当然，也因为拍照出片。","翁法罗斯，一颗悲剧的宝石，它与神相争的光芒吸引了那些觊觎记忆的窃贼。但那些伤痕累累的「岁月」，分明向我诉说着对「忘却」的渴求。","与你们一起旅行的日子，早在他身上留下了不可磨灭的烙印。","对她来说，最好的未来，就是我可以彻底消失的那一天。","能在我面前保持镇定的忆者，不超过一掌之数。难道说…她看过更可怕的东西？","这位优秀的裁衣师本该为翁法罗斯编织出更多的回忆，若是我的话，一定会为自己无法亲眼见证翁法罗斯的未来而感到遗憾。","「明天见」，无论对谁来说，都是个简单而又奢侈的愿望。","身为王储的他，还是身为战士的他，都肩负着太多关于仇恨的记忆。但当他履行自己的职责时，却从未将过往与未来混为一谈。","以前她种下的那片花海，是否能挺过感官之雨的洗礼呢？","我一直都想问他一个问题：「大地兽和世界真理的真相都掉到了海里，你先捡哪个？」","晴天让人烦躁，但不得不说，她洒下的光，连我也觉得柔和舒适。","一个美好的谎言，的确胜过万千残酷的真相。","每个轮回里，他都在空白的起点出发，却又总是走向同一个结局。我和三月七的命运，是否会有所不同？","能把那位「天才」拉下马，果然不能小看擅长益智游戏的人…有机会好想和她过过招呀。","她就像那美丽的泡沫，即便破裂时，也像弦上落下的颤音一样令人动容。","我能看到，过往的英雄之火仍在他的心中燃烧。有这样经验丰富的前辈引路，让人放心多了。","成熟、优雅、如玫瑰般馥郁…三月一直在努力向她学习呢。当列车驶向更深邃的星空，未来…她又会以怎样的姿态绽放？","好想摸摸它呀。可惜，这位神秘莫测的「列车长」，一看就不会乖乖就范呢~","何物能使生灵长存？是记忆么？不，记忆只能保存腐朽的过去。而它却甘愿成为后世的基石，为这个世界留下了生生不息的传承。","希望我带来的这一场意料之外的「雨」，能让荒芜的岁月盛开…如她所愿的百花♭"]}},then:"(oml2d)=>{\ntry { localStorage.removeItem('oml2d-status') } catch(e){}\ntry { oml2d && oml2d.sleep && oml2d.sleep() } catch(e){}\ntry { oml2d && oml2d.statusBar && oml2d.statusBar.setRest && oml2d.statusBar.setRest('看板娘休息中', '💤') } catch(e){}\n}\n"});</script><!-- hexo injector body_end end --></body>
+  </html>
