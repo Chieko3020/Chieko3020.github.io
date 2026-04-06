@@ -196,6 +196,7 @@
         </h2>
       <%_ } else { _%>
         <%_ let subtitle;
+            let subtitleIsRawHtml = false;
             if (is_archive()) {
               if (is_month()) {
                 subtitle = page.year + '/' + page.month;
@@ -216,15 +217,21 @@
               }
             } else if (theme.subtitle && typeof theme.subtitle === 'string') {
               subtitle = theme.subtitle;
+              subtitleIsRawHtml = true;
             } else if (config.subtitle) {
               subtitle = config.subtitle;
+              subtitleIsRawHtml = true;
             } _%>
         <h2 id="subtitle-wrap" data-aos="<%= theme.animation.options.header.subTitle %>">
           <%_ if (subtitle) { _%>
             <%_ if (is_home() && theme.subtitle?.typing?.enable) { _%>
               <span id="subtitle"><span></span></span>
             <%_ } else { _%>
-              <span id="subtitle"><%= subtitle %></span>
+              <%_ if (subtitleIsRawHtml) { _%>
+                <span id="subtitle"><%- subtitle %></span>
+              <%_ } else { _%>
+                <span id="subtitle"><%= subtitle %></span>
+              <%_ } _%>
             <%_ } _%>
           <%_ } _%>
         </h2>

@@ -5,19 +5,19 @@
         <%_ if (content.categories) { _%>
         <div class="post-categories-wrap">
           <%_ let c = parseHomeCategories(content.categories); _%>
-          <a class="post-link" href="<%= url_for_lang(c.url, {relative: false}) %>" aria-label="<%= c.name %>" title="<%= c.name %>"></a>
+          <a class="post-link" href="<%= url_for_lang(c.url, {relative: false}) %>" aria-label="<%= stripHtml(c.name) %>" title="<%= stripHtml(c.name) %>"></a>
           <div class="post-categories-cover">
             <%_ if (content.cover) { _%>
-              <img data-src="<%- url_for(content.cover, {relative: false}) %>" data-sizes="auto" alt="<%= c.name %>" class="lazyload">
+              <img data-src="<%- url_for(content.cover, {relative: false}) %>" data-sizes="auto" alt="<%= stripHtml(c.name) %>" class="lazyload">
             <%_ } else { _%>
               <%_ let cover = randomCover(); _%>
               <%_ if (cover) { _%>
-                <img data-src="<%= cover %>" data-sizes="auto" alt="<%= c.name %>" class="lazyload">
+                <img data-src="<%= cover %>" data-sizes="auto" alt="<%= stripHtml(c.name) %>" class="lazyload">
               <%_ } else { _%>
-                <img data-src="<%- url_for(theme.banner, {relative: false}) %>" data-sizes="auto" alt="<%= c.name %>" class="lazyload">
+                <img data-src="<%- url_for(theme.banner, {relative: false}) %>" data-sizes="auto" alt="<%= stripHtml(c.name) %>" class="lazyload">
               <%_ } _%>
             <%_ } _%>
-            <h2><%= c.name %></h2>
+            <h2><%- c.name %></h2>
             <h3><%= _p('home_categories.count', c.count) %></h3>
           </div>
         </div>
