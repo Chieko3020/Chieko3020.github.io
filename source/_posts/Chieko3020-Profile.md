@@ -6,8 +6,6 @@ tags: "你知道吗"
 categories: "不可解的它的一切 <br> 那不就是「关于网站」吗"
 ---
 
-{% heatMapCard levelStandard %}
-
 # 介绍一下自己吧？
 
 - 2026年 福建农林大学毕业  
