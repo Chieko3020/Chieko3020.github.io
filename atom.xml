@@ -49,13 +49,7 @@
     <updated>2026-02-04T09:30:31.000Z</updated>
     
     
-      
-      
-        
-        
-    <summary type="html">&lt;h1 id=&quot;Framework-Architecture&quot;&gt;&lt;a href=&quot;#Framework-Architecture&quot; class=&quot;headerlink&quot; title=&quot;Framework Architecture&quot;&gt;&lt;/a&gt;Framework</summary>
-        
-      
+    <summary type="html">随便记录 Android 一点点的基础知识，以及一些音频相关的概念</summary>
     
     
     
@@ -74,13 +68,7 @@
     <updated>2026-01-21T05:16:21.000Z</updated>
     
     
-      
-      
-        
-        
-    <summary type="html">&lt;h1 id=&quot;Redis-Ready-Start——如何开始&quot;&gt;&lt;a href=&quot;#Redis-Ready-Start——如何开始&quot; class=&quot;headerlink&quot; title=&quot;Redis &amp;#x3D; Ready + Start——如何开始&quot;&gt;&lt;/a&gt;Redis</summary>
-        
-      
+    <summary type="html">Redis 有关数据结构、内存、网络部分源码的解析</summary>
     
     
     
@@ -99,13 +87,7 @@
     <updated>2026-01-15T08:13:14.000Z</updated>
     
     
-      
-      
-        
-        
-    <summary type="html">&lt;h1 id=&quot;Mongo-概念&quot;&gt;&lt;a href=&quot;#Mongo-概念&quot; class=&quot;headerlink&quot; title=&quot;Mongo 概念&quot;&gt;&lt;/a&gt;Mongo 概念&lt;/h1&gt;&lt;h2 id=&quot;MongoDB&quot;&gt;&lt;a href=&quot;#MongoDB&quot;</summary>
-        
-      
+    <summary type="html">有关 MongoDB 的基本知识概括</summary>
     
     
     
@@ -124,13 +106,7 @@
     <updated>2026-01-11T17:26:18.000Z</updated>
     
     
-      
-      
-        
-        
-    <summary type="html">&lt;h1 id=&quot;Java学习笔记&quot;&gt;&lt;a href=&quot;#Java学习笔记&quot; class=&quot;headerlink&quot; title=&quot;Java学习笔记&quot;&gt;&lt;/a&gt;Java学习笔记&lt;/h1&gt;&lt;h2 id=&quot;编码风格&quot;&gt;&lt;a href=&quot;#编码风格&quot; class=&quot;headerlink&quot;</summary>
-        
-      
+    <summary type="html">有关 Java 的基础知识</summary>
     
     
     
@@ -149,13 +125,7 @@
     <updated>2026-01-11T17:25:13.000Z</updated>
     
     
-      
-      
-        
-        
-    <summary type="html">&lt;h1 id=&quot;Go语言学习笔记&quot;&gt;&lt;a href=&quot;#Go语言学习笔记&quot; class=&quot;headerlink&quot; title=&quot;Go语言学习笔记&quot;&gt;&lt;/a&gt;Go语言学习笔记&lt;/h1&gt;&lt;h2 id=&quot;代码格式化&quot;&gt;&lt;a href=&quot;#代码格式化&quot;</summary>
-        
-      
+    <summary type="html">有关 Golang 的基础知识</summary>
     
     
     
@@ -174,15 +144,7 @@
     <updated>2025-11-02T13:01:15.000Z</updated>
     
     
-      
-      
-        
-        
-    <summary type="html">&lt;ul&gt;
-&lt;li&gt;网络IO模型也是 Linux 网络编程经常问到的题目，有次面试没答详细，只是简单介绍了一下，这里再写出来复习用&lt;/li&gt;
-&lt;li&gt;原文参考： &lt;a</summary>
-        
-      
+    <summary type="html">网络IO模型概念</summary>
     
     
     
@@ -201,16 +163,7 @@
     <updated>2025-11-02T12:39:59.000Z</updated>
     
     
-      
-      
-        
-        
-    <summary type="html">&lt;ul&gt;
-&lt;li&gt;某次面试被问到 一时没反应过来要回答连续与非连续再细分为分区,分页,分段,段页式 这里记录一下&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h1 id=&quot;连续分配&quot;&gt;&lt;a href=&quot;#连续分配&quot; class=&quot;headerlink&quot;</summary>
-        
-      
+    <summary type="html">一次面试中针对进程分配内存空间问题的复盘</summary>
     
     
     
@@ -229,16 +182,7 @@
     <updated>2025-10-21T04:50:51.000Z</updated>
     
     
-      
-      
-        
-        
-    <summary type="html">&lt;ul&gt;
-&lt;li&gt;散步魔女因子 ing&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;玩游戏不玩&lt;a</summary>
-        
-      
+    <summary type="html">还没玩过这个游戏？快去 Steam 看看</summary>
     
     
     
@@ -257,13 +201,7 @@
     <updated>2025-10-12T09:41:43.000Z</updated>
     
     
-      
-      
-        
-        
-    <summary type="html">&lt;h1 id=&quot;网站列表&quot;&gt;&lt;a href=&quot;#网站列表&quot; class=&quot;headerlink&quot; title=&quot;网站列表&quot;&gt;&lt;/a&gt;网站列表&lt;/h1&gt;&lt;h2 id=&quot;资源向&quot;&gt;&lt;a href=&quot;#资源向&quot; class=&quot;headerlink&quot;</summary>
-        
-      
+    <summary type="html">自己的浏览器收藏夹，分资源/学习向</summary>
     
     
     
@@ -275,21 +213,14 @@
   </entry>
   
   <entry>
-    <title>Chieko3020 Profile</title>
+    <title>关于 Chieko3020</title>
     <link href="https://chieko3020.xyz/2025/10/12/Chieko3020-Profile/"/>
     <id>https://chieko3020.xyz/2025/10/12/Chieko3020-Profile/</id>
     <published>2025-10-12T05:50:01.000Z</published>
     <updated>2025-10-12T05:50:01.000Z</updated>
     
     
-      
-      
-        
-        
-    <summary type="html">&lt;h1 id=&quot;介绍一下自己吧？&quot;&gt;&lt;a href=&quot;#介绍一下自己吧？&quot; class=&quot;headerlink&quot; title=&quot;介绍一下自己吧？&quot;&gt;&lt;/a&gt;介绍一下自己吧？&lt;/h1&gt;&lt;ul&gt;
-&lt;li&gt;2026年 福建农林大学毕业 </summary>
-        
-      
+    <summary type="html">个人主页</summary>
     
     
     
@@ -305,17 +236,10 @@
     <link href="https://chieko3020.xyz/2025/10/12/%E7%94%BB%E5%BB%8A/"/>
     <id>https://chieko3020.xyz/2025/10/12/%E7%94%BB%E5%BB%8A/</id>
     <published>2025-10-12T04:00:30.000Z</published>
-    <updated>2026-04-12T08:06:28.025Z</updated>
+    <updated>2026-04-12T08:40:17.748Z</updated>
     
     
-      
-      
-        
-        
-    <summary type="html">&lt;h1 id=&quot;Pixiv-插画作品&quot;&gt;&lt;a href=&quot;#Pixiv-插画作品&quot; class=&quot;headerlink&quot; title=&quot;Pixiv 插画作品&quot;&gt;&lt;/a&gt;Pixiv 插画作品&lt;/h1&gt;
-&lt;div class=&quot;gallery-wall&quot;</summary>
-        
-      
+    <summary type="html">Pixiv 插画、Arcaea CG、无限暖暖摄影、魔女裁判 CG，以及 ⬛⬛⬛⬛</summary>
     
     
     
