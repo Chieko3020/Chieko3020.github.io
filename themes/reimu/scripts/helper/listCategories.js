@@ -1,3 +1,12 @@
+const { escapeHTML, stripHTML } = require("hexo-util");
+
+const plainForAttr = (s) =>
+  escapeHTML(
+    stripHTML(String(s).replace(/<\s*br\s*\/?>/gi, " "))
+      .replace(/\s+/g, " ")
+      .trim()
+  );
+
 // https://github.com/hexojs/hexo/blob/master/lib/plugins/helper/list_categories.ts
 function listCategoriesHelper(categories, options) {
   if (
@@ -58,7 +67,9 @@ function listCategoriesHelper(categories, options) {
       result += `<li class="${className}-list-item${additionalClassName}">`;
       result += `<a class="${className}-list-link${
         isCurrent ? " current" : ""
-      }" href="${this.url_for_lang(cat.path)}${suffix}" title="${cat.name}">`;
+      }" href="${this.url_for_lang(cat.path)}${suffix}" title="${plainForAttr(
+        cat.name
+      )}">`;
       result += transform ? transform(cat.name) : cat.name;
       result += "</a>";
       if (showCount) {
@@ -77,7 +88,7 @@ function listCategoriesHelper(categories, options) {
       if (i || level) result += separator;
       result += `<a class="${className}-link" href="${this.url_for_lang(
         cat.path
-      )}${suffix}" title="${cat.name}">`;
+      )}${suffix}" title="${plainForAttr(cat.name)}">`;
       result += transform ? transform(cat.name) : cat.name;
       if (showCount) {
         result += `<span class="${className}-count">${cat.length}</span>`;
