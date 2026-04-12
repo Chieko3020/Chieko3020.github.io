@@ -1,7 +1,7 @@
 ---
 title: Chieko3020 Profile
 date: 2025-10-12 13:50:01
-sticky: 10
+sticky: true
 tags: "你知道吗"
 categories: "不可解的它的一切 <br> 那不就是「关于网站」吗"
 ---

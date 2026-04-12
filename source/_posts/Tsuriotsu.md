@@ -2,7 +2,7 @@
 title: Tsuriotsu
 date: 2026-03-27 18:18:32
 tags: "你知道吗"
-sticky: 9
+sticky: true
 categories: "只属于你的小妙招 <br> 看似有用实则没用"
 ---
 
