@@ -9,10 +9,20 @@
     "beforeend",
     '<form id="search-form"><input type="text" id="search-text"></form>'
   );
+  // 与当前页同源再拼 base，否则本地 hexo s 会因 url 指向线上而触发 CORS
   const baseUrl = window.REIMU_CONFIG?.base;
-  const searchUrl = baseUrl
-    ? new URL("search.json", baseUrl.replace(/\/?$/, "/")).toString()
-    : "/search.json";
+  let searchUrl = "/search.json";
+  try {
+    if (baseUrl) {
+      const normalized = baseUrl.replace(/\/?$/, "/");
+      const bu = new URL(normalized);
+      if (bu.origin === window.location.origin) {
+        searchUrl = new URL("search.json", bu).toString();
+      }
+    }
+  } catch (e) {
+    searchUrl = "/search.json";
+  }
   fetch(searchUrl)
     .then((response) => {
       if (!response.ok) {

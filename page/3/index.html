@@ -95,8 +95,20 @@
           });
         }
 
-        // Keep original behavior: desktop only.
-        if (window.screen.width >= 768) {
+        function live2dWebglAvailable() {
+          try {
+            var c = document.createElement("canvas");
+            if (!c.getContext) return false;
+            return !!(
+              c.getContext("webgl") || c.getContext("experimental-webgl")
+            );
+          } catch (e) {
+            return false;
+          }
+        }
+
+        // Desktop only; skip when WebGL/canvas is unavailable (no GPU, embedded browser, etc.).
+        if (window.screen.width >= 768 && live2dWebglAvailable()) {
           Promise.all([
             loadExternalResource(live2dConfig.path.cssPath, "css"),
             loadExternalResource(live2dConfig.path.live2dCorePath, "js"),
@@ -105,20 +117,28 @@
           ])
             .then(() => {
               if (typeof initWidget === "function") {
-                initWidget({
-                  homePath: live2dConfig.path.homePath,
-                  waifuPath: live2dConfig.path.tipsJsonPath,
-                  cdnPath: live2dConfig.path.modelPath,
-                  tools: live2dConfig.tools,
-                  dragEnable: live2dConfig.drag.enable,
-                  dragDirection: live2dConfig.drag.direction,
-                  switchType: live2dConfig.switchType,
-                });
+                try {
+                  initWidget({
+                    homePath: live2dConfig.path.homePath,
+                    waifuPath: live2dConfig.path.tipsJsonPath,
+                    cdnPath: live2dConfig.path.modelPath,
+                    tools: live2dConfig.tools,
+                    dragEnable: live2dConfig.drag.enable,
+                    dragDirection: live2dConfig.drag.direction,
+                    switchType: live2dConfig.switchType,
+                  });
+                } catch (e) {
+                  console.warn("[live2d] initWidget failed:", e);
+                }
               } else {
                 console.warn("[live2d] initWidget not found after script load");
               }
             })
             .catch((err) => console.error("[live2d] Failed to initialize:", err));
+        } else if (window.screen.width >= 768) {
+          console.warn(
+            "[live2d] WebGL/canvas unavailable; skipping Live2D. Enable hardware acceleration or use a normal browser window."
+          );
         }
       })();
     </script>
@@ -141,7 +161,7 @@
     }
     var hideLoader = () => {
       document.body.style.overflow = 'auto';
-      loader.classList.add('loading');
+      if (loaderEl) loaderEl.classList.add('loading');
     };
 
     var endLoading = () => {

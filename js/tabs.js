@@ -26,6 +26,13 @@ _$$(".nav-tabs li.tab a").forEach((tab) => {
 
     updateIndicator(this.parentElement, navTabs);
 
+    window.requestAnimationFrame(() => {
+      window.dispatchEvent(new Event("resize"));
+      if (typeof window.lazySizes !== "undefined" && window.lazySizes.loader) {
+        window.lazySizes.loader.checkElems();
+      }
+    });
+
     return false;
   });
 });

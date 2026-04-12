@@ -25,7 +25,7 @@
 <meta property="og:description" content="Pixiv 插画、Arcaea CG、无限暖暖摄影、魔女裁判 CG，以及 ⬛⬛⬛⬛">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2025-10-12T04:00:30.000Z">
-<meta property="article:modified_time" content="2026-04-12T08:42:08.807Z">
+<meta property="article:modified_time" content="2026-04-12T10:54:06.582Z">
 <meta property="article:author" content="Chieko3020">
 <meta property="article:tag" content="你知道吗">
 <meta name="twitter:card" content="summary">
@@ -236,7 +236,7 @@
     <div class="sidebar-wrap" data-aos="fade-up">
           <div class="sidebar-toc-sidebar"><h3 class="toc-title">文章目录</h3>
 <div class="sidebar-toc-wrapper toc-div-class" >
-    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Pixiv-%E6%8F%92%E7%94%BB%E4%BD%9C%E5%93%81"><span class="toc-number">1.</span> <span class="toc-text">Pixiv 插画作品</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Arcaea-CG"><span class="toc-number">2.</span> <span class="toc-text">Arcaea CG</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%97%A0%E9%99%90%E6%9A%96%E6%9A%96-%E6%B8%B8%E6%88%8F%E5%86%85%E6%91%84%E5%BD%B1"><span class="toc-number">3.</span> <span class="toc-text">无限暖暖 游戏内摄影</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%AD%94%E6%B3%95%E5%B0%91%E5%A5%B3%E7%9A%84%E9%AD%94%E5%A5%B3%E8%A3%81%E5%88%A4-CG"><span class="toc-number">4.</span> <span class="toc-text">魔法少女的魔女裁判 CG</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%BE%E7%81%B5%E7%9A%84%E8%AF%85%E5%92%92"><span class="toc-number">5.</span> <span class="toc-text">图灵的诅咒</span></a></li></ol>
+    
 </div>
 </div>
           <div class="sidebar-common-sidebar hidden"><div class="sidebar-author">
@@ -317,7 +317,7 @@
     <time style="display: none;" id="post-update-time">2026-04-12</time>
   </span>
     <span class="article-date-link icon-calendar-plus" data-aos="zoom-in">
-      <time datetime="2026-04-12T08:42:08.807Z" itemprop="dateModified">2026-04-12</time>
+      <time datetime="2026-04-12T10:54:06.582Z" itemprop="dateModified">2026-04-12</time>
     </span>
 </div>
 
@@ -330,667 +330,655 @@
           <p class="custom-block-title">WARNING</p>
           <p></p>
         </div>
-        <h1 id="Pixiv-插画作品"><a href="#Pixiv-插画作品" class="headerlink" title="Pixiv 插画作品"></a>Pixiv 插画作品</h1>
-<div class="gallery-wall" id="photoWall-png20pnnu"></div>
+        <div class="tabs" id="tab-tab_1"><ul class="nav-tabs center"><li class="tab active"><a class="#tab_1-1">Pixiv 插画作品</a></li><li class="tab"><a class="#tab_1-2">Arcaea CG</a></li><li class="tab"><a class="#tab_1-3">无限暖暖 游戏内摄影</a></li><li class="tab"><a class="#tab_1-4">魔法少女的魔女裁判 CG</a></li><li class="tab"><a class="#tab_1-5">图灵的诅咒</a></li><div class="tab-indicator"></div></ul><div class="tab-content"><div class="tab-pane active" id="tab_1-1"><div class="gallery-wall" id="photoWall-9io56n0k1"></div>
 <script>
   (function() {
     const imageUrls = ["/images/%E7%94%BB%E5%BB%8A/pixiv/104391353_p0.webp","/images/%E7%94%BB%E5%BB%8A/pixiv/93588597_p0_master1200.webp","/images/%E7%94%BB%E5%BB%8A/pixiv/illust_72300844_20200720_031307.webp","/images/%E7%94%BB%E5%BB%8A/pixiv/31A_x4_g4A.webp","/images/%E7%94%BB%E5%BB%8A/pixiv/107752063_p0.webp","/images/%E7%94%BB%E5%BB%8A/pixiv/109195200_p0.webp","/images/%E7%94%BB%E5%BB%8A/pixiv/110336778_p0.webp","/images/%E7%94%BB%E5%BB%8A/pixiv/112432125_p0.webp","/images/%E7%94%BB%E5%BB%8A/pixiv/124905855_p0.webp","/images/%E7%94%BB%E5%BB%8A/pixiv/124928964_p0.webp","/images/%E7%94%BB%E5%BB%8A/pixiv/124942301_p0.webp","/images/%E7%94%BB%E5%BB%8A/Arcara/live_origin.webp"];
     let images = [];
-    const wallId = '#photoWall-png20pnnu';
+    const wallId = '#photoWall-9io56n0k1';
     let resizeTimer;
     let lastWidth = 0;
     
-    function init() {
-      createInitialDOM();
-      loadImages();
-      const wall = _$(wallId);
-      if (wall && window.ResizeObserver) {
-        const observer = new ResizeObserver((entries) => {
-          const newWidth = entries[0].contentRect.width;
-          if (Math.abs(newWidth - lastWidth) > 1) {
-            clearTimeout(resizeTimer);
-            resizeTimer = setTimeout(renderPhotoWall, 250);
-          }
-        });
-        observer.observe(wall);
-      } else {
-        window.addEventListener('resize', handleResize);
+<pre><code>function init() {
+  createInitialDOM();
+  loadImages();
+  const wall = _$(wallId);
+  if (wall &amp;&amp; window.ResizeObserver) {
+    const observer = new ResizeObserver((entries) =&gt; {
+      const newWidth = entries[0].contentRect.width;
+      if (Math.abs(newWidth - lastWidth) &gt; 1) {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(renderPhotoWall, 250);
       }
-    }
-    
-    function createInitialDOM() {
-      const wall = _$(wallId);
-      if (!wall || !imageUrls.length) return;
-      
-      wall.style.opacity = '0';
-      wall.style.pointerEvents = 'none';
-      
-      imageUrls.forEach((url) => {
-        images.push({
-          width: 800,
-          height: 600,
-          aspectRatio: 4/3,
-          url: url,
-          loaded: false
-        });
-      });
-      
-      renderPhotoWall();
-    }
-    
-    function loadImages() {
-      const loadPromises = imageUrls.map((url, index) => {
-        return new Promise((resolve, reject) => {
-          const img = new Image();
-          img.onload = () => {
-            if (images[index]) {
-              images[index].width = img.naturalWidth;
-              images[index].height = img.naturalHeight;
-              images[index].aspectRatio = img.naturalWidth / img.naturalHeight;
-              images[index].loaded = true;
-            }
-            resolve();
-          };
-          img.onerror = () => {
-            if (images[index]) {
-              images[index].loaded = true;
-            }
-            resolve();
-          };
-          img.src = url;
-        });
-      });
-      
-      Promise.all(loadPromises)
-        .then(() => {
-          const wall = _$(wallId);
-          if (wall) {
-            wall.style.opacity = '1';
-            wall.style.pointerEvents = 'auto';
-            wall.style.transition = 'opacity 0.3s ease';
-          }
-          renderPhotoWall();
-        })
-        .catch((error) => console.error("图片加载失败:", error));
-    }
-    
-    function renderPhotoWall() {
-      const wall = _$(wallId);
-      
-      if (!images.length || !wall) return;
-      
-      const screenWidth = wall.offsetWidth || window.innerWidth - 40;
-      lastWidth = screenWidth;
-      
-      wall.innerHTML = "";
-      const rowHeight = 200;
-      const gap = 10;
-      const maxPerRow = 4;
-      
-      let row = [];
-      let rowWidth = 0;
-      const rows = [];
-      
-      images.forEach((img) => {
-        const scaledWidth = rowHeight * img.aspectRatio;
-        
-        if (rowWidth + scaledWidth <= screenWidth && row.length < maxPerRow) {
-          row.push(img);
-          rowWidth += scaledWidth + gap;
-        } else {
-          if (row.length) rows.push(row);
-          row = [img];
-          rowWidth = scaledWidth + gap;
-        }
-      });
-      
-      if (row.length) rows.push(row);
-      
-      rows.forEach((row) => {
-        const rowDiv = document.createElement("div");
-        rowDiv.style.cssText = `display: flex; gap: ${gap}px; width: 100%`;
-        
-        row.forEach((img) => {
-          const item = document.createElement("div");
-          item.className = "photo-item";
-          const flex = row.length === 1 ? '1' : img.aspectRatio;
-          item.style.cssText = `flex: ${flex}; height: ${rowHeight}px`;
-          
-          const imgEl = document.createElement("img");
-          imgEl.alt = "Gallery Image";
-          imgEl.style.cssText = "width: 100%; height: 100%; object-fit: cover";
-          imgEl.className = "lazyload";
-          imgEl.dataset.src = img.url;
-          imgEl.dataset.sizes = "auto";
+    });
+    observer.observe(wall);
+  } else {
+    window.addEventListener(&#39;resize&#39;, handleResize);
+  }
+}
 
-          const link = document.createElement("a");
-          link.href = img.url;
-          link.dataset.pswpWidth = img.width;
-          link.dataset.pswpHeight = img.height;
-          link.target = "_blank";
-          link.className = "article-gallery-item";
-          link.style.cssText = "width: 100%; height: 100%";
-          link.appendChild(imgEl);
-          
-          item.appendChild(link);
-          rowDiv.appendChild(item);
-        });
-        
-        wall.appendChild(rowDiv);
-      });
-    }
-    
-    function handleResize() {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(renderPhotoWall, 250);
-    }
-    
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', init);
-    } else {
-      init();
-    }
-  })();
-</script>
-<link rel="preload" href="/css/gallery.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+function createInitialDOM() {
+  const wall = _$(wallId);
+  if (!wall || !imageUrls.length) return;
   
+  wall.style.opacity = &#39;0&#39;;
+  wall.style.pointerEvents = &#39;none&#39;;
+  
+  imageUrls.forEach((url) =&gt; {
+    images.push({
+      width: 800,
+      height: 600,
+      aspectRatio: 4/3,
+      url: url,
+      loaded: false
+    });
+  });
+  
+  renderPhotoWall();
+}
 
-<h1 id="Arcaea-CG"><a href="#Arcaea-CG" class="headerlink" title="Arcaea CG"></a>Arcaea CG</h1>
-<div class="gallery-wall" id="photoWall-nmhavyxrp"></div>
+function loadImages() {
+  const loadPromises = imageUrls.map((url, index) =&gt; {
+    return new Promise((resolve, reject) =&gt; {
+      const img = new Image();
+      img.onload = () =&gt; {
+        if (images[index]) {
+          images[index].width = img.naturalWidth;
+          images[index].height = img.naturalHeight;
+          images[index].aspectRatio = img.naturalWidth / img.naturalHeight;
+          images[index].loaded = true;
+        }
+        resolve();
+      };
+      img.onerror = () =&gt; {
+        if (images[index]) {
+          images[index].loaded = true;
+        }
+        resolve();
+      };
+      img.src = url;
+    });
+  });
+  
+  Promise.all(loadPromises)
+    .then(() =&gt; {
+      const wall = _$(wallId);
+      if (wall) {
+        wall.style.opacity = &#39;1&#39;;
+        wall.style.pointerEvents = &#39;auto&#39;;
+        wall.style.transition = &#39;opacity 0.3s ease&#39;;
+      }
+      renderPhotoWall();
+    })
+    .catch((error) =&gt; console.error(&quot;图片加载失败:&quot;, error));
+}
+
+function renderPhotoWall() {
+  const wall = _$(wallId);
+  
+  if (!images.length || !wall) return;
+  
+  const screenWidth = wall.offsetWidth || window.innerWidth - 40;
+  lastWidth = screenWidth;
+  
+  wall.innerHTML = &quot;&quot;;
+  const rowHeight = 200;
+  const gap = 10;
+  const maxPerRow = 4;
+  
+  let row = [];
+  let rowWidth = 0;
+  const rows = [];
+  
+  images.forEach((img) =&gt; {
+    const scaledWidth = rowHeight * img.aspectRatio;
+    
+    if (rowWidth + scaledWidth &lt;= screenWidth &amp;&amp; row.length &lt; maxPerRow) {
+      row.push(img);
+      rowWidth += scaledWidth + gap;
+    } else {
+      if (row.length) rows.push(row);
+      row = [img];
+      rowWidth = scaledWidth + gap;
+    }
+  });
+  
+  if (row.length) rows.push(row);
+  
+  rows.forEach((row) =&gt; {
+    const rowDiv = document.createElement(&quot;div&quot;);
+    rowDiv.style.cssText = `display: flex; gap: ${gap}px; width: 100%`;
+    
+    row.forEach((img) =&gt; {
+      const item = document.createElement(&quot;div&quot;);
+      item.className = &quot;photo-item&quot;;
+      const flex = row.length === 1 ? &#39;1&#39; : img.aspectRatio;
+      item.style.cssText = `flex: ${flex}; height: ${rowHeight}px`;
+      
+      const imgEl = document.createElement(&quot;img&quot;);
+      imgEl.alt = &quot;Gallery Image&quot;;
+      imgEl.style.cssText = &quot;width: 100%; height: 100%; object-fit: cover&quot;;
+      // 不使用 lazysizes：在 display:none 的标签页内 lazyload 不会 unveil，切换 tab 后图片一直空白
+      imgEl.src = img.url;
+      imgEl.loading = &quot;eager&quot;;
+      imgEl.decoding = &quot;async&quot;;
+
+      const link = document.createElement(&quot;a&quot;);
+      link.href = img.url;
+      link.dataset.pswpWidth = img.width;
+      link.dataset.pswpHeight = img.height;
+      link.target = &quot;_blank&quot;;
+      link.className = &quot;article-gallery-item&quot;;
+      link.style.cssText = &quot;width: 100%; height: 100%&quot;;
+      link.appendChild(imgEl);
+      
+      item.appendChild(link);
+      rowDiv.appendChild(item);
+    });
+    
+    wall.appendChild(rowDiv);
+  });
+}
+
+function handleResize() {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(renderPhotoWall, 250);
+}
+
+if (document.readyState === &#39;loading&#39;) {
+  document.addEventListener(&#39;DOMContentLoaded&#39;, init);
+} else {
+  init();
+}
+</code></pre>
+<p>  })();<br></script></p>
+<link rel="preload" href="/css/gallery.css" as="style" onload="this.onload=null;this.rel='stylesheet'"></div><div class="tab-pane" id="tab_1-2"><div class="gallery-wall" id="photoWall-5ehoiv5lb"></div>
 <script>
   (function() {
     const imageUrls = ["/images/%E7%94%BB%E5%BB%8A/Arcara/1-1.webp","/images/%E7%94%BB%E5%BB%8A/Arcara/1-8.webp","/images/%E7%94%BB%E5%BB%8A/Arcara/1-ZR.webp","/images/%E7%94%BB%E5%BB%8A/Arcara/2-1.webp","/images/%E7%94%BB%E5%BB%8A/Arcara/2-8.webp","/images/%E7%94%BB%E5%BB%8A/Arcara/2-D.webp","/images/%E7%94%BB%E5%BB%8A/Arcara/4-1.webp","/images/%E7%94%BB%E5%BB%8A/Arcara/4-7.webp","/images/%E7%94%BB%E5%BB%8A/Arcara/7-6.webp","/images/%E7%94%BB%E5%BB%8A/Arcara/Last3_epilogue.webp","/images/%E7%94%BB%E5%BB%8A/Arcara/V-5_silent.webp"];
     let images = [];
-    const wallId = '#photoWall-nmhavyxrp';
+    const wallId = '#photoWall-5ehoiv5lb';
     let resizeTimer;
     let lastWidth = 0;
     
-    function init() {
-      createInitialDOM();
-      loadImages();
-      const wall = _$(wallId);
-      if (wall && window.ResizeObserver) {
-        const observer = new ResizeObserver((entries) => {
-          const newWidth = entries[0].contentRect.width;
-          if (Math.abs(newWidth - lastWidth) > 1) {
-            clearTimeout(resizeTimer);
-            resizeTimer = setTimeout(renderPhotoWall, 250);
-          }
-        });
-        observer.observe(wall);
-      } else {
-        window.addEventListener('resize', handleResize);
+<pre><code>function init() {
+  createInitialDOM();
+  loadImages();
+  const wall = _$(wallId);
+  if (wall &amp;&amp; window.ResizeObserver) {
+    const observer = new ResizeObserver((entries) =&gt; {
+      const newWidth = entries[0].contentRect.width;
+      if (Math.abs(newWidth - lastWidth) &gt; 1) {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(renderPhotoWall, 250);
       }
-    }
-    
-    function createInitialDOM() {
-      const wall = _$(wallId);
-      if (!wall || !imageUrls.length) return;
-      
-      wall.style.opacity = '0';
-      wall.style.pointerEvents = 'none';
-      
-      imageUrls.forEach((url) => {
-        images.push({
-          width: 800,
-          height: 600,
-          aspectRatio: 4/3,
-          url: url,
-          loaded: false
-        });
-      });
-      
-      renderPhotoWall();
-    }
-    
-    function loadImages() {
-      const loadPromises = imageUrls.map((url, index) => {
-        return new Promise((resolve, reject) => {
-          const img = new Image();
-          img.onload = () => {
-            if (images[index]) {
-              images[index].width = img.naturalWidth;
-              images[index].height = img.naturalHeight;
-              images[index].aspectRatio = img.naturalWidth / img.naturalHeight;
-              images[index].loaded = true;
-            }
-            resolve();
-          };
-          img.onerror = () => {
-            if (images[index]) {
-              images[index].loaded = true;
-            }
-            resolve();
-          };
-          img.src = url;
-        });
-      });
-      
-      Promise.all(loadPromises)
-        .then(() => {
-          const wall = _$(wallId);
-          if (wall) {
-            wall.style.opacity = '1';
-            wall.style.pointerEvents = 'auto';
-            wall.style.transition = 'opacity 0.3s ease';
-          }
-          renderPhotoWall();
-        })
-        .catch((error) => console.error("图片加载失败:", error));
-    }
-    
-    function renderPhotoWall() {
-      const wall = _$(wallId);
-      
-      if (!images.length || !wall) return;
-      
-      const screenWidth = wall.offsetWidth || window.innerWidth - 40;
-      lastWidth = screenWidth;
-      
-      wall.innerHTML = "";
-      const rowHeight = 200;
-      const gap = 10;
-      const maxPerRow = 4;
-      
-      let row = [];
-      let rowWidth = 0;
-      const rows = [];
-      
-      images.forEach((img) => {
-        const scaledWidth = rowHeight * img.aspectRatio;
-        
-        if (rowWidth + scaledWidth <= screenWidth && row.length < maxPerRow) {
-          row.push(img);
-          rowWidth += scaledWidth + gap;
-        } else {
-          if (row.length) rows.push(row);
-          row = [img];
-          rowWidth = scaledWidth + gap;
-        }
-      });
-      
-      if (row.length) rows.push(row);
-      
-      rows.forEach((row) => {
-        const rowDiv = document.createElement("div");
-        rowDiv.style.cssText = `display: flex; gap: ${gap}px; width: 100%`;
-        
-        row.forEach((img) => {
-          const item = document.createElement("div");
-          item.className = "photo-item";
-          const flex = row.length === 1 ? '1' : img.aspectRatio;
-          item.style.cssText = `flex: ${flex}; height: ${rowHeight}px`;
-          
-          const imgEl = document.createElement("img");
-          imgEl.alt = "Gallery Image";
-          imgEl.style.cssText = "width: 100%; height: 100%; object-fit: cover";
-          imgEl.className = "lazyload";
-          imgEl.dataset.src = img.url;
-          imgEl.dataset.sizes = "auto";
+    });
+    observer.observe(wall);
+  } else {
+    window.addEventListener(&#39;resize&#39;, handleResize);
+  }
+}
 
-          const link = document.createElement("a");
-          link.href = img.url;
-          link.dataset.pswpWidth = img.width;
-          link.dataset.pswpHeight = img.height;
-          link.target = "_blank";
-          link.className = "article-gallery-item";
-          link.style.cssText = "width: 100%; height: 100%";
-          link.appendChild(imgEl);
-          
-          item.appendChild(link);
-          rowDiv.appendChild(item);
-        });
-        
-        wall.appendChild(rowDiv);
-      });
-    }
-    
-    function handleResize() {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(renderPhotoWall, 250);
-    }
-    
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', init);
-    } else {
-      init();
-    }
-  })();
-</script>
-<link rel="preload" href="/css/gallery.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+function createInitialDOM() {
+  const wall = _$(wallId);
+  if (!wall || !imageUrls.length) return;
   
+  wall.style.opacity = &#39;0&#39;;
+  wall.style.pointerEvents = &#39;none&#39;;
+  
+  imageUrls.forEach((url) =&gt; {
+    images.push({
+      width: 800,
+      height: 600,
+      aspectRatio: 4/3,
+      url: url,
+      loaded: false
+    });
+  });
+  
+  renderPhotoWall();
+}
 
-<h1 id="无限暖暖-游戏内摄影"><a href="#无限暖暖-游戏内摄影" class="headerlink" title="无限暖暖 游戏内摄影"></a>无限暖暖 游戏内摄影</h1>
-<div class="gallery-wall" id="photoWall-fjxnddqh9"></div>
+function loadImages() {
+  const loadPromises = imageUrls.map((url, index) =&gt; {
+    return new Promise((resolve, reject) =&gt; {
+      const img = new Image();
+      img.onload = () =&gt; {
+        if (images[index]) {
+          images[index].width = img.naturalWidth;
+          images[index].height = img.naturalHeight;
+          images[index].aspectRatio = img.naturalWidth / img.naturalHeight;
+          images[index].loaded = true;
+        }
+        resolve();
+      };
+      img.onerror = () =&gt; {
+        if (images[index]) {
+          images[index].loaded = true;
+        }
+        resolve();
+      };
+      img.src = url;
+    });
+  });
+  
+  Promise.all(loadPromises)
+    .then(() =&gt; {
+      const wall = _$(wallId);
+      if (wall) {
+        wall.style.opacity = &#39;1&#39;;
+        wall.style.pointerEvents = &#39;auto&#39;;
+        wall.style.transition = &#39;opacity 0.3s ease&#39;;
+      }
+      renderPhotoWall();
+    })
+    .catch((error) =&gt; console.error(&quot;图片加载失败:&quot;, error));
+}
+
+function renderPhotoWall() {
+  const wall = _$(wallId);
+  
+  if (!images.length || !wall) return;
+  
+  const screenWidth = wall.offsetWidth || window.innerWidth - 40;
+  lastWidth = screenWidth;
+  
+  wall.innerHTML = &quot;&quot;;
+  const rowHeight = 200;
+  const gap = 10;
+  const maxPerRow = 4;
+  
+  let row = [];
+  let rowWidth = 0;
+  const rows = [];
+  
+  images.forEach((img) =&gt; {
+    const scaledWidth = rowHeight * img.aspectRatio;
+    
+    if (rowWidth + scaledWidth &lt;= screenWidth &amp;&amp; row.length &lt; maxPerRow) {
+      row.push(img);
+      rowWidth += scaledWidth + gap;
+    } else {
+      if (row.length) rows.push(row);
+      row = [img];
+      rowWidth = scaledWidth + gap;
+    }
+  });
+  
+  if (row.length) rows.push(row);
+  
+  rows.forEach((row) =&gt; {
+    const rowDiv = document.createElement(&quot;div&quot;);
+    rowDiv.style.cssText = `display: flex; gap: ${gap}px; width: 100%`;
+    
+    row.forEach((img) =&gt; {
+      const item = document.createElement(&quot;div&quot;);
+      item.className = &quot;photo-item&quot;;
+      const flex = row.length === 1 ? &#39;1&#39; : img.aspectRatio;
+      item.style.cssText = `flex: ${flex}; height: ${rowHeight}px`;
+      
+      const imgEl = document.createElement(&quot;img&quot;);
+      imgEl.alt = &quot;Gallery Image&quot;;
+      imgEl.style.cssText = &quot;width: 100%; height: 100%; object-fit: cover&quot;;
+      // 不使用 lazysizes：在 display:none 的标签页内 lazyload 不会 unveil，切换 tab 后图片一直空白
+      imgEl.src = img.url;
+      imgEl.loading = &quot;eager&quot;;
+      imgEl.decoding = &quot;async&quot;;
+
+      const link = document.createElement(&quot;a&quot;);
+      link.href = img.url;
+      link.dataset.pswpWidth = img.width;
+      link.dataset.pswpHeight = img.height;
+      link.target = &quot;_blank&quot;;
+      link.className = &quot;article-gallery-item&quot;;
+      link.style.cssText = &quot;width: 100%; height: 100%&quot;;
+      link.appendChild(imgEl);
+      
+      item.appendChild(link);
+      rowDiv.appendChild(item);
+    });
+    
+    wall.appendChild(rowDiv);
+  });
+}
+
+function handleResize() {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(renderPhotoWall, 250);
+}
+
+if (document.readyState === &#39;loading&#39;) {
+  document.addEventListener(&#39;DOMContentLoaded&#39;, init);
+} else {
+  init();
+}
+</code></pre>
+<p>  })();<br></script></p>
+<link rel="preload" href="/css/gallery.css" as="style" onload="this.onload=null;this.rel='stylesheet'"></div><div class="tab-pane" id="tab_1-3"><div class="gallery-wall" id="photoWall-f11p9xkoy"></div>
 <script>
   (function() {
     const imageUrls = [];
     let images = [];
-    const wallId = '#photoWall-fjxnddqh9';
+    const wallId = '#photoWall-f11p9xkoy';
     let resizeTimer;
     let lastWidth = 0;
     
-    function init() {
-      createInitialDOM();
-      loadImages();
-      const wall = _$(wallId);
-      if (wall && window.ResizeObserver) {
-        const observer = new ResizeObserver((entries) => {
-          const newWidth = entries[0].contentRect.width;
-          if (Math.abs(newWidth - lastWidth) > 1) {
-            clearTimeout(resizeTimer);
-            resizeTimer = setTimeout(renderPhotoWall, 250);
-          }
-        });
-        observer.observe(wall);
-      } else {
-        window.addEventListener('resize', handleResize);
+<pre><code>function init() {
+  createInitialDOM();
+  loadImages();
+  const wall = _$(wallId);
+  if (wall &amp;&amp; window.ResizeObserver) {
+    const observer = new ResizeObserver((entries) =&gt; {
+      const newWidth = entries[0].contentRect.width;
+      if (Math.abs(newWidth - lastWidth) &gt; 1) {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(renderPhotoWall, 250);
       }
-    }
-    
-    function createInitialDOM() {
-      const wall = _$(wallId);
-      if (!wall || !imageUrls.length) return;
-      
-      wall.style.opacity = '0';
-      wall.style.pointerEvents = 'none';
-      
-      imageUrls.forEach((url) => {
-        images.push({
-          width: 800,
-          height: 600,
-          aspectRatio: 4/3,
-          url: url,
-          loaded: false
-        });
-      });
-      
-      renderPhotoWall();
-    }
-    
-    function loadImages() {
-      const loadPromises = imageUrls.map((url, index) => {
-        return new Promise((resolve, reject) => {
-          const img = new Image();
-          img.onload = () => {
-            if (images[index]) {
-              images[index].width = img.naturalWidth;
-              images[index].height = img.naturalHeight;
-              images[index].aspectRatio = img.naturalWidth / img.naturalHeight;
-              images[index].loaded = true;
-            }
-            resolve();
-          };
-          img.onerror = () => {
-            if (images[index]) {
-              images[index].loaded = true;
-            }
-            resolve();
-          };
-          img.src = url;
-        });
-      });
-      
-      Promise.all(loadPromises)
-        .then(() => {
-          const wall = _$(wallId);
-          if (wall) {
-            wall.style.opacity = '1';
-            wall.style.pointerEvents = 'auto';
-            wall.style.transition = 'opacity 0.3s ease';
-          }
-          renderPhotoWall();
-        })
-        .catch((error) => console.error("图片加载失败:", error));
-    }
-    
-    function renderPhotoWall() {
-      const wall = _$(wallId);
-      
-      if (!images.length || !wall) return;
-      
-      const screenWidth = wall.offsetWidth || window.innerWidth - 40;
-      lastWidth = screenWidth;
-      
-      wall.innerHTML = "";
-      const rowHeight = 200;
-      const gap = 10;
-      const maxPerRow = 4;
-      
-      let row = [];
-      let rowWidth = 0;
-      const rows = [];
-      
-      images.forEach((img) => {
-        const scaledWidth = rowHeight * img.aspectRatio;
-        
-        if (rowWidth + scaledWidth <= screenWidth && row.length < maxPerRow) {
-          row.push(img);
-          rowWidth += scaledWidth + gap;
-        } else {
-          if (row.length) rows.push(row);
-          row = [img];
-          rowWidth = scaledWidth + gap;
-        }
-      });
-      
-      if (row.length) rows.push(row);
-      
-      rows.forEach((row) => {
-        const rowDiv = document.createElement("div");
-        rowDiv.style.cssText = `display: flex; gap: ${gap}px; width: 100%`;
-        
-        row.forEach((img) => {
-          const item = document.createElement("div");
-          item.className = "photo-item";
-          const flex = row.length === 1 ? '1' : img.aspectRatio;
-          item.style.cssText = `flex: ${flex}; height: ${rowHeight}px`;
-          
-          const imgEl = document.createElement("img");
-          imgEl.alt = "Gallery Image";
-          imgEl.style.cssText = "width: 100%; height: 100%; object-fit: cover";
-          imgEl.className = "lazyload";
-          imgEl.dataset.src = img.url;
-          imgEl.dataset.sizes = "auto";
+    });
+    observer.observe(wall);
+  } else {
+    window.addEventListener(&#39;resize&#39;, handleResize);
+  }
+}
 
-          const link = document.createElement("a");
-          link.href = img.url;
-          link.dataset.pswpWidth = img.width;
-          link.dataset.pswpHeight = img.height;
-          link.target = "_blank";
-          link.className = "article-gallery-item";
-          link.style.cssText = "width: 100%; height: 100%";
-          link.appendChild(imgEl);
-          
-          item.appendChild(link);
-          rowDiv.appendChild(item);
-        });
-        
-        wall.appendChild(rowDiv);
-      });
-    }
-    
-    function handleResize() {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(renderPhotoWall, 250);
-    }
-    
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', init);
-    } else {
-      init();
-    }
-  })();
-</script>
-<link rel="preload" href="/css/gallery.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+function createInitialDOM() {
+  const wall = _$(wallId);
+  if (!wall || !imageUrls.length) return;
   
+  wall.style.opacity = &#39;0&#39;;
+  wall.style.pointerEvents = &#39;none&#39;;
+  
+  imageUrls.forEach((url) =&gt; {
+    images.push({
+      width: 800,
+      height: 600,
+      aspectRatio: 4/3,
+      url: url,
+      loaded: false
+    });
+  });
+  
+  renderPhotoWall();
+}
 
-<h1 id="魔法少女的魔女裁判-CG"><a href="#魔法少女的魔女裁判-CG" class="headerlink" title="魔法少女的魔女裁判 CG"></a>魔法少女的魔女裁判 CG</h1>
-<div class="gallery-wall" id="photoWall-3z1p2929l"></div>
+function loadImages() {
+  const loadPromises = imageUrls.map((url, index) =&gt; {
+    return new Promise((resolve, reject) =&gt; {
+      const img = new Image();
+      img.onload = () =&gt; {
+        if (images[index]) {
+          images[index].width = img.naturalWidth;
+          images[index].height = img.naturalHeight;
+          images[index].aspectRatio = img.naturalWidth / img.naturalHeight;
+          images[index].loaded = true;
+        }
+        resolve();
+      };
+      img.onerror = () =&gt; {
+        if (images[index]) {
+          images[index].loaded = true;
+        }
+        resolve();
+      };
+      img.src = url;
+    });
+  });
+  
+  Promise.all(loadPromises)
+    .then(() =&gt; {
+      const wall = _$(wallId);
+      if (wall) {
+        wall.style.opacity = &#39;1&#39;;
+        wall.style.pointerEvents = &#39;auto&#39;;
+        wall.style.transition = &#39;opacity 0.3s ease&#39;;
+      }
+      renderPhotoWall();
+    })
+    .catch((error) =&gt; console.error(&quot;图片加载失败:&quot;, error));
+}
+
+function renderPhotoWall() {
+  const wall = _$(wallId);
+  
+  if (!images.length || !wall) return;
+  
+  const screenWidth = wall.offsetWidth || window.innerWidth - 40;
+  lastWidth = screenWidth;
+  
+  wall.innerHTML = &quot;&quot;;
+  const rowHeight = 200;
+  const gap = 10;
+  const maxPerRow = 4;
+  
+  let row = [];
+  let rowWidth = 0;
+  const rows = [];
+  
+  images.forEach((img) =&gt; {
+    const scaledWidth = rowHeight * img.aspectRatio;
+    
+    if (rowWidth + scaledWidth &lt;= screenWidth &amp;&amp; row.length &lt; maxPerRow) {
+      row.push(img);
+      rowWidth += scaledWidth + gap;
+    } else {
+      if (row.length) rows.push(row);
+      row = [img];
+      rowWidth = scaledWidth + gap;
+    }
+  });
+  
+  if (row.length) rows.push(row);
+  
+  rows.forEach((row) =&gt; {
+    const rowDiv = document.createElement(&quot;div&quot;);
+    rowDiv.style.cssText = `display: flex; gap: ${gap}px; width: 100%`;
+    
+    row.forEach((img) =&gt; {
+      const item = document.createElement(&quot;div&quot;);
+      item.className = &quot;photo-item&quot;;
+      const flex = row.length === 1 ? &#39;1&#39; : img.aspectRatio;
+      item.style.cssText = `flex: ${flex}; height: ${rowHeight}px`;
+      
+      const imgEl = document.createElement(&quot;img&quot;);
+      imgEl.alt = &quot;Gallery Image&quot;;
+      imgEl.style.cssText = &quot;width: 100%; height: 100%; object-fit: cover&quot;;
+      // 不使用 lazysizes：在 display:none 的标签页内 lazyload 不会 unveil，切换 tab 后图片一直空白
+      imgEl.src = img.url;
+      imgEl.loading = &quot;eager&quot;;
+      imgEl.decoding = &quot;async&quot;;
+
+      const link = document.createElement(&quot;a&quot;);
+      link.href = img.url;
+      link.dataset.pswpWidth = img.width;
+      link.dataset.pswpHeight = img.height;
+      link.target = &quot;_blank&quot;;
+      link.className = &quot;article-gallery-item&quot;;
+      link.style.cssText = &quot;width: 100%; height: 100%&quot;;
+      link.appendChild(imgEl);
+      
+      item.appendChild(link);
+      rowDiv.appendChild(item);
+    });
+    
+    wall.appendChild(rowDiv);
+  });
+}
+
+function handleResize() {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(renderPhotoWall, 250);
+}
+
+if (document.readyState === &#39;loading&#39;) {
+  document.addEventListener(&#39;DOMContentLoaded&#39;, init);
+} else {
+  init();
+}
+</code></pre>
+<p>  })();<br></script></p>
+<link rel="preload" href="/css/gallery.css" as="style" onload="this.onload=null;this.rel='stylesheet'"></div><div class="tab-pane" id="tab_1-4"><div class="gallery-wall" id="photoWall-7avx62b8n"></div>
 <script>
   (function() {
     const imageUrls = [];
     let images = [];
-    const wallId = '#photoWall-3z1p2929l';
+    const wallId = '#photoWall-7avx62b8n';
     let resizeTimer;
     let lastWidth = 0;
     
-    function init() {
-      createInitialDOM();
-      loadImages();
-      const wall = _$(wallId);
-      if (wall && window.ResizeObserver) {
-        const observer = new ResizeObserver((entries) => {
-          const newWidth = entries[0].contentRect.width;
-          if (Math.abs(newWidth - lastWidth) > 1) {
-            clearTimeout(resizeTimer);
-            resizeTimer = setTimeout(renderPhotoWall, 250);
-          }
-        });
-        observer.observe(wall);
-      } else {
-        window.addEventListener('resize', handleResize);
+<pre><code>function init() {
+  createInitialDOM();
+  loadImages();
+  const wall = _$(wallId);
+  if (wall &amp;&amp; window.ResizeObserver) {
+    const observer = new ResizeObserver((entries) =&gt; {
+      const newWidth = entries[0].contentRect.width;
+      if (Math.abs(newWidth - lastWidth) &gt; 1) {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(renderPhotoWall, 250);
       }
-    }
-    
-    function createInitialDOM() {
-      const wall = _$(wallId);
-      if (!wall || !imageUrls.length) return;
-      
-      wall.style.opacity = '0';
-      wall.style.pointerEvents = 'none';
-      
-      imageUrls.forEach((url) => {
-        images.push({
-          width: 800,
-          height: 600,
-          aspectRatio: 4/3,
-          url: url,
-          loaded: false
-        });
-      });
-      
-      renderPhotoWall();
-    }
-    
-    function loadImages() {
-      const loadPromises = imageUrls.map((url, index) => {
-        return new Promise((resolve, reject) => {
-          const img = new Image();
-          img.onload = () => {
-            if (images[index]) {
-              images[index].width = img.naturalWidth;
-              images[index].height = img.naturalHeight;
-              images[index].aspectRatio = img.naturalWidth / img.naturalHeight;
-              images[index].loaded = true;
-            }
-            resolve();
-          };
-          img.onerror = () => {
-            if (images[index]) {
-              images[index].loaded = true;
-            }
-            resolve();
-          };
-          img.src = url;
-        });
-      });
-      
-      Promise.all(loadPromises)
-        .then(() => {
-          const wall = _$(wallId);
-          if (wall) {
-            wall.style.opacity = '1';
-            wall.style.pointerEvents = 'auto';
-            wall.style.transition = 'opacity 0.3s ease';
-          }
-          renderPhotoWall();
-        })
-        .catch((error) => console.error("图片加载失败:", error));
-    }
-    
-    function renderPhotoWall() {
-      const wall = _$(wallId);
-      
-      if (!images.length || !wall) return;
-      
-      const screenWidth = wall.offsetWidth || window.innerWidth - 40;
-      lastWidth = screenWidth;
-      
-      wall.innerHTML = "";
-      const rowHeight = 200;
-      const gap = 10;
-      const maxPerRow = 4;
-      
-      let row = [];
-      let rowWidth = 0;
-      const rows = [];
-      
-      images.forEach((img) => {
-        const scaledWidth = rowHeight * img.aspectRatio;
-        
-        if (rowWidth + scaledWidth <= screenWidth && row.length < maxPerRow) {
-          row.push(img);
-          rowWidth += scaledWidth + gap;
-        } else {
-          if (row.length) rows.push(row);
-          row = [img];
-          rowWidth = scaledWidth + gap;
-        }
-      });
-      
-      if (row.length) rows.push(row);
-      
-      rows.forEach((row) => {
-        const rowDiv = document.createElement("div");
-        rowDiv.style.cssText = `display: flex; gap: ${gap}px; width: 100%`;
-        
-        row.forEach((img) => {
-          const item = document.createElement("div");
-          item.className = "photo-item";
-          const flex = row.length === 1 ? '1' : img.aspectRatio;
-          item.style.cssText = `flex: ${flex}; height: ${rowHeight}px`;
-          
-          const imgEl = document.createElement("img");
-          imgEl.alt = "Gallery Image";
-          imgEl.style.cssText = "width: 100%; height: 100%; object-fit: cover";
-          imgEl.className = "lazyload";
-          imgEl.dataset.src = img.url;
-          imgEl.dataset.sizes = "auto";
+    });
+    observer.observe(wall);
+  } else {
+    window.addEventListener(&#39;resize&#39;, handleResize);
+  }
+}
 
-          const link = document.createElement("a");
-          link.href = img.url;
-          link.dataset.pswpWidth = img.width;
-          link.dataset.pswpHeight = img.height;
-          link.target = "_blank";
-          link.className = "article-gallery-item";
-          link.style.cssText = "width: 100%; height: 100%";
-          link.appendChild(imgEl);
-          
-          item.appendChild(link);
-          rowDiv.appendChild(item);
-        });
-        
-        wall.appendChild(rowDiv);
-      });
-    }
-    
-    function handleResize() {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(renderPhotoWall, 250);
-    }
-    
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', init);
-    } else {
-      init();
-    }
-  })();
-</script>
-<link rel="preload" href="/css/gallery.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+function createInitialDOM() {
+  const wall = _$(wallId);
+  if (!wall || !imageUrls.length) return;
   
+  wall.style.opacity = &#39;0&#39;;
+  wall.style.pointerEvents = &#39;none&#39;;
+  
+  imageUrls.forEach((url) =&gt; {
+    images.push({
+      width: 800,
+      height: 600,
+      aspectRatio: 4/3,
+      url: url,
+      loaded: false
+    });
+  });
+  
+  renderPhotoWall();
+}
 
-<h1 id="图灵的诅咒"><a href="#图灵的诅咒" class="headerlink" title="图灵的诅咒"></a>图灵的诅咒</h1><blockquote class="info custom-block">
+function loadImages() {
+  const loadPromises = imageUrls.map((url, index) =&gt; {
+    return new Promise((resolve, reject) =&gt; {
+      const img = new Image();
+      img.onload = () =&gt; {
+        if (images[index]) {
+          images[index].width = img.naturalWidth;
+          images[index].height = img.naturalHeight;
+          images[index].aspectRatio = img.naturalWidth / img.naturalHeight;
+          images[index].loaded = true;
+        }
+        resolve();
+      };
+      img.onerror = () =&gt; {
+        if (images[index]) {
+          images[index].loaded = true;
+        }
+        resolve();
+      };
+      img.src = url;
+    });
+  });
+  
+  Promise.all(loadPromises)
+    .then(() =&gt; {
+      const wall = _$(wallId);
+      if (wall) {
+        wall.style.opacity = &#39;1&#39;;
+        wall.style.pointerEvents = &#39;auto&#39;;
+        wall.style.transition = &#39;opacity 0.3s ease&#39;;
+      }
+      renderPhotoWall();
+    })
+    .catch((error) =&gt; console.error(&quot;图片加载失败:&quot;, error));
+}
+
+function renderPhotoWall() {
+  const wall = _$(wallId);
+  
+  if (!images.length || !wall) return;
+  
+  const screenWidth = wall.offsetWidth || window.innerWidth - 40;
+  lastWidth = screenWidth;
+  
+  wall.innerHTML = &quot;&quot;;
+  const rowHeight = 200;
+  const gap = 10;
+  const maxPerRow = 4;
+  
+  let row = [];
+  let rowWidth = 0;
+  const rows = [];
+  
+  images.forEach((img) =&gt; {
+    const scaledWidth = rowHeight * img.aspectRatio;
+    
+    if (rowWidth + scaledWidth &lt;= screenWidth &amp;&amp; row.length &lt; maxPerRow) {
+      row.push(img);
+      rowWidth += scaledWidth + gap;
+    } else {
+      if (row.length) rows.push(row);
+      row = [img];
+      rowWidth = scaledWidth + gap;
+    }
+  });
+  
+  if (row.length) rows.push(row);
+  
+  rows.forEach((row) =&gt; {
+    const rowDiv = document.createElement(&quot;div&quot;);
+    rowDiv.style.cssText = `display: flex; gap: ${gap}px; width: 100%`;
+    
+    row.forEach((img) =&gt; {
+      const item = document.createElement(&quot;div&quot;);
+      item.className = &quot;photo-item&quot;;
+      const flex = row.length === 1 ? &#39;1&#39; : img.aspectRatio;
+      item.style.cssText = `flex: ${flex}; height: ${rowHeight}px`;
+      
+      const imgEl = document.createElement(&quot;img&quot;);
+      imgEl.alt = &quot;Gallery Image&quot;;
+      imgEl.style.cssText = &quot;width: 100%; height: 100%; object-fit: cover&quot;;
+      // 不使用 lazysizes：在 display:none 的标签页内 lazyload 不会 unveil，切换 tab 后图片一直空白
+      imgEl.src = img.url;
+      imgEl.loading = &quot;eager&quot;;
+      imgEl.decoding = &quot;async&quot;;
+
+      const link = document.createElement(&quot;a&quot;);
+      link.href = img.url;
+      link.dataset.pswpWidth = img.width;
+      link.dataset.pswpHeight = img.height;
+      link.target = &quot;_blank&quot;;
+      link.className = &quot;article-gallery-item&quot;;
+      link.style.cssText = &quot;width: 100%; height: 100%&quot;;
+      link.appendChild(imgEl);
+      
+      item.appendChild(link);
+      rowDiv.appendChild(item);
+    });
+    
+    wall.appendChild(rowDiv);
+  });
+}
+
+function handleResize() {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(renderPhotoWall, 250);
+}
+
+if (document.readyState === &#39;loading&#39;) {
+  document.addEventListener(&#39;DOMContentLoaded&#39;, init);
+} else {
+  init();
+}
+</code></pre>
+<p>  })();<br></script></p>
+<link rel="preload" href="/css/gallery.css" as="style" onload="this.onload=null;this.rel='stylesheet'"></div><div class="tab-pane" id="tab_1-5"><blockquote class="info custom-block">
     <p class="custom-block-title">观前提醒</p>
     <p>以下内容可能引起不适</p>
 
@@ -1000,171 +988,172 @@
 <summary>无视风险继续查看</summary>
 
 
-<div class="gallery-wall" id="photoWall-s8bc4dsrd"></div>
+<div class="gallery-wall" id="photoWall-m0o8ml8wx"></div>
 <script>
   (function() {
     const imageUrls = ["/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_6755.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_6002.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_6012.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_6026.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_6029.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_6040.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_6057.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_6063.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_6068.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_6080.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_6147.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_6069.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_6148.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_5668.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_5672.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_4635.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_4608.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_4624.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_4602.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_4576.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_4550.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_4547.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_4534.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_4522.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_4462.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_4444.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_4424.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_4395.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_4387.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_4337.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_4324.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_4283.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_4175.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_4133.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_4141.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_4114.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_4113.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_4112.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_3455.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_3501.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_3502.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_3499.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_3500.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_3171.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_3161.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_3147.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_3049.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_3048.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_3043.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_3039.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_3036.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_2503.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_3035.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_3034.webp","/images/%E7%94%BB%E5%BB%8A/Chieko3020/IMG_3097.webp"];
     let images = [];
-    const wallId = '#photoWall-s8bc4dsrd';
+    const wallId = '#photoWall-m0o8ml8wx';
     let resizeTimer;
     let lastWidth = 0;
     
-    function init() {
-      createInitialDOM();
-      loadImages();
-      const wall = _$(wallId);
-      if (wall && window.ResizeObserver) {
-        const observer = new ResizeObserver((entries) => {
-          const newWidth = entries[0].contentRect.width;
-          if (Math.abs(newWidth - lastWidth) > 1) {
-            clearTimeout(resizeTimer);
-            resizeTimer = setTimeout(renderPhotoWall, 250);
-          }
-        });
-        observer.observe(wall);
-      } else {
-        window.addEventListener('resize', handleResize);
+<pre><code>function init() {
+  createInitialDOM();
+  loadImages();
+  const wall = _$(wallId);
+  if (wall &amp;&amp; window.ResizeObserver) {
+    const observer = new ResizeObserver((entries) =&gt; {
+      const newWidth = entries[0].contentRect.width;
+      if (Math.abs(newWidth - lastWidth) &gt; 1) {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(renderPhotoWall, 250);
       }
-    }
-    
-    function createInitialDOM() {
-      const wall = _$(wallId);
-      if (!wall || !imageUrls.length) return;
-      
-      wall.style.opacity = '0';
-      wall.style.pointerEvents = 'none';
-      
-      imageUrls.forEach((url) => {
-        images.push({
-          width: 800,
-          height: 600,
-          aspectRatio: 4/3,
-          url: url,
-          loaded: false
-        });
-      });
-      
-      renderPhotoWall();
-    }
-    
-    function loadImages() {
-      const loadPromises = imageUrls.map((url, index) => {
-        return new Promise((resolve, reject) => {
-          const img = new Image();
-          img.onload = () => {
-            if (images[index]) {
-              images[index].width = img.naturalWidth;
-              images[index].height = img.naturalHeight;
-              images[index].aspectRatio = img.naturalWidth / img.naturalHeight;
-              images[index].loaded = true;
-            }
-            resolve();
-          };
-          img.onerror = () => {
-            if (images[index]) {
-              images[index].loaded = true;
-            }
-            resolve();
-          };
-          img.src = url;
-        });
-      });
-      
-      Promise.all(loadPromises)
-        .then(() => {
-          const wall = _$(wallId);
-          if (wall) {
-            wall.style.opacity = '1';
-            wall.style.pointerEvents = 'auto';
-            wall.style.transition = 'opacity 0.3s ease';
-          }
-          renderPhotoWall();
-        })
-        .catch((error) => console.error("图片加载失败:", error));
-    }
-    
-    function renderPhotoWall() {
-      const wall = _$(wallId);
-      
-      if (!images.length || !wall) return;
-      
-      const screenWidth = wall.offsetWidth || window.innerWidth - 40;
-      lastWidth = screenWidth;
-      
-      wall.innerHTML = "";
-      const rowHeight = 200;
-      const gap = 10;
-      const maxPerRow = 4;
-      
-      let row = [];
-      let rowWidth = 0;
-      const rows = [];
-      
-      images.forEach((img) => {
-        const scaledWidth = rowHeight * img.aspectRatio;
-        
-        if (rowWidth + scaledWidth <= screenWidth && row.length < maxPerRow) {
-          row.push(img);
-          rowWidth += scaledWidth + gap;
-        } else {
-          if (row.length) rows.push(row);
-          row = [img];
-          rowWidth = scaledWidth + gap;
-        }
-      });
-      
-      if (row.length) rows.push(row);
-      
-      rows.forEach((row) => {
-        const rowDiv = document.createElement("div");
-        rowDiv.style.cssText = `display: flex; gap: ${gap}px; width: 100%`;
-        
-        row.forEach((img) => {
-          const item = document.createElement("div");
-          item.className = "photo-item";
-          const flex = row.length === 1 ? '1' : img.aspectRatio;
-          item.style.cssText = `flex: ${flex}; height: ${rowHeight}px`;
-          
-          const imgEl = document.createElement("img");
-          imgEl.alt = "Gallery Image";
-          imgEl.style.cssText = "width: 100%; height: 100%; object-fit: cover";
-          imgEl.className = "lazyload";
-          imgEl.dataset.src = img.url;
-          imgEl.dataset.sizes = "auto";
+    });
+    observer.observe(wall);
+  } else {
+    window.addEventListener(&#39;resize&#39;, handleResize);
+  }
+}
 
-          const link = document.createElement("a");
-          link.href = img.url;
-          link.dataset.pswpWidth = img.width;
-          link.dataset.pswpHeight = img.height;
-          link.target = "_blank";
-          link.className = "article-gallery-item";
-          link.style.cssText = "width: 100%; height: 100%";
-          link.appendChild(imgEl);
-          
-          item.appendChild(link);
-          rowDiv.appendChild(item);
-        });
-        
-        wall.appendChild(rowDiv);
-      });
-    }
+function createInitialDOM() {
+  const wall = _$(wallId);
+  if (!wall || !imageUrls.length) return;
+  
+  wall.style.opacity = &#39;0&#39;;
+  wall.style.pointerEvents = &#39;none&#39;;
+  
+  imageUrls.forEach((url) =&gt; {
+    images.push({
+      width: 800,
+      height: 600,
+      aspectRatio: 4/3,
+      url: url,
+      loaded: false
+    });
+  });
+  
+  renderPhotoWall();
+}
+
+function loadImages() {
+  const loadPromises = imageUrls.map((url, index) =&gt; {
+    return new Promise((resolve, reject) =&gt; {
+      const img = new Image();
+      img.onload = () =&gt; {
+        if (images[index]) {
+          images[index].width = img.naturalWidth;
+          images[index].height = img.naturalHeight;
+          images[index].aspectRatio = img.naturalWidth / img.naturalHeight;
+          images[index].loaded = true;
+        }
+        resolve();
+      };
+      img.onerror = () =&gt; {
+        if (images[index]) {
+          images[index].loaded = true;
+        }
+        resolve();
+      };
+      img.src = url;
+    });
+  });
+  
+  Promise.all(loadPromises)
+    .then(() =&gt; {
+      const wall = _$(wallId);
+      if (wall) {
+        wall.style.opacity = &#39;1&#39;;
+        wall.style.pointerEvents = &#39;auto&#39;;
+        wall.style.transition = &#39;opacity 0.3s ease&#39;;
+      }
+      renderPhotoWall();
+    })
+    .catch((error) =&gt; console.error(&quot;图片加载失败:&quot;, error));
+}
+
+function renderPhotoWall() {
+  const wall = _$(wallId);
+  
+  if (!images.length || !wall) return;
+  
+  const screenWidth = wall.offsetWidth || window.innerWidth - 40;
+  lastWidth = screenWidth;
+  
+  wall.innerHTML = &quot;&quot;;
+  const rowHeight = 200;
+  const gap = 10;
+  const maxPerRow = 4;
+  
+  let row = [];
+  let rowWidth = 0;
+  const rows = [];
+  
+  images.forEach((img) =&gt; {
+    const scaledWidth = rowHeight * img.aspectRatio;
     
-    function handleResize() {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(renderPhotoWall, 250);
-    }
-    
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', init);
+    if (rowWidth + scaledWidth &lt;= screenWidth &amp;&amp; row.length &lt; maxPerRow) {
+      row.push(img);
+      rowWidth += scaledWidth + gap;
     } else {
-      init();
+      if (row.length) rows.push(row);
+      row = [img];
+      rowWidth = scaledWidth + gap;
     }
-  })();
-</script>
+  });
+  
+  if (row.length) rows.push(row);
+  
+  rows.forEach((row) =&gt; {
+    const rowDiv = document.createElement(&quot;div&quot;);
+    rowDiv.style.cssText = `display: flex; gap: ${gap}px; width: 100%`;
+    
+    row.forEach((img) =&gt; {
+      const item = document.createElement(&quot;div&quot;);
+      item.className = &quot;photo-item&quot;;
+      const flex = row.length === 1 ? &#39;1&#39; : img.aspectRatio;
+      item.style.cssText = `flex: ${flex}; height: ${rowHeight}px`;
+      
+      const imgEl = document.createElement(&quot;img&quot;);
+      imgEl.alt = &quot;Gallery Image&quot;;
+      imgEl.style.cssText = &quot;width: 100%; height: 100%; object-fit: cover&quot;;
+      // 不使用 lazysizes：在 display:none 的标签页内 lazyload 不会 unveil，切换 tab 后图片一直空白
+      imgEl.src = img.url;
+      imgEl.loading = &quot;eager&quot;;
+      imgEl.decoding = &quot;async&quot;;
+
+      const link = document.createElement(&quot;a&quot;);
+      link.href = img.url;
+      link.dataset.pswpWidth = img.width;
+      link.dataset.pswpHeight = img.height;
+      link.target = &quot;_blank&quot;;
+      link.className = &quot;article-gallery-item&quot;;
+      link.style.cssText = &quot;width: 100%; height: 100%&quot;;
+      link.appendChild(imgEl);
+      
+      item.appendChild(link);
+      rowDiv.appendChild(item);
+    });
+    
+    wall.appendChild(rowDiv);
+  });
+}
+
+function handleResize() {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(renderPhotoWall, 250);
+}
+
+if (document.readyState === &#39;loading&#39;) {
+  document.addEventListener(&#39;DOMContentLoaded&#39;, init);
+} else {
+  init();
+}
+</code></pre>
+<p>  })();<br></script></p>
 <link rel="preload" href="/css/gallery.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
   
 
-</details>
+</details></div></div></div><link rel="preload" href="/css/tabs.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
 
     </div>
     <footer class="article-footer">
@@ -1173,7 +1162,7 @@
     <p><strong><span class="icon-link icon"></span>本文链接：</strong><a href="https://chieko3020.xyz/2025/10/12/%E7%94%BB%E5%BB%8A/">https://chieko3020.xyz/2025/10/12/%E7%94%BB%E5%BB%8A/</a></p>
     <p><strong><span class="icon-pencil icon"></span>本文标题：</strong>「画廊」</p>
     <p><strong><span class="icon-calendar icon"></span>本文发布时间：</strong>2025-10-12 12:00:30</p>
-    <p><strong><span class="icon-calendar icon"></span>本文更新时间：</strong>2026-04-12 16:42:08</p>
+    <p><strong><span class="icon-calendar icon"></span>本文更新时间：</strong>2026-04-12 18:54:06</p>
     <p><strong><span class="icon-copyright icon"></span>本文版权：</strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" rel="noopener nofollow noreferrer" target="_blank"><span class="icon-creative-commons"></span>BY-NC-SA</a> 许可协议。转载请注明出处！</p>
     <span class="icon-creative-commons article-copyright-bg"></span>
   </blockquote>
@@ -1276,7 +1265,7 @@
   <div class="sidebar-wrap">
         <div class="sidebar-toc-sidebar"><h3 class="toc-title">文章目录</h3>
 <div class="sidebar-toc-wrapper toc-div-class" >
-    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Pixiv-%E6%8F%92%E7%94%BB%E4%BD%9C%E5%93%81"><span class="toc-number">1.</span> <span class="toc-text">Pixiv 插画作品</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Arcaea-CG"><span class="toc-number">2.</span> <span class="toc-text">Arcaea CG</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%97%A0%E9%99%90%E6%9A%96%E6%9A%96-%E6%B8%B8%E6%88%8F%E5%86%85%E6%91%84%E5%BD%B1"><span class="toc-number">3.</span> <span class="toc-text">无限暖暖 游戏内摄影</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%AD%94%E6%B3%95%E5%B0%91%E5%A5%B3%E7%9A%84%E9%AD%94%E5%A5%B3%E8%A3%81%E5%88%A4-CG"><span class="toc-number">4.</span> <span class="toc-text">魔法少女的魔女裁判 CG</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%BE%E7%81%B5%E7%9A%84%E8%AF%85%E5%92%92"><span class="toc-number">5.</span> <span class="toc-text">图灵的诅咒</span></a></li></ol>
+    
 </div>
 </div>
         <div class="sidebar-common-sidebar hidden"><div class="sidebar-author">
@@ -1435,9 +1424,9 @@
           url: "https://chieko3020.xyz/2025/10/12/%E7%94%BB%E5%BB%8A/",
           excerpt: "Pixiv 插画、Arcaea CG、无限暖暖摄影、魔女裁判 CG，以及 ⬛⬛⬛⬛",
           description: "",
-          stripContent: "Pixiv 插画作品     (function() {     const imageUrls = [&#34;/images/%E7%94%BB%E5%BB%8A/pixiv/104391353_p0.webp&#34;,&#34;/images/%E7%94%BB%E5%BB%8A/pixiv/93588597_p0_master1200.webp&#34;,&#34;/images/%E7%94%BB%E5%BB%8A/pixiv/illust_72300844_20200720_031307.webp&#34;,&#34;/images/%",
+          stripContent: "Pixiv 插画作品Arcaea CG无限暖暖 游戏内摄影魔法少女的魔女裁判 CG图灵的诅咒    (function() {     const imageUrls = [&#34;/images/%E7%94%BB%E5%BB%8A/pixiv/104391353_p0.webp&#34;,&#34;/images/%E7%94%BB%E5%BB%8A/pixiv/93588597_p0_master1200.webp&#34;,&#34;/images/%E7%94%BB%E5%BB%8A/pixiv/illust_723008",
           date: "Sun Oct 12 2025 12:00:30 GMT+0800",
-          updated: "Sun Apr 12 2026 16:42:08 GMT+0800",
+          updated: "Sun Apr 12 2026 18:54:06 GMT+0800",
           cover: "/images/%E7%94%BB%E5%BB%8A/pixiv/31A_x4_g4A.webp",
         };
       </script>
@@ -1504,7 +1493,7 @@
               envId: 'https://twikoo.chieko3020.xyz',
               region: '',
               urls: [
-                '/about/index.html'
+                '/friend/index.html'
               ],
               includeReply: false
             }).then((res) => {
