@@ -9,13 +9,15 @@
           <div class="post-categories-cover">
             <%_ if (content.cover) { _%>
               <img data-src="<%- url_for(content.cover, {relative: false}) %>" data-sizes="auto" alt="<%= stripHtml(c.name) %>" class="lazyload">
-            <%_ } else { _%>
+            <%_ } else if (theme.random_cover !== false) { _%>
               <%_ let cover = randomCover(); _%>
               <%_ if (cover) { _%>
                 <img data-src="<%= cover %>" data-sizes="auto" alt="<%= stripHtml(c.name) %>" class="lazyload">
               <%_ } else { _%>
                 <img data-src="<%- url_for(theme.banner, {relative: false}) %>" data-sizes="auto" alt="<%= stripHtml(c.name) %>" class="lazyload">
               <%_ } _%>
+            <%_ } else { _%>
+              <img data-src="<%- url_for(theme.banner, {relative: false}) %>" data-sizes="auto" alt="<%= stripHtml(c.name) %>" class="lazyload">
             <%_ } _%>
             <h2><%- c.name %></h2>
             <h3><%= _p('home_categories.count', c.count) %></h3>

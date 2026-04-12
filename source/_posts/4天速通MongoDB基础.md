@@ -1,8 +1,10 @@
 ---
 title: 4天速通MongoDB基础
 date: 2026-01-15 16:13:14
+updated: 2026-01-15 16:13:14 
 tags: "你知道吗"
 categories: "只属于你的小妙招 <br> 看似有用实则没用"
+cover: /images/画廊/Arcara/4-1.webp
 ---
 # Mongo 概念
 ## MongoDB

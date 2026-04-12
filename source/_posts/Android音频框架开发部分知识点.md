@@ -1,8 +1,10 @@
 ---
 title: Android音频框架开发部分知识点
-date: 2026-02-04
-tags:
-categories:
+date: 2026-02-04 17:30:31
+updated: 2026-02-04 17:30:31
+tags: "你知道吗"
+categories: "只属于你的小妙招 <br> 看似有用实则没用"
+cover: /images/画廊/pixiv/104391353_p0.webp
 ---
 
 # Framework Architecture

@@ -11,13 +11,15 @@
     <div class=<% if (even === true) { %>"post-cover left"<% } else { %>"post-cover right"<% } %>>
       <%_ if (post.cover && !post.cover.startsWith("rgb")) { _%>
         <img data-src="<%- url_for(post.cover, {relative: false}) %>" data-sizes="auto" alt="<%= post.title %>" class="lazyload">
-      <%_ } else { _%>
+      <%_ } else if (theme.random_cover !== false) { _%>
         <%_ let cover = randomCover(); _%>
         <%_ if (cover) { _%>
           <img data-src="<%= cover %>" data-sizes="auto" alt="<%= post.title %>" class="lazyload">
         <%_ } else { _%>
           <img data-src="<%- url_for(theme.banner, {relative: false}) %>" data-sizes="auto" alt="<%= post.title %>" class="lazyload">
         <%_ } _%>
+      <%_ } else { _%>
+        <img data-src="<%- url_for(theme.banner, {relative: false}) %>" data-sizes="auto" alt="<%= post.title %>" class="lazyload">
       <%_ } _%>
     </div>
     <div class="post-info">

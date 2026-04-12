@@ -1,9 +1,11 @@
 ---
 title: Tsuriotsu
 date: 2026-03-27 18:18:32
+updated: 2026-03-27 18:18:32
 tags: "你知道吗"
-sticky: true
 categories: "只属于你的小妙招 <br> 看似有用实则没用"
+banner: /images/Tsuriotsu/tsuriotsu_title.webp
+cover: /images/Tsuriotsu/tsuriotsu_title.webp
 ---
 
 # ⭕⭕⭕🐶～
@@ -12,6 +14,6 @@ categories: "只属于你的小妙招 <br> 看似有用实则没用"
 
 <div class="gallery-grid">
   <div class="gallery-item">
-    <img src="/images/Tsuriotsu/tsuriotsu.png" alt="樱小路露娜" class="gallery-image">
+    <img src="/images/Tsuriotsu/tsuriotsu.webp" alt="樱小路露娜" class="gallery-image">
   </div>
 </div>

@@ -8,18 +8,18 @@ theme_config_check: true
 menu:
   - name: home
     url: /
-    icon: /images/loading.webp # default use taichi icon, you can use a hexadecimal representation of fontawesome or icon_font, like 'f0c1'
+    icon: /images/Website_Config/loading/loading.webp # default use taichi icon, you can use a hexadecimal representation of fontawesome or icon_font, like 'f0c1'
   - name: archives
     url: /archives
-    icon: /images/loading.webp
+    icon: /images/Website_Config/loading/loading.webp
   - name: about
     url: /about
-    icon: /images/loading.webp
+    icon: /images/Website_Config/loading/loading.webp
   - name: friend
     url: /friend
-    icon: /images/loading.webp
+    icon: /images/Website_Config/loading/loading.webp
 
-banner: "/images/bg.webp" # which means themes/reimu/source/images/banner.webp
+banner: "/images/Website_Config/global_background/bg.webp" # site source/images → /images/...
 # You can also write it in the form of the following url
 # banner: "https://example.com"
 
@@ -34,7 +34,7 @@ banner_srcset:
     - src: 
       media: 
 
-favicon: "/images/favi.ico" # which means themes/reimu/source/images/favicon.ico
+favicon: "/images/Website_Config/icon/favi.ico" # site source/images → /images/...
 # You can also write it in the form of the following url
 # favicon: "https://example.com"
 
@@ -44,6 +44,8 @@ avatar: "avatar.webp" # which means source/_data/avatar/avatar.webp
 # If not set, the banner image will be displayed by default
 # Its priority is lower than the cover in the Front-matter
 cover: # https://example.com / false / rgb(255,117,117)
+# When false, posts without cover in front-matter use theme banner only (no random image from source/_data/covers.yml)
+random_cover: false
 
 # Control the display of the post toc
 # Its priority is lower than the toc in the Front-matter
@@ -65,7 +67,7 @@ open_graph:
     #google_plus: <g+:profile_link>
     #fb_admins: <fb:admin_id>
     #fb_app_id: <fb:app_id>
-    default_og_image: /images/bg.webp # the default og:image for Open Graph, support absolute path
+    default_og_image: /images/Website_Config/global_background/bg.webp # the default og:image for Open Graph, support absolute path
 
 # Content
 excerpt_link: Read More
@@ -98,7 +100,7 @@ footer:
   count: true # show word count and reading time
   busuanzi: true
   icon:
-    url: "../images/loading.webp" # this path is relative to the css/style.css, so it needs to go up one level to reach the images folder
+    url: "../images/Website_Config/loading/loading.webp" # this path is relative to the css/style.css, so it needs to go up one level to reach the images folder
     rotate: true
     mask: false # whether to use the images as a mask
 
@@ -172,9 +174,9 @@ anchor_icon: # default use '#' icon, you can use a hexadecimal representation of
 reimu_cursor:
   enable: true
   cursor:
-    default: ../images/shizukululu-cursor-default.webp # this path is relative to the css/style.css, so it needs to go up one level to reach the images folder
-    pointer: ../images/shizukululu-cursor-pointer.webp
-    text: ../images/shizukululu-cursor-text.webp
+    default: ../images/Website_Config/cursor/shizukululu-cursor-default.webp # this path is relative to the css/style.css, so it needs to go up one level to reach the images folder
+    pointer: ../images/Website_Config/cursor/shizukululu-cursor-pointer.webp
+    text: ../images/Website_Config/cursor/shizukululu-cursor-text.webp
 
 # set to false to enable fontawesome
 icon_font: 4552607_4k4bc36ef96
@@ -414,7 +416,7 @@ preloader:
     en: Loading...
     ja: 加载中...
     pt-BR: Carregando...
-  icon: /images/loading.webp
+  icon: /images/Website_Config/loading/loading.webp
   rotate: true # whether to rotate the icon
 
 # see https://github.com/D-Sketon/aos.js
@@ -498,10 +500,10 @@ home_categories:
   content:
     - categories: "不可解的它的一切 <br> 那不就是「关于网站」吗"
     # string (single-layer category) or array (multi-layer category)
-      cover: 
+      cover: /images/画廊/pixiv/107752063_p0.webp
     # empty means random cover
     - categories: "只属于你的小妙招 <br> 看似有用实则没用"
-      cover:
+      cover: /images/画廊/Arcara/live.webp
 
 # whether to display the notification when the article is outdated
 outdate:
@@ -524,7 +526,7 @@ sponsor:
     ja: コーヒーを買ってください
     pt-BR: Compre-me um café
   icon:
-    url: "../images/loading.webp" # this path is relative to the css/style.css, so it needs to go up one level to reach the images folder
+    url: "../images/Website_Config/loading/loading.webp" # this path is relative to the css/style.css, so it needs to go up one level to reach the images folder
     rotate: true
     mask: true # whether to use the images as a mask
   qr:
@@ -560,7 +562,7 @@ top:
   enable: true
   position: right # left or right
   icon:
-    url: "../images/loading.webp" # this path is relative to the css/style.css, so it needs to go up one level to reach the images folder
+    url: "../images/Website_Config/loading/loading.webp" # this path is relative to the css/style.css, so it needs to go up one level to reach the images folder
     rotate: true
     mask: true # whether to use the images as a mask
 

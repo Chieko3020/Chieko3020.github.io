@@ -1,8 +1,10 @@
 ---
 title: Redis部分源码解析
 date: 2026-01-21 13:16:21
+updated: 2026-01-21 13:16:21
 tags: "你知道吗"
 categories: "只属于你的小妙招 <br> 看似有用实则没用"
+cover: /images/画廊/pixiv/124905855_p0.webp
 ---
 
 # Redis = Ready + Start——如何开始

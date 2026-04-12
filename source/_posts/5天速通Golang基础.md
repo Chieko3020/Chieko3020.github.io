@@ -1,8 +1,10 @@
 ---
 title: 5天速通Golang基础
 date: 2026-01-12 01:25:13
+updated: 2026-01-12 01:25:13
 tags: "你知道吗"
 categories: "只属于你的小妙招 <br> 看似有用实则没用"
+cover: /images/画廊/Arcara/1-8.webp
 ---
 
 # Go语言学习笔记
