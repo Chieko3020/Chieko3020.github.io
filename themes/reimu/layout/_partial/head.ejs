@@ -8,6 +8,10 @@
   <%- partial('analytics/baidu-analytics', null, { cache: true }) %>
   <%- tagCached('themeConfig', themeConfig) %>
   <%_
+    const plainDocTitle = (t) => {
+      if (t == null || t === '') return t;
+      return stripHtml(String(t).replace(/<\s*br\s*\/?>/gi, ' ')).replace(/\s+/g, ' ').trim();
+    };
     let title = page.title;
     if (is_archive()) {
       title = __('archive_a');
@@ -21,9 +25,11 @@
     } else if (is_tag()) {
       title = __('tag') + ': ' + page.tag;
     }
+    const docTitlePart = title ? plainDocTitle(title) : '';
+    const docSiteTitle = plainDocTitle(config.title);
   _%>
   <title>
-    <% if (title) { %><%= title %> | <% } %><%= config.title %>
+    <% if (docTitlePart) { %><%= docTitlePart %> | <% } %><%= docSiteTitle %>
   </title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <%_ if (theme.custom_font?.enable) { _%>
