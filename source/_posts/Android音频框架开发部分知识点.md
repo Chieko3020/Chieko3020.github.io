@@ -5,6 +5,7 @@ updated: 2026-02-04 17:30:31
 tags: "你知道吗"
 categories: "只属于你的小妙招 <br> 看似有用实则没用"
 cover: /images/画廊/pixiv/104391353_p0.webp
+excerpt: 随便记录 Android 一点点的基础知识，以及一些音频相关的概念
 ---
 
 # Framework Architecture

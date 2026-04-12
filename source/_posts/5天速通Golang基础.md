@@ -5,6 +5,7 @@ updated: 2026-01-12 01:25:13
 tags: "你知道吗"
 categories: "只属于你的小妙招 <br> 看似有用实则没用"
 cover: /images/画廊/Arcara/1-8.webp
+excerpt: 有关 Golang 的基础知识
 ---
 
 # Go语言学习笔记

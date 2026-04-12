@@ -1,11 +1,12 @@
 ---
-title: Chieko3020 Profile
+title: 关于 Chieko3020
 date: 2025-10-12 13:50:01
 updated: 2025-10-12 13:50:01
 sticky: true
 tags: "你知道吗"
 categories: "不可解的它的一切 <br> 那不就是「关于网站」吗"
 cover: /images/画廊/Arcara/1-ZR.webp
+excerpt: 个人主页
 ---
 
 # 介绍一下自己吧？
