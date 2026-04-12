@@ -1,5 +1,39 @@
 let asyncCss;
 let tabIndex = 0;
+
+/**
+ * Nunjucks evaluates nested tags (e.g. {% gallery %}) before this runs, so tab
+ * bodies can already contain raw HTML with <script>. Marked would treat indented
+ * lines inside <script> as code blocks; strip those blocks and restore after MD.
+ */
+function renderTabBody(hexo, raw) {
+  const text = (raw || "").trim();
+  if (!text) return "";
+
+  const chunks = [];
+  const shielded = text.replace(
+    /<(?:script|style)\b[\s\S]*?<\/(?:script|style)>/gim,
+    (block) => {
+      const id = chunks.length;
+      chunks.push(block);
+      return `\n\n<!--reimu-tab-shield-${id}-->\n\n`;
+    }
+  );
+
+  let html = hexo.render
+    .renderSync({ text: shielded, engine: "markdown" })
+    .trim();
+
+  chunks.forEach((block, id) => {
+    const marker = `<!--reimu-tab-shield-${id}-->`;
+    const esc = marker.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    html = html.replace(new RegExp(`<p>\\s*${esc}\\s*</p>\\s*`, "gi"), block);
+    html = html.split(marker).join(block);
+  });
+
+  return html;
+}
+
 /**
  * https://github.com/volantis-x/hexo-theme-volantis/blob/7.x/scripts/tags/tabs.js
  *
@@ -44,9 +78,7 @@ function postTabs(args, content) {
     const tabParameters = tab.header.split("@");
     const tabIcon = tabParameters.length > 1 ? tabParameters.pop() : "";
     let tabCaption = tabParameters.join("@") || "";
-    const postContent = hexo.render
-      .renderSync({ text: tab.body || "", engine: "markdown" })
-      .trim();
+    const postContent = renderTabBody(hexo, tab.body || "");
     const tabHref = `${tabName}-${tabId}`.toLowerCase();
 
     if (tabCaption.length === 0 && tabIcon.length === 0) {
