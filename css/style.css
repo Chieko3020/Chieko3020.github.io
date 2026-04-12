@@ -43,12 +43,12 @@
   --highlight-deletion-bg: #ffeef0;
   --highlight-addition: #22863a;
   --highlight-addition-bg: #f0fff4;
-  --cursor-default: url("../images/shizukululu-cursor-default.webp"), auto;
-  --cursor-pointer: url("../images/shizukululu-cursor-pointer.webp"), pointer;
-  --cursor-text: url("../images/shizukululu-cursor-text.webp"), text;
-  --footer-icon: url("../images/loading.webp");
-  --sponsor-icon: url("../images/loading.webp");
-  --top-icon: url("../images/loading.webp");
+  --cursor-default: url("../images/Website_Config/cursor/shizukululu-cursor-default.webp"), auto;
+  --cursor-pointer: url("../images/Website_Config/cursor/shizukululu-cursor-pointer.webp"), pointer;
+  --cursor-text: url("../images/Website_Config/cursor/shizukululu-cursor-text.webp"), text;
+  --footer-icon: url("../images/Website_Config/loading/loading.webp");
+  --sponsor-icon: url("../images/Website_Config/loading/loading.webp");
+  --top-icon: url("../images/Website_Config/loading/loading.webp");
   --shadow-meta: 0 0 5px 2px var(--color-meta-shadow);
   --shadow-meta-hover: 0 0 6px 4px var(--color-meta-shadow);
   --shadow-card: 0 0 10px 2px var(--color-hover-shadow);
@@ -1282,6 +1282,7 @@ button {
 .article-tag-list-item {
   float: left;
   text-decoration: none;
+  white-space: normal;
   text-transform: uppercase;
   background: var(--red-5);
   border-radius: 8px;
@@ -1950,6 +1951,7 @@ button {
 .archives-category-list-link {
   color: var(--red-1);
   font-size: 12px;
+  white-space: normal;
 }
 .archives-tag-list-link:before,
 .archives-category-list-link:before {

@@ -95,9 +95,9 @@ main {
 /* Extensions from @primer/css/alerts/flash.scss */
   --color-social-reaction-bg-hover: var(--color-scale-gray-7);
   --color-social-reaction-bg-reacted-hover: var(--color-scale-blue-8);
-  --cursor-default: url("../images/shizukululu-cursor-default.webp"), auto;
-  --cursor-pointer: url("../images/shizukululu-cursor-pointer.webp"), pointer;
-  --cursor-text: url("../images/shizukululu-cursor-text.webp"), text;
+  --cursor-default: url("../images/Website_Config/cursor/shizukululu-cursor-default.webp"), auto;
+  --cursor-pointer: url("../images/Website_Config/cursor/shizukululu-cursor-pointer.webp"), pointer;
+  --cursor-text: url("../images/Website_Config/cursor/shizukululu-cursor-text.webp"), text;
 }
 /* Extensions from @primer/css/alerts/flash.scss */
 main .pagination-loader-container {
