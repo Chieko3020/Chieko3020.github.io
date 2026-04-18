@@ -262,8 +262,8 @@ math:
 # mermaid url https://github.com/mermaid-js/mermaid
 # need https://github.com/webappdevelp/hexo-filter-mermaid-diagrams
 mermaid:
-  enable: false
-  zoom: false # whether to enable zoom for mermaid diagrams
+  enable: true
+  zoom: true # whether to enable zoom for mermaid diagrams
 
 code_block:
   # whether to expand the code block by default

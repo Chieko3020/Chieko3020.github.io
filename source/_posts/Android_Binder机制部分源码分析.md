@@ -67,6 +67,7 @@ mermaid: true
 > 可以和 WebRTC 进行类比，Client 通过 Handle 句柄 (SDP/ICE Candidates 元数据) 向 ServiceManager (Signaling Server) 获取到 Server 提前注册好的服务（Address），通过 ioctl （STUN/TURN）经由 Binder driver (HTTP/WebSocket) 的数据拷贝间接与 Server 进行通信
 
 ```mermaid
+
 graph TD
     subgraph Framework_Layer [Framework 层]
         Client[Client] --> BProxy[BinderProxy]
