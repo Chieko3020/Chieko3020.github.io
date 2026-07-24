@@ -1,4 +1,4 @@
-<%_ if (page.type == 404) { _%>
+﻿<%_ if (page.type == 404) { _%>
   <%- partial('404', {post: page}) %>
 <%_ } else { _%>
   <!DOCTYPE html>
@@ -94,6 +94,9 @@
         }
       })();
     </script>
+    <script src="/live2d/waifu-chat.js?v=20260724b"
+        data-api-base="https://chat.chieko3020.xyz"
+        data-model="march7th"></script>
     <%- partial('_partial/loader', {post: page}) %>
     <div id="container">
       <div id="wrap">
@@ -167,3 +170,4 @@
   </body>
   </html>
 <%_ } _%>
+
