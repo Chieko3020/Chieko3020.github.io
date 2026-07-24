@@ -110,22 +110,28 @@
 
   // ── 显示回复 ──────────────────────────────────────────
   function showReply(text) {
-    // 复用 waifu-tips.js 的 tips 气泡机制
-    // tips 气泡显示在 #waifu-tips 元素中
+    // 优先使用 oml2d 的 showMessage（当前主要运行时）
+    try {
+      if (window.__oml2d && typeof window.__oml2d.showMessage === "function") {
+        window.__oml2d.showMessage(text, 8000, 5);
+        sessionStorage.removeItem("waifu-text");
+        return;
+      }
+    } catch (_) { /* ignore */ }
+
+    // 回退：waifu-tips.js widget 的 #waifu-tips 气泡
     const tips = document.getElementById("waifu-tips");
     if (!tips) return;
 
     tips.innerHTML = text;
     tips.classList.add("waifu-tips-active");
 
-    // 8 秒后自动消失
     setTimeout(() => {
       if (tips.innerHTML === text) {
         tips.classList.remove("waifu-tips-active");
       }
     }, 8000);
 
-    // 清除 sessionStorage 中的 tips 状态（waifu-tips.js 用它控制防重复）
     sessionStorage.removeItem("waifu-text");
   }
 

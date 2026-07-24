@@ -344,7 +344,7 @@ waline:
 # https://twikoo.js.org
 twikoo:
   enable: true
-  envId: https://twikoo.chieko3020.xyz
+  envId: https://comment.chieko3020.xyz
   region:
 
 # https://github.com/gitalk/gitalk/blob/master/readme-cn.md

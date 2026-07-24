@@ -274,6 +274,7 @@ OhMyLive2d:
             - "希望我带来的这一场意料之外的「雨」，能让荒芜的岁月盛开…如她所愿的百花♭"
     then: |
         (oml2d)=>{
+        window.__oml2d = oml2d;
         try { localStorage.removeItem('oml2d-status') } catch(e){}
         try { oml2d && oml2d.sleep && oml2d.sleep() } catch(e){}
         try { oml2d && oml2d.statusBar && oml2d.statusBar.setRest && oml2d.statusBar.setRest('看板娘休息中', '💤') } catch(e){}
