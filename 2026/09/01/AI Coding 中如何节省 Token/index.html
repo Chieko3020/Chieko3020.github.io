@@ -1,0 +1,1415 @@
+  <!DOCTYPE html>
+  <html lang="zh-CN"  
+      data-theme-mode="auto"
+  >
+  <head>
+  <meta charset="utf-8">
+  
+  
+  
+  <script>window.REIMU_CONFIG = {};window.REIMU_CONFIG.icon_font = '4552607_4k4bc36ef96';window.REIMU_CONFIG.clipboard_tips = {"success":{"zh-CN":"复制成功 (*^▽^*)"},"fail":{"zh-CN":"复制失败 (ﾟ⊿ﾟ)ﾂ"},"copyright":{"enable":false,"count":50,"license_type":"by-nc-sa"}};window.REIMU_CONFIG.clipboard_tips.copyright.content = '本博客所有文章除特别声明外，均采用 BY-NC-SA 许可协议。转载请注明出处！';window.REIMU_CONFIG.outdate = {"enable":true,"daysAgo":30,"message":{"en":"This article was last updated on {time}. Please note that the content may no longer be applicable.","zh-CN":"本文最后更新于 {time}，请注意文中内容可能已不适用。","zh-TW":"本文最後更新於 {time}，請注意文中內容可能已不適用。","ja":"この記事は最終更新日：{time}。記載内容が現在有効でない可能性がありますのでご注意ください。","pt-BR":"Este artigo foi atualizado pela última vez em {time}. Observe que o conteúdo pode não ser mais aplicável."}};window.REIMU_CONFIG.code_block = {"expand":true};window.REIMU_CONFIG.base = 'https://chieko3020.xyz';</script>
+  <title>
+    AI Coding 中如何节省 Token | Chieko3020 | Nostalgia
+  </title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="preload" as="style" href="https://fonts.googleapis.com/css?family=Mulish:400,400italic,700,700italic|Noto Serif SC:400,400italic,700,700italic&display=swap"><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Mulish:400,400italic,700,700italic|Noto Serif SC:400,400italic,700,700italic&display=swap" media="print" onload="this.media='all'">
+    <link rel="preload" href="//at.alicdn.com/t/c/font_4552607_4k4bc36ef96.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    
+<link rel="stylesheet" href="/css/loader.css">
+
+    <meta name="description" content="在 AI 编码中节省 token 的方法论：从计费原理、缓存命中到上下文与会话管理的实操">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI Coding 中如何节省 Token">
+<meta property="og:url" content="https://chieko3020.xyz/2026/09/01/AI%20Coding%20%E4%B8%AD%E5%A6%82%E4%BD%95%E8%8A%82%E7%9C%81%20Token/index.html">
+<meta property="og:site_name" content="Chieko3020 | Nostalgia">
+<meta property="og:description" content="在 AI 编码中节省 token 的方法论：从计费原理、缓存命中到上下文与会话管理的实操">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-09-01T05:02:50.000Z">
+<meta property="article:modified_time" content="2026-09-01T05:02:50.000Z">
+<meta property="article:author" content="Chieko3020">
+<meta property="article:tag" content="你知道吗">
+<meta name="twitter:card" content="summary">
+    <link rel="alternate" href="/atom.xml" title="Chieko3020 | Nostalgia" type="application/atom+xml">
+    <link rel="shortcut icon" href="/images/Website_Config/icon/favi.ico">
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  <link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="https://npm.webcache.cn/photoswipe@5.4.4/dist/photoswipe.css" integrity="sha384-IfxC36XL/toUyJ939C73PcgMuRzAZuIzZxE38drsmO5p6jD7ei+Zx/1oA/0l8ysE" crossorigin="anonymous">
+    
+<script src="https://npm.webcache.cn/pace-js@1.2.4/pace.min.js" integrity="sha384-k6YtvFUEIuEFBdrLKJ3YAUbBki333tj1CSUisai5Cswsg9wcLNaPzsTHDswp4Az8" crossorigin="anonymous"></script>
+
+    
+<link rel="stylesheet" href="https://npm.webcache.cn/@reimujs/aos@0.1.2/dist/aos.css" integrity="sha384-GMRP93c6Hkz9JVKGAuRR3nTS7M07RwPgTFenXiosjq2VbVgvdDNcz1g6Mkj8AONa" crossorigin="anonymous">
+
+    <link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="https://npm.webcache.cn/aplayer@1.10.1/dist/APlayer.min.css" integrity="sha384-tLMkTWh2pfXNWGFlUS0w1TFtRG5xZ9lPWFOooj+vDDLIL+xBGQU/voDBY5XE2lVh" crossorigin="anonymous">
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+  <body>
+    <script>
+      (function () {
+        // Prevent duplicate initialization under PJAX / repeated script execution.
+        if (window.__customLive2dBooted) return;
+        window.__customLive2dBooted = true;
+
+        const cdnPath = "/live2d";
+        const live2dConfig = {
+          path: {
+            homePath: "/",
+            modelPath: cdnPath + "/Resources/",
+            cssPath: cdnPath + "/waifu.css",
+            tipsJsonPath: cdnPath + "/waifu-tips.json",
+            tipsJsPath: cdnPath + "/waifu-tips.js",
+            live2dCorePath: cdnPath + "/Core/live2dcubismcore.js",
+            live2dSdkPath: cdnPath + "/live2d-sdk.js",
+          },
+          tools: [
+            "hitokoto",
+            "express",
+            "switch-model",
+            "switch-texture",
+            "photo",
+            "info",
+            "quit",
+          ],
+          drag: {
+            enable: true,
+            direction: ["x", "y"],
+          },
+          switchType: "order",
+        };
+
+        function loadExternalResource(url, type) {
+          return new Promise((resolve, reject) => {
+            let tag;
+            if (type === "css") {
+              tag = document.createElement("link");
+              tag.rel = "stylesheet";
+              tag.href = url;
+            } else if (type === "js") {
+              tag = document.createElement("script");
+              tag.src = url;
+            }
+            if (!tag) return reject(new Error("Unsupported resource type"));
+            tag.onload = () => resolve(url);
+            tag.onerror = () => reject(new Error("Failed to load: " + url));
+            document.head.appendChild(tag);
+          });
+        }
+
+        // Keep original behavior: desktop only.
+        if (window.screen.width >= 768) {
+          Promise.all([
+            loadExternalResource(live2dConfig.path.cssPath, "css"),
+            loadExternalResource(live2dConfig.path.live2dCorePath, "js"),
+            loadExternalResource(live2dConfig.path.live2dSdkPath, "js"),
+            loadExternalResource(live2dConfig.path.tipsJsPath, "js"),
+          ])
+            .then(() => {
+              if (typeof initWidget === "function") {
+                initWidget({
+                  homePath: live2dConfig.path.homePath,
+                  waifuPath: live2dConfig.path.tipsJsonPath,
+                  cdnPath: live2dConfig.path.modelPath,
+                  tools: live2dConfig.tools,
+                  dragEnable: live2dConfig.drag.enable,
+                  dragDirection: live2dConfig.drag.direction,
+                  switchType: live2dConfig.switchType,
+                });
+              } else {
+                console.warn("[live2d] initWidget not found after script load");
+              }
+            })
+            .catch((err) => console.error("[live2d] Failed to initialize:", err));
+        }
+      })();
+    </script>
+    <script src="/live2d/waifu-chat.js?v=20260725a"
+        data-api-base="https://chat.chieko3020.xyz"
+        data-model="march7th"></script>
+      <div id='loader'>
+    <div class="loading-left-bg loading-bg"></div>
+    <div class="loading-right-bg loading-bg"></div>
+    <div class="spinner-box">
+      <div class="loading-taichi rotate">
+          <img src="/images/Website_Config/loading/loading.webp" alt="loading" />
+      </div>
+      <div class="loading-word">加载中...</div>
+    </div>
+  </div>
+  <script>
+    var time = null;
+    var loaderEl = document.getElementById('loader');
+    var startLoading = () => {
+      time = Date.now();
+      loaderEl.classList.remove("loading");
+    }
+    var hideLoader = () => {
+      document.body.style.overflow = 'auto';
+      loader.classList.add('loading');
+    };
+
+    var endLoading = () => {
+      if (!time) {
+        hideLoader();
+      } else {
+        if (Date.now() - time > 500) {
+          time = null;
+          hideLoader();
+        } else {
+          setTimeout(endLoading, 500 - (Date.now() - time));
+          time = null;
+        }
+      }
+    }
+    window.addEventListener('DOMContentLoaded', endLoading);
+    loaderEl.addEventListener('click', endLoading);
+  </script>
+<div id="copy-tooltip"></div>
+<div id="heatmap-tooltip"></div>
+
+
+    <div id="container">
+      <div id="wrap">
+        <div id="header-nav">
+  <nav id="main-nav" aria-label="Primary navigation">
+        <a class="main-nav-link-wrap" href="/">
+            <div class="main-nav-icon icon ">
+                  <img src="/images/Website_Config/loading/loading.webp" alt="home icon" style="height: 1em;">
+            </div>
+          <span class="main-nav-link">首页</span>
+        </a>
+        <a class="main-nav-link-wrap" href="/archives">
+            <div class="main-nav-icon icon ">
+                  <img src="/images/Website_Config/loading/loading.webp" alt="archives icon" style="height: 1em;">
+            </div>
+          <span class="main-nav-link">归档</span>
+        </a>
+        <a class="main-nav-link-wrap" href="/about">
+            <div class="main-nav-icon icon ">
+                  <img src="/images/Website_Config/loading/loading.webp" alt="about icon" style="height: 1em;">
+            </div>
+          <span class="main-nav-link">关于</span>
+        </a>
+        <a class="main-nav-link-wrap" href="/friend">
+            <div class="main-nav-icon icon ">
+                  <img src="/images/Website_Config/loading/loading.webp" alt="friend icon" style="height: 1em;">
+            </div>
+          <span class="main-nav-link">友链</span>
+        </a>
+    <a id="main-nav-toggle" class="nav-icon" aria-label="Toggle navigation" role="button"></a>
+  </nav>
+  <nav id="sub-nav" aria-label="Secondary navigation">
+      <a id="nav-search-btn" class="nav-icon popup-trigger" title="搜索" aria-label="搜索"></a>
+  </nav>
+</div>
+<header id="header" aria-label="Site header">
+    <picture></picture>
+    <img crossorigin="anonymous" fetchpriority="high" src="/images/%E7%94%BB%E5%BB%8A/pixiv/104391353_p0.webp" alt="AI Coding 中如何节省 Token">
+  <div id="header-outer">
+    <div id="header-title">
+          <span id="logo">
+            <h1 data-aos="slide-up">AI Coding 中如何节省 Token</h1>
+          </span>
+        <h2 id="subtitle-wrap" data-aos="slide-down">
+        </h2>
+    </div>
+  </div>
+</header>
+
+        <div id="content" aria-label="Page content"  class="sidebar-right" >
+          <aside id="sidebar" aria-label="Sidebar">
+  <div class="sidebar-wrapper-container sticky">
+      <meting-js
+        theme="var(--color-link)"
+        id="2265921590"
+        server="netease"
+        type="playlist"
+        
+        fixed="false"
+        autoplay="false"
+        loop="all"
+        order="list"
+        preload="auto"
+        volume="0.3"
+        mutex="true"
+        list-folded="false"
+        
+      ></meting-js>
+  <div class="sidebar-wrapper">
+    <div class="sidebar-wrap" data-aos="fade-up">
+          <div class="sidebar-toc-sidebar"><h3 class="toc-title">文章目录</h3>
+<div class="sidebar-toc-wrapper toc-div-class" >
+    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#AI-Coding-%E4%B8%AD%E5%A6%82%E4%BD%95%E8%8A%82%E7%9C%81-Token"><span class="toc-number">1.</span> <span class="toc-text">AI Coding 中如何节省 Token</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC-1-%E7%AB%A0-%E8%AE%A1%E8%B4%B9%E6%A0%87%E5%87%86"><span class="toc-number">1.1.</span> <span class="toc-text">第 1 章 计费标准</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E4%B8%80%E6%AC%A1%E5%AF%B9%E8%AF%9D%E5%8F%91%E7%94%9F%E4%BA%86%E4%BB%80%E4%B9%88"><span class="toc-number">1.1.1.</span> <span class="toc-text">1.1 一次对话发生了什么</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E8%BE%93%E5%85%A5%E7%9A%84%E5%AE%9A%E4%B9%89%E4%B8%8E%E7%BB%84%E6%88%90"><span class="toc-number">1.1.2.</span> <span class="toc-text">1.2 输入的定义与组成</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-%E8%BE%93%E5%87%BA%E7%9A%84%E5%AE%9A%E4%B9%89"><span class="toc-number">1.1.3.</span> <span class="toc-text">1.3 输出的定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-%E8%BE%93%E5%85%A5%E8%BE%93%E5%87%BA%E7%9A%84%E5%88%86%E7%B1%BB"><span class="toc-number">1.1.4.</span> <span class="toc-text">1.4 输入输出的分类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-5-%E8%BE%93%E5%85%A5%E8%BE%93%E5%87%BA%E5%BC%80%E9%94%80%E5%B7%AE%E5%BC%82%E4%B8%8E%E5%8E%9F%E5%9B%A0"><span class="toc-number">1.1.5.</span> <span class="toc-text">1.5 输入输出开销差异与原因</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-6-token-%E7%9A%84%E5%88%86%E7%B1%BB%E4%B8%8E%E5%BC%80%E9%94%80%E5%B7%AE%E5%BC%82"><span class="toc-number">1.1.6.</span> <span class="toc-text">1.6 token 的分类与开销差异</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC-2-%E7%AB%A0-%E7%BC%93%E5%AD%98%E5%9F%BA%E7%A1%80%E4%B8%8E%E7%BC%93%E5%AD%98%E5%91%BD%E4%B8%AD%E7%AD%96%E7%95%A5"><span class="toc-number">1.2.</span> <span class="toc-text">第 2 章 缓存基础与缓存命中策略</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E7%BC%93%E5%AD%98%E7%9A%84%E6%A6%82%E5%BF%B5"><span class="toc-number">1.2.1.</span> <span class="toc-text">2.1 缓存的概念</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E7%BC%93%E5%AD%98%E7%9A%84%E5%88%86%E5%B1%82%E6%9E%B6%E6%9E%84"><span class="toc-number">1.2.2.</span> <span class="toc-text">2.2 缓存的分层架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E7%BC%93%E5%AD%98%E5%86%99%E5%85%A5%E6%9C%BA%E5%88%B6%EF%BC%9A%E5%89%8D%E7%BC%80%E5%8C%B9%E9%85%8D"><span class="toc-number">1.2.3.</span> <span class="toc-text">2.3 缓存写入机制：前缀匹配</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-TTL-%E4%B8%8E%E8%BF%87%E6%9C%9F"><span class="toc-number">1.2.4.</span> <span class="toc-text">2.4 TTL 与过期</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-%E7%BC%93%E5%AD%98%E5%A4%B1%E6%95%88%E7%9A%84%E5%9C%BA%E6%99%AF"><span class="toc-number">1.2.5.</span> <span class="toc-text">2.5 缓存失效的场景</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC-3-%E7%AB%A0-%E5%AE%9E%E8%B7%B5%E6%96%B9%E6%B3%95"><span class="toc-number">1.3.</span> <span class="toc-text">第 3 章 实践方法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E8%AF%8A%E6%96%AD%E5%85%88%E8%A1%8C%EF%BC%9A%E5%85%88%E7%9F%A5%E9%81%93%E9%92%B1%E8%8A%B1%E5%9C%A8%E5%93%AA"><span class="toc-number">1.3.1.</span> <span class="toc-text">3.1 诊断先行：先知道钱花在哪</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E4%BB%8E%E7%BC%93%E5%AD%98%E5%91%BD%E4%B8%AD%E8%A7%92%E5%BA%A6%E7%9C%81%E9%92%B1%EF%BC%9A%E9%98%B2%E6%AD%A2%E7%BC%93%E5%AD%98%E5%A4%B1%E6%95%88"><span class="toc-number">1.3.2.</span> <span class="toc-text">3.2 从缓存命中角度省钱：防止缓存失效</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E5%89%8A%E5%87%8F%E8%BE%93%E5%85%A5-token"><span class="toc-number">1.3.3.</span> <span class="toc-text">3.3 削减输入 token</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E5%89%8A%E5%87%8F%E8%BE%93%E5%87%BA-token"><span class="toc-number">1.3.4.</span> <span class="toc-text">3.4 削减输出 token</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-5-%E4%BC%9A%E8%AF%9D%E7%AE%A1%E7%90%86%E4%B8%8E%E6%96%87%E6%A1%A3%E6%8C%81%E4%B9%85%E5%8C%96"><span class="toc-number">1.3.5.</span> <span class="toc-text">3.5 会话管理与文档持久化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-6-%E7%94%A8%E5%B7%A5%E5%85%B7%E5%8A%A8%E6%80%81%E7%9B%91%E6%8E%A7%E5%BC%80%E9%94%80"><span class="toc-number">1.3.6.</span> <span class="toc-text">3.6 用工具动态监控开销</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-7-%E6%8F%90%E7%A4%BA%E8%AF%8D%E6%9C%AC%E8%BA%AB%E7%98%A6%E8%BA%AB"><span class="toc-number">1.3.7.</span> <span class="toc-text">3.7 提示词本身瘦身</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-8-%E5%87%8F%E5%B0%91%E8%AF%B7%E6%B1%82%E6%AC%A1%E6%95%B0"><span class="toc-number">1.3.8.</span> <span class="toc-text">3.8 减少请求次数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-9-%E6%A8%A1%E5%9E%8B%E9%80%89%E5%9E%8B%E9%99%8D%E7%BA%A7"><span class="toc-number">1.3.9.</span> <span class="toc-text">3.9 模型选型降级</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-10-%E5%A4%9A%E6%A8%A1%E6%80%81%E8%BE%93%E5%85%A5%E5%BC%80%E9%94%80"><span class="toc-number">1.3.10.</span> <span class="toc-text">3.10 多模态输入开销</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-11-DeepSeek-Harness-%E9%87%8C%E7%9A%84%E7%9C%81%E9%92%B1%E5%AE%9E%E8%B7%B5"><span class="toc-number">1.3.11.</span> <span class="toc-text">3.11 DeepSeek Harness 里的省钱实践</span></a></li></ol></li></ol></li></ol>
+</div>
+</div>
+          <div class="sidebar-common-sidebar hidden"><div class="sidebar-author">
+  <img data-src="/avatar/avatar.webp" data-sizes="auto" alt="Chieko3020" class="lazyload">
+  <div class="sidebar-author-name">Chieko3020</div>
+  <div class="sidebar-description">这并非约束我的规则<br>而是我对她的礼仪</div>
+</div>
+<div class="sidebar-state">
+  <div class="sidebar-state-article">
+    <div>文章</div>
+    <div class="sidebar-state-number">16</div>
+  </div>
+  <div class="sidebar-state-category">
+    <div>分类</div>
+    <div class="sidebar-state-number">2</div>
+  </div>
+  <div class="sidebar-state-tag">
+    <div>标签</div>
+    <div class="sidebar-state-number">2</div>
+  </div>
+</div>
+<div class="sidebar-social" >
+    <div class="icon-github sidebar-social-icon">
+      <a href=https://github.com/Chieko3020 itemprop="url" target="_blank" aria-label="github" rel="noopener nofollow noreferrer"></a>
+    </div>
+    <div class="icon-bilibili sidebar-social-icon">
+      <a href=https://space.bilibili.com/165313953 itemprop="url" target="_blank" aria-label="bilibili" rel="noopener nofollow noreferrer"></a>
+    </div>
+</div>
+<div class="sidebar-menu">
+      <div class="sidebar-menu-link-wrap">
+        <a class="sidebar-menu-link-dummy" href="/" aria-label="首页"></a>
+          <div class="sidebar-menu-icon icon ">
+                <img src="/images/Website_Config/loading/loading.webp" alt="home icon" style="width: 1em;">
+          </div>
+        <div class="sidebar-menu-link">首页</div>
+      </div>
+      <div class="sidebar-menu-link-wrap">
+        <a class="sidebar-menu-link-dummy" href="/archives" aria-label="归档"></a>
+          <div class="sidebar-menu-icon icon ">
+                <img src="/images/Website_Config/loading/loading.webp" alt="archives icon" style="width: 1em;">
+          </div>
+        <div class="sidebar-menu-link">归档</div>
+      </div>
+      <div class="sidebar-menu-link-wrap">
+        <a class="sidebar-menu-link-dummy" href="/about" aria-label="关于"></a>
+          <div class="sidebar-menu-icon icon ">
+                <img src="/images/Website_Config/loading/loading.webp" alt="about icon" style="width: 1em;">
+          </div>
+        <div class="sidebar-menu-link">关于</div>
+      </div>
+      <div class="sidebar-menu-link-wrap">
+        <a class="sidebar-menu-link-dummy" href="/friend" aria-label="友链"></a>
+          <div class="sidebar-menu-icon icon ">
+                <img src="/images/Website_Config/loading/loading.webp" alt="friend icon" style="width: 1em;">
+          </div>
+        <div class="sidebar-menu-link">友链</div>
+      </div>
+</div>
+</div>
+          <div class="sidebar-btn-wrapper" style="position:static">
+            <div class="sidebar-toc-btn current"></div>
+            <div class="sidebar-common-btn"></div>
+          </div>
+    </div>
+  </div>
+  <div class="sidebar-widget">
+  </div>
+  </div>
+</aside>
+
+          <section id="main" aria-label="Main content"><article id="post-AI Coding 中如何节省 Token" class="h-entry article" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-inner" data-aos="fade-up">
+    <div class="article-meta">
+      <div class="article-date">
+  <span class="article-date-link icon-calendar" data-aos="zoom-in">
+    <time datetime="2026-09-01T05:02:50.000Z" itemprop="datePublished">2026-09-01</time>
+    <time style="display: none;" id="post-update-time">2026-09-01</time>
+  </span>
+    <span class="article-date-link icon-calendar-plus" data-aos="zoom-in">
+      <time datetime="2026-09-01T05:02:50.000Z" itemprop="dateModified">2026-09-01</time>
+    </span>
+</div>
+
+    </div>
+    
+    <div class="hr-line"></div>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+        <div class="warning custom-block" id="outdate-blockquote" style="display: none;">
+          <p class="custom-block-title">WARNING</p>
+          <p></p>
+        </div>
+        <h1 id="AI-Coding-中如何节省-Token"><a href="#AI-Coding-中如何节省-Token" class="headerlink" title="AI Coding 中如何节省 Token"></a>AI Coding 中如何节省 Token</h1><ul>
+<li>文章分三大块：先讲清楚钱是按什么算的，再讲缓存这个省钱大头（缓存基础与缓存命中策略），最后是实操方法</li>
+<li>参考来源以 DeepSeek 官方文档为主，具体价格数字会过时，以官方定价页为准。抓取时间 2026 年 9 月</li>
+</ul>
+<h2 id="第-1-章-计费标准"><a href="#第-1-章-计费标准" class="headerlink" title="第 1 章 计费标准"></a>第 1 章 计费标准</h2><h3 id="1-1-一次对话发生了什么"><a href="#1-1-一次对话发生了什么" class="headerlink" title="1.1 一次对话发生了什么"></a>1.1 一次对话发生了什么</h3><ul>
+<li>要省钱先得知道钱花在哪。一次对话到底发生了什么，从头拆一遍</li>
+<li>一次对话落到工程上就是一次 HTTP 请求，客户端把一整段 messages 数组发过去，服务端算完把结果发回来</li>
+<li>关键事实：<strong>模型是无状态的，每次请求都要把完整上下文重新发一遍</strong><ul>
+<li>“继续聊天”只是假象，每次请求都是把 system 消息、之前所有轮次的 user&#x2F;assistant&#x2F;tool 消息原样打包重发</li>
+<li>上次聊了什么，模型不记得，全在请求里。对话越长，每次请求的输入越大，这是 token 开销的第一来源</li>
+</ul>
+</li>
+<li>服务端处理分两个阶段（DeepSeek-V3 技术报告里明确把这两个阶段分开部署）：<ul>
+<li>prefill（预填充）：把输入整段一次性并行算完，产出第一个 token，同时把 KV cache 存下来</li>
+<li>decode（解码）：从第一个 token 开始逐 token 生成，一次一个，靠 KV cache 复用前面算好的部分</li>
+</ul>
+</li>
+<li>请求返回两个东西：<ul>
+<li>choices[0].message.content：最终答案（思考模式下还有 reasoning_content，思维链）</li>
+<li>usage：本次消耗的 token 明细，是计费依据，也是后面诊断开销的入口</li>
+</ul>
+</li>
+<li>DeepSeek 官方 usage 字段（API Reference 里的定义）：</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>prompt_tokens</td>
+<td>输入 token 数，等于下面两个相加</td>
+</tr>
+<tr>
+<td>prompt_cache_hit_tokens</td>
+<td>输入中命中上下文缓存的 token 数</td>
+</tr>
+<tr>
+<td>prompt_cache_miss_tokens</td>
+<td>输入中未命中缓存的 token 数</td>
+</tr>
+<tr>
+<td>completion_tokens</td>
+<td>输出 token 数</td>
+</tr>
+<tr>
+<td>completion_tokens_details.reasoning_tokens</td>
+<td>输出中思考（思维链）部分的 token 数</td>
+</tr>
+<tr>
+<td>total_tokens</td>
+<td>输入加输出</td>
+</tr>
+</tbody></table>
+<ul>
+<li>费用 &#x3D; 各分类 token 数 × 对应单价，所以想省钱，就是让 token 落在便宜的类里（比如命中缓存），或者干脆少用</li>
+</ul>
+<h3 id="1-2-输入的定义与组成"><a href="#1-2-输入的定义与组成" class="headerlink" title="1.2 输入的定义与组成"></a>1.2 输入的定义与组成</h3><ul>
+<li>输入就是上下文，上下文就是 messages 数组里的全部内容，模型一次性读完，从头到尾</li>
+<li>按角色分，输入由这几类组成：</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>角色</th>
+<th>是什么</th>
+<th>典型内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>system</td>
+<td>系统提示词</td>
+<td>角色、规则、输出风格，每次请求原样带着</td>
+</tr>
+<tr>
+<td>user</td>
+<td>你这次说的话</td>
+<td>提问、任务、贴的代码、塞的文件</td>
+</tr>
+<tr>
+<td>assistant</td>
+<td>模型以前说过的话</td>
+<td>对话历史、工具调用记录</td>
+</tr>
+<tr>
+<td>tool</td>
+<td>工具返回结果</td>
+<td>命令输出、文件内容、API 响应</td>
+</tr>
+</tbody></table>
+<ul>
+<li>在 AI 编码工具里，输入基本是这几样拼起来的：<ul>
+<li>工具自身的 system prompt（Claude Code、Hermes 这类工具都内置一大段规则）</li>
+<li>项目上下文（项目说明、文档、skills、被引用的文件）（有些工具默认就把一堆东西塞进来，你还未必知道）</li>
+<li>会话历史（之前的对话轮次，包括模型输出的内容，甚至思维链）</li>
+</ul>
+</li>
+<li>输入受上下文窗口限制，DeepSeek V4 系列是 1M，够塞下一本书。但窗口大不等于该塞满，塞得越多每次请求越贵，而且上下文一多模型容易忘记或注意力不集中，实际有用高效的部分只占 30% ~ 40% 窗口大小，要经常做上下文管理</li>
+</ul>
+<h3 id="1-3-输出的定义"><a href="#1-3-输出的定义" class="headerlink" title="1.3 输出的定义"></a>1.3 输出的定义</h3><ul>
+<li>输出是模型这一轮生成的所有 token，主要有三类：<ul>
+<li>content：最终答案正文</li>
+<li>reasoning_content：思维链</li>
+<li>工具调用 JSON（请求带 tools 时）</li>
+</ul>
+</li>
+<li>思考模式默认开启：DeepSeek 默认 effort 是 high，也就是说每次回答前模型都会先输出一大段推理过程，这部分全是输出计费，单价还是最贵的那档。思考模式默认开启这件事，好多人是第一次看账单才知道的</li>
+<li>这里有个省 token 的官方机制，很多人不知道：请求不带 tools 参数时，reasoning_content 不需要回传，即使传了也会被忽略、不会拼进上下文（官方文档原话）。但 AI 编码工具几乎都带 tools，所以思维链会进上下文，这是编码场景特有的开销来源</li>
+</ul>
+<h3 id="1-4-输入输出的分类"><a href="#1-4-输入输出的分类" class="headerlink" title="1.4 输入输出的分类"></a>1.4 输入输出的分类</h3><table>
+<thead>
+<tr>
+<th>分类维度</th>
+<th>分类</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>按角色</td>
+<td>system &#x2F; user &#x2F; assistant &#x2F; tool</td>
+<td>输入的不同来源</td>
+</tr>
+<tr>
+<td>按内容</td>
+<td>指令 &#x2F; 数据 &#x2F; 历史 &#x2F; 推理</td>
+<td>指令是任务，数据是材料，历史是对话，推理是思维链</td>
+</tr>
+<tr>
+<td>按计费</td>
+<td>命中缓存输入 &#x2F; 未命中输入 &#x2F; 输出</td>
+<td>三类价格差最大能到几十倍</td>
+</tr>
+</tbody></table>
+<h3 id="1-5-输入输出开销差异与原因"><a href="#1-5-输入输出开销差异与原因" class="headerlink" title="1.5 输入输出开销差异与原因"></a>1.5 输入输出开销差异与原因</h3><ul>
+<li>DeepSeek 官方当前定价（每 1M tokens，空闲时段价，2026-09 抓的官方中文定价页，以官方页为准）：</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>输入（缓存命中）</th>
+<th>输入（未命中）</th>
+<th>输出</th>
+<th>上下文长度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>deepseek-v4-flash</td>
+<td>0.05 元</td>
+<td>1.5 元</td>
+<td>4.5 元</td>
+<td>1M</td>
+</tr>
+<tr>
+<td>deepseek-v4-pro</td>
+<td>0.15 元</td>
+<td>4.5 元</td>
+<td>13.5 元</td>
+<td>1M</td>
+</tr>
+<tr>
+<td>deepseek-v4-flash-vision-exp</td>
+<td>0.05 元</td>
+<td>1.5 元</td>
+<td>4.5 元</td>
+<td>1M</td>
+</tr>
+</tbody></table>
+<ul>
+<li>顺带一提，deepseek-chat &#x2F; deepseek-reasoner 这两个旧模型名已经在 2026-07-24 弃用，现在只有 V4 系列。网上还飘着旧价格表的文章，别信</li>
+<li>看三个数字，得出三个结论：<ul>
+<li>缓存命中的输入约是未命中的 1&#x2F;30（flash 的 0.05 vs 1.5 元），命中缓存是最大头的省钱手段</li>
+<li>输出约是未命中输入的 3 倍（4.5 vs 1.5 元），输出是单价最贵的部分，思考模式的思维链还额外堆在这上面</li>
+<li>输入即使全部未命中也比输出便宜，所以”多塞点必要上下文让模型少猜”在单价上划算，前提是别塞没用的</li>
+</ul>
+</li>
+<li>为什么输出最贵？回到 prefill 和 decode 的原理：<ul>
+<li>prefill 处理输入，整段并行算，能吃满 GPU 并行度，单位 token 的算力成本低</li>
+<li>decode 生成输出，一次只能算一个 token，串行；每生成一个 token 还要读一遍越来越大的 KV cache，受内存带宽限制，单位 token 的算力成本高</li>
+<li>DeepSeek-V3 技术报告里写得很直白：decode 阶段每个专家只有很小的批量（通常 256 token 以内），<strong>瓶颈是内存访问而不是计算</strong></li>
+<li>说白了，输入可以批量打包处理，输出只能一个字一个字现写，贵是计算方式决定的</li>
+</ul>
+</li>
+<li>还有高峰 &#x2F; 空闲时段计费（DeepSeek 官方规则，北京时间口径）：<ul>
+<li>高峰：周一至周五 09:00-12:00 和 14:00-18:00（北京时间）</li>
+<li>空闲：其他所有时间，价格是高峰的一半</li>
+<li>对个人开发影响不大，但批量任务、CI 脚本挑空闲时段跑能省一半</li>
+</ul>
+</li>
+</ul>
+<h3 id="1-6-token-的分类与开销差异"><a href="#1-6-token-的分类与开销差异" class="headerlink" title="1.6 token 的分类与开销差异"></a>1.6 token 的分类与开销差异</h3><ul>
+<li>同一段内容，不同模型切出来的 token 数不一样，直接决定花多少钱</li>
+<li>DeepSeek 官方口径（Token &amp; Token Usage 文档）：<ul>
+<li>1 英文字符 ≈ 0.3 token</li>
+<li>1 中文字符 ≈ 0.6 token</li>
+<li>一个中文词、英文词、数字或符号通常算一个 token</li>
+</ul>
+</li>
+<li>注意口径差异：OpenAI 官方口径是 100 tokens 约 75 个英文单词、中文 1 字约 1-2 token。各家 tokenizer 不同，比例只能估算，实际以 usage 返回为准</li>
+<li>按字符数比，中文的 token 数是英文的 2 倍；但表达同样意思，中文文本通常短得多，谁更省不能一概而论，别凭感觉，用官方给的离线 tokenizer（deepseek_tokenizer.zip）实测，网页端还有图片 Token 计算器</li>
+<li>图片输入按尺寸换算 token（deepseek-v4-flash-vision-exp）：<ul>
+<li>图片会自动缩放：小图放大、大图缩到约 800×800 的总像素</li>
+<li>每张图上限 384 token，2000×2000 和 5000×5000 的图花的钱一样</li>
+<li>多张图每张独立计，按输入价计费</li>
+<li>一张截图 ≈ 384 token，按输入价计费（图片能否命中缓存，官方文档没明确说，别指望它享受文本缓存的折扣）</li>
+</ul>
+</li>
+<li>思维链 token：思考模式下 reasoning_content 按输出价计费，AI coding 里模型经常”想很久”，这部分开销不小</li>
+<li>小结：token 开销差异来自四个维度，语言（中&#x2F;英&#x2F;代码）、类型（文本&#x2F;图片）、阶段（输入&#x2F;输出）、缓存（命中&#x2F;未命中）。实操方法基本就是围绕这四个维度展开</li>
+</ul>
+<h2 id="第-2-章-缓存基础与缓存命中策略"><a href="#第-2-章-缓存基础与缓存命中策略" class="headerlink" title="第 2 章 缓存基础与缓存命中策略"></a>第 2 章 缓存基础与缓存命中策略</h2><h3 id="2-1-缓存的概念"><a href="#2-1-缓存的概念" class="headerlink" title="2.1 缓存的概念"></a>2.1 缓存的概念</h3><ul>
+<li>命中缓存的输入开销只要未命中的 1&#x2F;30，这一章把它讲透：缓存是什么、怎么命中、怎么失效</li>
+<li>上下文缓存（context caching）是什么：服务端把请求的前缀部分存下来，后续请求如果前缀相同，重叠部分直接从缓存取，不重新计算</li>
+<li>为什么能缓存：模型处理输入时，相同前缀的计算结果是确定的，中间结果（KV cache）可以复用。上一轮算过的东西，下一轮不用再算一遍</li>
+<li>省在哪：输入 token 按缓存命中价计费。flash 的命中输入 0.05 元&#x2F;1M vs 未命中 1.5 元&#x2F;1M（空闲时段），差了 30 倍</li>
+<li>DeepSeek 官方实现：Context Caching on Disk Technology（磁盘缓存），默认对所有用户开启，不用改任何代码（官方原话 “enabled by default for all users, allowing them to benefit without needing to modify their code”）</li>
+<li>命中状态在 usage 里看：prompt_cache_hit_tokens（命中）和 prompt_cache_miss_tokens（未命中），加起来就是输入总数</li>
+</ul>
+<h3 id="2-2-缓存的分层架构"><a href="#2-2-缓存的分层架构" class="headerlink" title="2.2 缓存的分层架构"></a>2.2 缓存的分层架构</h3><ul>
+<li>先纠正一个常见误解：缓存本身不分”系统 &#x2F; 项目 &#x2F; 会话”三层，这说法是拿应用层的上下文分类去套缓存</li>
+<li>缓存的粒度只有一个：<strong>前缀</strong>。请求的 messages 数组从头开始，前缀越稳定，能命中的部分越多</li>
+<li>那”系统 &#x2F; 项目 &#x2F; 会话”是什么？是编码工具在应用层拼 messages 数组时，上下文的三个来源。它们的稳定性，直接决定前缀稳不稳定：</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>上下文来源</th>
+<th>内容</th>
+<th>稳定性</th>
+<th>对缓存的影响</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>工具&#x2F;system 提示词</td>
+<td>工具内置规则、你的角色设定</td>
+<td>基本不变</td>
+<td>前缀最前面，最稳定，最容易命中</td>
+</tr>
+<tr>
+<td>项目上下文</td>
+<td>项目说明、文档、skills、被引用的文件</td>
+<td>较稳定</td>
+<td>中间部分，改了会导致断点之后全 miss</td>
+</tr>
+<tr>
+<td>会话历史</td>
+<td>对话轮次、工具结果、思维链</td>
+<td>一直在变</td>
+<td>尾部，每轮都在增长</td>
+</tr>
+</tbody></table>
+<ul>
+<li>所以”系统 &#x2F; 项目 &#x2F; 会话”是上下文的<strong>来源分层</strong>，不是缓存的<strong>机制分层</strong>。缓存眼里只有前缀匹配，没有这些概念</li>
+<li>各家 API 的缓存机制对比（具体数字以各家官方文档为准）：</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>DeepSeek</th>
+<th>OpenAI</th>
+<th>Anthropic</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>生效方式</td>
+<td>自动，无需改代码</td>
+<td>自动，无需改代码</td>
+<td>需要显式 cache_control 标记缓存点</td>
+</tr>
+<tr>
+<td>缓存位置</td>
+<td>磁盘缓存</td>
+<td>服务端前缀缓存</td>
+<td>标记点之间的前缀</td>
+</tr>
+<tr>
+<td>命中输入价格</td>
+<td>打折（约未命中 1&#x2F;30）</td>
+<td>读取约 0.1×，写入 1.25×</td>
+<td>读取约 0.1×，写入 1.25×（官方公告）</td>
+</tr>
+<tr>
+<td>最小可缓存前缀</td>
+<td>官方未给具体值</td>
+<td>1024 token（GPT-5.6+）</td>
+<td>1024&#x2F;2048 token（第三方资料）</td>
+</tr>
+</tbody></table>
+<ul>
+<li>三家都能省钱，DeepSeek 和 OpenAI 是”你什么都不用做，保持前缀稳定就行”；Anthropic 要自己在代码里声明缓存点，多一步配置。也就是说 DeepSeek 和 OpenAI 是开箱即用的，Anthropic 需要你主动设计缓存策略</li>
+</ul>
+<h3 id="2-3-缓存写入机制：前缀匹配"><a href="#2-3-缓存写入机制：前缀匹配" class="headerlink" title="2.3 缓存写入机制：前缀匹配"></a>2.3 缓存写入机制：前缀匹配</h3><ul>
+<li>先补一个概念：Sliding Window Attention（滑动窗口注意力，SWA）。普通注意力里，每个 token 要和序列里所有其它 token 算一遍注意力；SWA 把范围限制在固定窗口内，每个 token 只和它前面窗口大小内的 token 做注意力，窗口之外的历史不参与当前计算</li>
+<li>用 SWA 的好处是长序列下计算量和显存可控：序列再长，每个位置都只看窗口内，这是 Mistral 这类模型用它的原因</li>
+<li>它和缓存的关系：因为注意力只覆盖窗口内，缓存前缀的存储和匹配方式跟每个 token 依赖前面所有 token 的时代不一样了。官方文档的原话是：由于 SWA 机制，每条缓存前缀是一个独立的完整单元，后续请求只有在完整匹配缓存前缀单元时才能命中</li>
+<li>通俗地说，缓存不是一条从头到尾连续依赖的链，而是按单元组织的一批积木；命中检查就是我的请求前缀能不能完整盖住某个已落盘的单元</li>
+<li>这里和常见认知有个重要区别：<strong>不是任意前缀都能命中，必须是”缓存前缀单元”（cache prefix unit）的完全匹配</strong></li>
+<li>缓存单元什么时候被持久化（写入磁盘缓存）？官方给了三种时机：<ul>
+<li>请求边界持久化：每个请求会在 user 输入末尾和 model 输出末尾各产生一个缓存前缀单元</li>
+<li>公共前缀检测持久化：系统检测到多个请求有公共前缀时，把该公共前缀单独持久化为一个单元</li>
+<li>固定 token 间隔持久化：长输入、长输出按固定 token 间隔切出单元，避免长前缀因为永远到不了末尾而完全没法缓存</li>
+</ul>
+</li>
+<li>官方 Example 1（多轮对话）：第一轮发 A+B，第二轮发 A+B+C，第二轮完全匹配第一轮的单元 A+B，命中</li>
+<li>官方 Example 2（长文本问答）：第一轮 A+B，第二轮 A+C，第二轮匹配不上（A+C 不能完全匹配 A+B），不命中；但系统检测到公共前缀 A，把它持久化；第三轮发 A+D，命中 A</li>
+<li>从这两个例子能推出三个实用结论：<ul>
+<li>多轮对话天然吃缓存：system 和前面的轮次都不变，只有尾部在长，命中的部分随对话推进越来越大</li>
+<li>中间改一条消息，断点之后全废：前缀从改动处断开，后面的内容全部 miss</li>
+<li>系统提示词是前缀最前端，改一个字符，整条前缀从最前面开始全部 miss。这是 system prompt 必须保持稳定的直接原因</li>
+</ul>
+</li>
+</ul>
+<h3 id="2-4-TTL-与过期"><a href="#2-4-TTL-与过期" class="headerlink" title="2.4 TTL 与过期"></a>2.4 TTL 与过期</h3><ul>
+<li>DeepSeek 官方对缓存有效期的口径：<ul>
+<li>缓存是 best-effort 的，不保证 100% 命中率</li>
+<li>缓存构建需要数秒（第一次请求时构建，所以第一次请求必然是 miss）</li>
+<li>缓存不再被使用后会自动清除，通常在几小时到几天内</li>
+</ul>
+</li>
+<li>也就是说没有固定的 TTL 数字，是”用进废退”：你高频使用，缓存就一直在；隔几天不用，缓存可能已经被清了</li>
+<li>对比一下别家：OpenAI 官方口径是最近一次写入&#x2F;命中后至少 30 分钟（GPT-5.6+，旧模型约 5-10 分钟不活跃、最长 1 小时）；Anthropic 默认 5 分钟、扩展档 1 小时。DeepSeek 不给具体数字，只说几小时到几天，更宽松</li>
+<li>缓存只匹配输入的前缀部分，输出仍然是实时计算生成的，受 temperature 等参数影响，有随机性（官方原话，别以为命中缓存后输出也会被复用）</li>
+</ul>
+<h3 id="2-5-缓存失效的场景"><a href="#2-5-缓存失效的场景" class="headerlink" title="2.5 缓存失效的场景"></a>2.5 缓存失效的场景</h3><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>发生了什么</th>
+<th>对策</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>系统提示词更换</td>
+<td>前缀从最前端断开，几乎全 miss</td>
+<td>system 保持稳定，要变的内容尽量放尾部</td>
+</tr>
+<tr>
+<td>中间某条消息被改动</td>
+<td>断点之后全部 miss</td>
+<td>会话历史只追加、不修改</td>
+</tr>
+<tr>
+<td>上下文被压缩&#x2F;清空</td>
+<td>前缀整体变化，之前的缓存单元匹配不上</td>
+<td>压缩时尽量保留公共骨架（system + 不变的背景）</td>
+</tr>
+<tr>
+<td>长期不用</td>
+<td>缓存几小时到几天后自动清除</td>
+<td>高频任务保持活跃；隔很久重开任务，直接开新会话更省</td>
+</tr>
+<tr>
+<td>首次请求</td>
+<td>缓存还没构建，必然 miss</td>
+<td>别指望第一次就命中，连续操作才有缓存可吃</td>
+</tr>
+<tr>
+<td>切换模型</td>
+<td>缓存与模型绑定（官方未细说，谨慎理解）</td>
+<td>别在任务中途换模型，换模型就当缓存清零</td>
+</tr>
+</tbody></table>
+<ul>
+<li>总结一句话：缓存命中的核心操作是”让请求的前缀尽量稳定”</li>
+</ul>
+<h2 id="第-3-章-实践方法"><a href="#第-3-章-实践方法" class="headerlink" title="第 3 章 实践方法"></a>第 3 章 实践方法</h2><h3 id="3-1-诊断先行：先知道钱花在哪"><a href="#3-1-诊断先行：先知道钱花在哪" class="headerlink" title="3.1 诊断先行：先知道钱花在哪"></a>3.1 诊断先行：先知道钱花在哪</h3><ul>
+<li>前两章是原理，这一章全是能上手做的事。先别急着优化，先把账算清楚</li>
+<li>诊断入口有三个：<ul>
+<li>usage 字段：每次请求返回的 prompt_tokens &#x2F; prompt_cache_hit_tokens &#x2F; prompt_cache_miss_tokens &#x2F; completion_tokens，这是最细的账本</li>
+<li>平台的用量账单页：能看到按天的 token 消耗和费用曲线</li>
+<li>代理层统计：很多转发工具&#x2F;网关自带用量日志，能看到每次请求的明细</li>
+</ul>
+</li>
+<li>具体做法：拿几个典型任务跑一遍，重点看两个比例<ul>
+<li>命中比例 &#x3D; hit &#x2F; (hit + miss)：如果长期接近 0，说明你的使用方式根本没吃到缓存</li>
+<li>输出占比 &#x3D; completion &#x2F; total：如果输出占大头，说明模型话太多</li>
+</ul>
+</li>
+<li>账算明白了再动手，别凭感觉优化</li>
+</ul>
+<h3 id="3-2-从缓存命中角度省钱：防止缓存失效"><a href="#3-2-从缓存命中角度省钱：防止缓存失效" class="headerlink" title="3.2 从缓存命中角度省钱：防止缓存失效"></a>3.2 从缓存命中角度省钱：防止缓存失效</h3><ul>
+<li>缓存吃的是前缀稳定性。这一节全是围绕”让前缀别乱动”的操作</li>
+<li>保持 system 稳定：<ul>
+<li>系统提示词是前缀最前端，改一个字符全废</li>
+<li>会变的内容（日期、当前任务、临时要求）放 user 消息或对话尾部，别塞进 system</li>
+<li>工具自带的 system prompt 你管不了，但你自己加的角色设定、规则要克制，别动不动加一句</li>
+</ul>
+</li>
+<li>切任务就清理会话：<ul>
+<li>换个任务还在旧会话里继续，旧上下文全变成前缀的”历史包袱”，既占输入又破坏缓存</li>
+<li>新任务开新会话，前缀从干净的 system 开始，缓存命中率高得多</li>
+</ul>
+</li>
+<li>不中途切模型：<ul>
+<li>切换模型缓存基本清零（官方未细说，但别赌）</li>
+<li>一个任务从头到尾用一个模型，要换就换会话</li>
+</ul>
+</li>
+<li>会话历史只追加、不修改：<ul>
+<li>改中间一条消息，断点之后全部 miss</li>
+<li>需要修正时，追加一条新消息说明，别回头改</li>
+</ul>
+</li>
+<li>缓存过期后，与其重新发送不如先压缩：<ul>
+<li>隔很久再继续旧任务，旧缓存大概率已被清除（几小时到几天自动清），原样重发等于全 miss</li>
+<li>这时候不如先把旧对话总结成要点，用”总结 + 新任务描述”开新请求，输入更短、前缀更干净</li>
+<li>压缩的正确姿势：把 system + 不变的背景留下，把过程性的来回删掉，只留结论</li>
+</ul>
+</li>
+</ul>
+<h3 id="3-3-削减输入-token"><a href="#3-3-削减输入-token" class="headerlink" title="3.3 削减输入 token"></a>3.3 削减输入 token</h3><ul>
+<li>输入即使全 miss 也比输出便宜，但积少成多，对话一长输入才是大头</li>
+<li>写好文档和 skills，而不是每次现贴：<ul>
+<li>项目背景、技术约束、代码规范这类知识，沉淀成文档&#x2F;skills，需要时让模型按需读取</li>
+<li>每次把一大段背景贴进对话里，等于每轮都按原价付一次，还占上下文</li>
+<li>知识放外面，用到才读，是编码工具里最省输入 token 的习惯之一</li>
+</ul>
+</li>
+<li>不引入不必要的上下文：<ul>
+<li>别把整个仓库、整份文件丢给模型，它只需要相关的那几段</li>
+<li>引用文件时只给需要的部分，模型要更多再给</li>
+<li>无关的日志、旧代码、聊天记录，能不给就不给</li>
+</ul>
+</li>
+<li>删重复内容：上下文里别让同一段信息出现两遍（比如文档贴了一遍，又口头描述了一遍）</li>
+</ul>
+<h3 id="3-4-削减输出-token"><a href="#3-4-削减输出-token" class="headerlink" title="3.4 削减输出 token"></a>3.4 削减输出 token</h3><ul>
+<li>输出是单价最贵的部分（flash 输出 4.5 元&#x2F;1M vs 未命中输入 1.5 元&#x2F;1M），模型每多说一个字都是钱</li>
+<li>不引入无端增加输出的 skills 和指令：<ul>
+<li>有些 skills&#x2F;提示词会要求模型”详细解释每一步””给出多个方案对比”，这些都会放大输出</li>
+<li>按任务需要给输出约束：要结论就别要解释，要代码就别要注释（除非你确实需要注释）</li>
+</ul>
+</li>
+<li>明确输出格式：指定”只返回 JSON &#x2F; 只返回 diff &#x2F; 只给结论”，模型就不会发散</li>
+<li>控制思考模式的开销：<ul>
+<li>DeepSeek 思考模式默认开启且 effort 默认 high，思维链按输出计费（usage 里的 reasoning_tokens 单独列着，能看见自己想了多少）</li>
+<li>简单任务可以把 reasoning_effort 调低（low），复杂任务才开 high</li>
+<li>思维链是不带 tools 时不会拼进上下文，但编码工具基本都带 tools，这部分省不掉，只能靠调 effort</li>
+</ul>
+</li>
+<li>检查 max_tokens 上限：输出截断会浪费一半生成量（生成了但没用上），该给的上限给够，不该给的别超</li>
+</ul>
+<h3 id="3-5-会话管理与文档持久化"><a href="#3-5-会话管理与文档持久化" class="headerlink" title="3.5 会话管理与文档持久化"></a>3.5 会话管理与文档持久化</h3><ul>
+<li>单个会话别拖太长：<ul>
+<li>每次请求都重发全部历史，对话越长，每次请求越贵，输入呈线性增长</li>
+<li>长对话末尾，即使缓存全命中，命中的也是”越来越长的前缀”，实际花费还是涨</li>
+</ul>
+</li>
+<li>总结并开新会话：<ul>
+<li>会话到一定长度（比如输入接近几千 token 时），让模型把关键信息总结成一份文档</li>
+<li>开新会话，把总结作为新的上下文起点，前缀重新变得又短又干净</li>
+<li>这招对”越聊越贵”的问题立竿见影，也顺便解决了长对话里模型注意力被稀释的问题</li>
+</ul>
+</li>
+<li>文档持久化：<ul>
+<li>把结论、决策、代码要点写进项目文档，会话清空后信息还在</li>
+<li>下次需要时用文档代替”重新聊一遍”，输入更短、质量更高</li>
+</ul>
+</li>
+<li>必要时切换适合任务场景的模型：<ul>
+<li>简单任务（改个变量名、格式化、问个语法）用便宜小模型就够，别杀鸡用牛刀</li>
+<li>复杂任务（架构设计、疑难 bug）才上贵的大模型</li>
+<li>模型切换和会话切换一起做：新任务 + 新模型 + 新会话，三者配套</li>
+</ul>
+</li>
+</ul>
+<h3 id="3-6-用工具动态监控开销"><a href="#3-6-用工具动态监控开销" class="headerlink" title="3.6 用工具动态监控开销"></a>3.6 用工具动态监控开销</h3><ul>
+<li>光省不算账等于白省，监控是长期保持低开销的手段</li>
+<li>平台用量页：定期看 token 消耗曲线，异常飙升（比如某天突然翻倍）说明使用方式出了问题</li>
+<li>代理层日志：如果请求走转发工具&#x2F;网关，它的日志能看到每次请求的 hit&#x2F;miss 明细，比平台粒度更细</li>
+<li>自己写脚本：把 usage 字段落库，按项目&#x2F;任务维度统计，能看出哪个项目在烧钱</li>
+<li>监控发现的典型问题：<ul>
+<li>命中率骤降：多半是 system prompt 被改了，或者换了模型</li>
+<li>单次输入暴涨：某个文件被整个塞进了上下文</li>
+<li>输出暴涨：某个任务的要求让模型输出过多</li>
+</ul>
+</li>
+</ul>
+<h3 id="3-7-提示词本身瘦身"><a href="#3-7-提示词本身瘦身" class="headerlink" title="3.7 提示词本身瘦身"></a>3.7 提示词本身瘦身</h3><ul>
+<li>提示词的长度直接决定输入 token，每句话都要有目的</li>
+<li>删套话：请务必、非常重要、一定要认真，这类词不增加信息，模型也不会因为”务必”就更认真</li>
+<li>控制 few-shot 示例数量：2~5 个够用，每个示例都是 token，还可能有偏差</li>
+<li>指令和描述分开：任务指令写清楚，背景材料用分隔符标出来，别混在一起让模型读两遍</li>
+<li>精简的提示词反而更好用：模型对长提示词末尾的注意力本来就弱，短而准的提示词命中率更高</li>
+</ul>
+<h3 id="3-8-减少请求次数"><a href="#3-8-减少请求次数" class="headerlink" title="3.8 减少请求次数"></a>3.8 减少请求次数</h3><ul>
+<li>每次请求都有固定成本（上下文重发 + 输出），请求次数越少越省</li>
+<li>一次说清需求：把任务背景、要求、期望输出一次讲明白，别挤牙膏式一问一答<ul>
+<li>挤牙膏 5 轮 &#x3D; 5 次上下文重发 + 5 次输出，一次说清 &#x3D; 1 次</li>
+</ul>
+</li>
+<li>合并小任务：连续的小修改、小问题合并成一次请求处理，不要一个文件一个请求</li>
+<li>让模型批量产出：比如”把这三个函数都优化了”而不是”先优化第一个”</li>
+<li>注意别矫枉过正：任务太复杂时硬合并，模型容易做不好，返工更费 token。批量要适量</li>
+</ul>
+<h3 id="3-9-模型选型降级"><a href="#3-9-模型选型降级" class="headerlink" title="3.9 模型选型降级"></a>3.9 模型选型降级</h3><ul>
+<li>不同模型价格差好几倍，选型是最直接的省钱手段</li>
+<li>DeepSeek 当前定价对比（空闲时段未命中输入）：flash 1.5 元 vs pro 4.5 元，差 3 倍；输出 flash 4.5 元 vs pro 13.5 元，差 3 倍</li>
+<li>什么时候用贵的：<ul>
+<li>复杂推理、架构设计、疑难 bug：pro 的准确率值这个差价</li>
+<li>简单任务（改代码风格、查语法、写文案）：flash 完全够用</li>
+</ul>
+</li>
+<li>工具里一般都能按任务配置模型：日常小任务走便宜档，关键任务手动切贵档</li>
+<li>选型降级和会话管理要配套：换模型就当缓存清零，别在一个会话里来回横跳</li>
+</ul>
+<h3 id="3-10-多模态输入开销"><a href="#3-10-多模态输入开销" class="headerlink" title="3.10 多模态输入开销"></a>3.10 多模态输入开销</h3><ul>
+<li>图片按输入 token 计费，deepseek-v4-flash-vision-exp 每张图上限 384 token（缩放后）</li>
+<li>384 token 什么概念：按 DeepSeek 官方换算（1 中文字符 ≈ 0.6 token），约等于 640 个中文字，还享受不到文本缓存折扣</li>
+<li>什么时候该贴图：<ul>
+<li>截图、UI 布局、图表、报错画面：图比文字描述准确，值得贴</li>
+<li>能从文字&#x2F;代码表达清楚的：别贴，直接给文本</li>
+</ul>
+</li>
+<li>一张图只算一次：同一张图在一个请求里只算一张的 token，多张图每张独立计</li>
+<li>对编码场景：报错信息优先贴文本（错误信息、堆栈），需要看界面布局才贴截图</li>
+</ul>
+<h3 id="3-11-DeepSeek-Harness-里的省钱实践"><a href="#3-11-DeepSeek-Harness-里的省钱实践" class="headerlink" title="3.11 DeepSeek Harness 里的省钱实践"></a>3.11 DeepSeek Harness 里的省钱实践</h3><ul>
+<li>前面几节是通用做法，这一节拿 DeepSeek Harness（DSH）具体说一遍。DSH 是 agent harness 类的编码工具，官方文档里也在开发者预览阶段，用 DeepSeek 模型做后端，也就是这篇文章运行所在的这个环境</li>
+<li>会话隔离：一个任务一个会话，任务做完开新会话。DSH 的会话可以切换工作目录、继续之前的对话，但别图省事在旧会话里开新任务，旧上下文全变成前缀的历史包袱，输入和缓存两头亏</li>
+<li>skills 按需加载：DSH 的 skills 不常驻每次请求，用到才加载完整内容。把反复要用的知识（项目规范、常用命令、代码风格）写成 skill，而不是每次手动贴一大段，能省下大量重复的输入 token</li>
+<li>子代理隔离上下文：独立任务（调研、翻译、批量处理）派给 subagent 在后台跑，主会话只拿结果摘要，工具执行的细节输出不会全部回填主会话，上下文就不会被撑爆</li>
+<li>文件按需读取：用 read &#x2F; glob &#x2F; grep 精准拿内容，别让模型把整个仓库读进上下文。DSH 里工具结果会回填到上下文，读多少花多少，一次整读目录和精准读取差的可能就是几千 token</li>
+<li>goal 管理长任务：跨轮的长目标用 goal 记录下来，后续轮次不用每轮重述任务背景；阶段产出写进文件而不是堆在对话里，需要时再读</li>
+<li>开销监控：DSH 底层走 DeepSeek API，账单在 DeepSeek 平台的用量页看。如果发现某轮输入异常大，先查是不是有文件被整读、或者工具输出回填过多</li>
+</ul>
+
+    </div>
+    <footer class="article-footer">
+        <blockquote class="article-copyright">
+    <p><strong><span class="icon-user icon"></span>本文作者：</strong>Chieko3020</p>
+    <p><strong><span class="icon-link icon"></span>本文链接：</strong><a href="https://chieko3020.xyz/2026/09/01/AI%20Coding%20%E4%B8%AD%E5%A6%82%E4%BD%95%E8%8A%82%E7%9C%81%20Token/">https://chieko3020.xyz/2026/09/01/AI%20Coding%20%E4%B8%AD%E5%A6%82%E4%BD%95%E8%8A%82%E7%9C%81%20Token/</a></p>
+    <p><strong><span class="icon-pencil icon"></span>本文标题：</strong>「AI Coding 中如何节省 Token」</p>
+    <p><strong><span class="icon-calendar icon"></span>本文发布时间：</strong>2026-09-01 13:02:50</p>
+    <p><strong><span class="icon-calendar icon"></span>本文更新时间：</strong>2026-09-01 13:02:50</p>
+    <p><strong><span class="icon-copyright icon"></span>本文版权：</strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" rel="noopener nofollow noreferrer" target="_blank"><span class="icon-creative-commons"></span>BY-NC-SA</a> 许可协议。转载请注明出处！</p>
+    <span class="icon-creative-commons article-copyright-bg"></span>
+  </blockquote>
+        <a data-aos="zoom-in" href="/2026/09/01/AI%20Coding%20%E4%B8%AD%E5%A6%82%E4%BD%95%E8%8A%82%E7%9C%81%20Token/#comments" class="article-comment-link">
+          <span class="post-comments-count twikoo-comment-count" data-path="/2026/09/01/AI%20Coding%20%E4%B8%AD%E5%A6%82%E4%BD%95%E8%8A%82%E7%9C%81%20Token/" itemprop="commentCount"></span>
+          留言
+        </a>
+        <a class="article-category-link" href="/categories/%E5%8F%AA%E5%B1%9E%E4%BA%8E%E4%BD%A0%E7%9A%84%E5%B0%8F%E5%A6%99%E6%8B%9B-br-%E7%9C%8B%E4%BC%BC%E6%9C%89%E7%94%A8%E5%AE%9E%E5%88%99%E6%B2%A1%E7%94%A8/" title="只属于你的小妙招 看似有用实则没用" data-aos="zoom-in">只属于你的小妙招 <br> 看似有用实则没用</a>
+
+        <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item" data-aos="zoom-in"><a class="article-tag-list-link" href="/tags/%E4%BD%A0%E7%9F%A5%E9%81%93%E5%90%97/" rel="tag" title="你知道吗">你知道吗</a></li></ul>
+
+    </footer>
+  </div>
+    <nav id="article-nav" aria-label="Article navigation" data-aos="fade-up">
+    <div class="article-nav-link-wrap right">
+        <img data-src="/images/%E7%94%BB%E5%BB%8A/pixiv/124905855_p0.webp" data-sizes="auto" alt="AI/LLM 的基础概念和常识" class="lazyload">
+      <a href="/2026/08/31/AI-LLM%20%E7%9A%84%E5%9F%BA%E7%A1%80%E6%A6%82%E5%BF%B5%E5%92%8C%E9%80%9A%E7%94%A8%E7%B4%A0%E5%85%BB/" aria-label="后一篇: AI/LLM 的基础概念和常识"  title="后一篇: AI/LLM 的基础概念和常识"></a>
+      <div class="article-nav-caption">后一篇</div>
+      <h3 class="article-nav-title">
+          AI/LLM 的基础概念和常识
+      </h3>
+    </div>
+  </nav>
+
+</article>
+
+  <section id="comments" data-aos="fade-up">
+    <div class="comment-header">
+        
+      <h2 class="comment-title"></h2>
+      <div class="comment-selector">
+        <div class="comment-selector-wrap">
+            <div class="selector-item" data-selector="twikoo">
+              <span>twikoo</span>
+            </div>
+        </div>
+      </div>
+    </div>
+    <div class="comment-content">
+          <div class="comment twikoo-comment" data-aos="fade-up"
+            id="twikoo-comment">
+          </div>
+    </div>
+  </section>
+
+</section>
+        </div>
+        <footer id="footer" aria-label="Site footer">
+  <div style="width: 100%; overflow: hidden">
+    <div class="footer-line"></div>
+  </div>
+  <div id="footer-info">
+    <div>
+      <span class="icon-copyright"></span>
+        2025-2026
+        <span class="footer-info-sep rotate"></span>
+      Chieko3020
+    </div>
+      <div>
+        基于&nbsp;<a href="https://hexo.io/" rel="noopener nofollow noreferrer" target="_blank">Hexo</a>&nbsp;
+        Theme.<a href="https://github.com/D-Sketon/hexo-theme-reimu" rel="noopener nofollow noreferrer" target="_blank">Reimu</a>
+      </div>
+      <div>
+        <span class="icon-brush"></span>
+        338k
+        &nbsp;|&nbsp;
+        <span class="icon-coffee"></span>
+        22:10
+      </div>
+      <div class="footer-beian">
+        <a target="_blank" rel="noopener nofollow noreferrer" href="https://beian.miit.gov.cn">闽ICP备2025117501号</a>
+      </div>
+      <div class="footer-beian">
+        <img
+          style="object-fit: contain;margin-right: 2px;"
+          src="https://icp.gov.moe/images/ico64.png"
+          alt=""
+          width="24"
+          height="24"
+        />
+        <a target="_blank" rel="noopener nofollow noreferrer" href="https://icp.gov.moe/?keyword=20258787">萌ICP备20258787号</a>
+      </div>
+      <div>
+        <span class="icon-eye"></span>
+        <span id="busuanzi_container_site_pv">总访问量&nbsp;<span id="busuanzi_value_site_pv"></span></span>
+        &nbsp;|&nbsp;
+        <span class="icon-user"></span>
+        <span id="busuanzi_container_site_uv">总访客量&nbsp;<span id="busuanzi_value_site_uv"></span></span>
+      </div>
+  </div>
+</footer>
+
+          <div class="sidebar-top">
+            <div class="sidebar-top-taichi rotate"></div>
+            <div class="arrow-up"></div>
+          </div>
+        <div id="mask" class="hide"></div>
+      </div>
+      <nav id="mobile-nav" aria-label="Mobile navigation">
+  <div class="sidebar-wrap">
+        <div class="sidebar-toc-sidebar"><h3 class="toc-title">文章目录</h3>
+<div class="sidebar-toc-wrapper toc-div-class" >
+    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#AI-Coding-%E4%B8%AD%E5%A6%82%E4%BD%95%E8%8A%82%E7%9C%81-Token"><span class="toc-number">1.</span> <span class="toc-text">AI Coding 中如何节省 Token</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC-1-%E7%AB%A0-%E8%AE%A1%E8%B4%B9%E6%A0%87%E5%87%86"><span class="toc-number">1.1.</span> <span class="toc-text">第 1 章 计费标准</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E4%B8%80%E6%AC%A1%E5%AF%B9%E8%AF%9D%E5%8F%91%E7%94%9F%E4%BA%86%E4%BB%80%E4%B9%88"><span class="toc-number">1.1.1.</span> <span class="toc-text">1.1 一次对话发生了什么</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E8%BE%93%E5%85%A5%E7%9A%84%E5%AE%9A%E4%B9%89%E4%B8%8E%E7%BB%84%E6%88%90"><span class="toc-number">1.1.2.</span> <span class="toc-text">1.2 输入的定义与组成</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-%E8%BE%93%E5%87%BA%E7%9A%84%E5%AE%9A%E4%B9%89"><span class="toc-number">1.1.3.</span> <span class="toc-text">1.3 输出的定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-%E8%BE%93%E5%85%A5%E8%BE%93%E5%87%BA%E7%9A%84%E5%88%86%E7%B1%BB"><span class="toc-number">1.1.4.</span> <span class="toc-text">1.4 输入输出的分类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-5-%E8%BE%93%E5%85%A5%E8%BE%93%E5%87%BA%E5%BC%80%E9%94%80%E5%B7%AE%E5%BC%82%E4%B8%8E%E5%8E%9F%E5%9B%A0"><span class="toc-number">1.1.5.</span> <span class="toc-text">1.5 输入输出开销差异与原因</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-6-token-%E7%9A%84%E5%88%86%E7%B1%BB%E4%B8%8E%E5%BC%80%E9%94%80%E5%B7%AE%E5%BC%82"><span class="toc-number">1.1.6.</span> <span class="toc-text">1.6 token 的分类与开销差异</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC-2-%E7%AB%A0-%E7%BC%93%E5%AD%98%E5%9F%BA%E7%A1%80%E4%B8%8E%E7%BC%93%E5%AD%98%E5%91%BD%E4%B8%AD%E7%AD%96%E7%95%A5"><span class="toc-number">1.2.</span> <span class="toc-text">第 2 章 缓存基础与缓存命中策略</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E7%BC%93%E5%AD%98%E7%9A%84%E6%A6%82%E5%BF%B5"><span class="toc-number">1.2.1.</span> <span class="toc-text">2.1 缓存的概念</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E7%BC%93%E5%AD%98%E7%9A%84%E5%88%86%E5%B1%82%E6%9E%B6%E6%9E%84"><span class="toc-number">1.2.2.</span> <span class="toc-text">2.2 缓存的分层架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E7%BC%93%E5%AD%98%E5%86%99%E5%85%A5%E6%9C%BA%E5%88%B6%EF%BC%9A%E5%89%8D%E7%BC%80%E5%8C%B9%E9%85%8D"><span class="toc-number">1.2.3.</span> <span class="toc-text">2.3 缓存写入机制：前缀匹配</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-TTL-%E4%B8%8E%E8%BF%87%E6%9C%9F"><span class="toc-number">1.2.4.</span> <span class="toc-text">2.4 TTL 与过期</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-%E7%BC%93%E5%AD%98%E5%A4%B1%E6%95%88%E7%9A%84%E5%9C%BA%E6%99%AF"><span class="toc-number">1.2.5.</span> <span class="toc-text">2.5 缓存失效的场景</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC-3-%E7%AB%A0-%E5%AE%9E%E8%B7%B5%E6%96%B9%E6%B3%95"><span class="toc-number">1.3.</span> <span class="toc-text">第 3 章 实践方法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E8%AF%8A%E6%96%AD%E5%85%88%E8%A1%8C%EF%BC%9A%E5%85%88%E7%9F%A5%E9%81%93%E9%92%B1%E8%8A%B1%E5%9C%A8%E5%93%AA"><span class="toc-number">1.3.1.</span> <span class="toc-text">3.1 诊断先行：先知道钱花在哪</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E4%BB%8E%E7%BC%93%E5%AD%98%E5%91%BD%E4%B8%AD%E8%A7%92%E5%BA%A6%E7%9C%81%E9%92%B1%EF%BC%9A%E9%98%B2%E6%AD%A2%E7%BC%93%E5%AD%98%E5%A4%B1%E6%95%88"><span class="toc-number">1.3.2.</span> <span class="toc-text">3.2 从缓存命中角度省钱：防止缓存失效</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E5%89%8A%E5%87%8F%E8%BE%93%E5%85%A5-token"><span class="toc-number">1.3.3.</span> <span class="toc-text">3.3 削减输入 token</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E5%89%8A%E5%87%8F%E8%BE%93%E5%87%BA-token"><span class="toc-number">1.3.4.</span> <span class="toc-text">3.4 削减输出 token</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-5-%E4%BC%9A%E8%AF%9D%E7%AE%A1%E7%90%86%E4%B8%8E%E6%96%87%E6%A1%A3%E6%8C%81%E4%B9%85%E5%8C%96"><span class="toc-number">1.3.5.</span> <span class="toc-text">3.5 会话管理与文档持久化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-6-%E7%94%A8%E5%B7%A5%E5%85%B7%E5%8A%A8%E6%80%81%E7%9B%91%E6%8E%A7%E5%BC%80%E9%94%80"><span class="toc-number">1.3.6.</span> <span class="toc-text">3.6 用工具动态监控开销</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-7-%E6%8F%90%E7%A4%BA%E8%AF%8D%E6%9C%AC%E8%BA%AB%E7%98%A6%E8%BA%AB"><span class="toc-number">1.3.7.</span> <span class="toc-text">3.7 提示词本身瘦身</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-8-%E5%87%8F%E5%B0%91%E8%AF%B7%E6%B1%82%E6%AC%A1%E6%95%B0"><span class="toc-number">1.3.8.</span> <span class="toc-text">3.8 减少请求次数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-9-%E6%A8%A1%E5%9E%8B%E9%80%89%E5%9E%8B%E9%99%8D%E7%BA%A7"><span class="toc-number">1.3.9.</span> <span class="toc-text">3.9 模型选型降级</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-10-%E5%A4%9A%E6%A8%A1%E6%80%81%E8%BE%93%E5%85%A5%E5%BC%80%E9%94%80"><span class="toc-number">1.3.10.</span> <span class="toc-text">3.10 多模态输入开销</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-11-DeepSeek-Harness-%E9%87%8C%E7%9A%84%E7%9C%81%E9%92%B1%E5%AE%9E%E8%B7%B5"><span class="toc-number">1.3.11.</span> <span class="toc-text">3.11 DeepSeek Harness 里的省钱实践</span></a></li></ol></li></ol></li></ol>
+</div>
+</div>
+        <div class="sidebar-common-sidebar hidden"><div class="sidebar-author">
+  <img data-src="/avatar/avatar.webp" data-sizes="auto" alt="Chieko3020" class="lazyload">
+  <div class="sidebar-author-name">Chieko3020</div>
+  <div class="sidebar-description">这并非约束我的规则<br>而是我对她的礼仪</div>
+</div>
+<div class="sidebar-state">
+  <div class="sidebar-state-article">
+    <div>文章</div>
+    <div class="sidebar-state-number">16</div>
+  </div>
+  <div class="sidebar-state-category">
+    <div>分类</div>
+    <div class="sidebar-state-number">2</div>
+  </div>
+  <div class="sidebar-state-tag">
+    <div>标签</div>
+    <div class="sidebar-state-number">2</div>
+  </div>
+</div>
+<div class="sidebar-social" >
+    <div class="icon-github sidebar-social-icon">
+      <a href=https://github.com/Chieko3020 itemprop="url" target="_blank" aria-label="github" rel="noopener nofollow noreferrer"></a>
+    </div>
+    <div class="icon-bilibili sidebar-social-icon">
+      <a href=https://space.bilibili.com/165313953 itemprop="url" target="_blank" aria-label="bilibili" rel="noopener nofollow noreferrer"></a>
+    </div>
+</div>
+<div class="sidebar-menu">
+      <div class="sidebar-menu-link-wrap">
+        <a class="sidebar-menu-link-dummy" href="/" aria-label="首页"></a>
+          <div class="sidebar-menu-icon icon ">
+                <img src="/images/Website_Config/loading/loading.webp" alt="home icon" style="width: 1em;">
+          </div>
+        <div class="sidebar-menu-link">首页</div>
+      </div>
+      <div class="sidebar-menu-link-wrap">
+        <a class="sidebar-menu-link-dummy" href="/archives" aria-label="归档"></a>
+          <div class="sidebar-menu-icon icon ">
+                <img src="/images/Website_Config/loading/loading.webp" alt="archives icon" style="width: 1em;">
+          </div>
+        <div class="sidebar-menu-link">归档</div>
+      </div>
+      <div class="sidebar-menu-link-wrap">
+        <a class="sidebar-menu-link-dummy" href="/about" aria-label="关于"></a>
+          <div class="sidebar-menu-icon icon ">
+                <img src="/images/Website_Config/loading/loading.webp" alt="about icon" style="width: 1em;">
+          </div>
+        <div class="sidebar-menu-link">关于</div>
+      </div>
+      <div class="sidebar-menu-link-wrap">
+        <a class="sidebar-menu-link-dummy" href="/friend" aria-label="友链"></a>
+          <div class="sidebar-menu-icon icon ">
+                <img src="/images/Website_Config/loading/loading.webp" alt="friend icon" style="width: 1em;">
+          </div>
+        <div class="sidebar-menu-link">友链</div>
+      </div>
+</div>
+</div>
+  </div>
+      <div class="sidebar-btn-wrapper">
+        <div class="sidebar-toc-btn current"></div>
+        <div class="sidebar-common-btn"></div>
+      </div>
+</nav>
+
+    </div>
+      <div class="site-search">
+        <div class="reimu-popup popup">
+          <div class="reimu-search">
+            <div class="reimu-search-input-icon"></div>
+            <div id="reimu-search-input"></div>
+            <div class="popup-btn-close"></div>
+          </div>
+          <div class="reimu-results">
+            <div id="reimu-stats"></div>
+            <div id="reimu-hits"></div>
+            <div id="reimu-pagination" class="reimu-pagination"></div>
+          </div>
+          <img class="reimu-bg" src="/images/Website_Config/search_background/Background_scenery_default.webp" loading="lazy" decoding="async" fetchpriority="low"/>
+        </div>
+      </div>
+    
+<script src="https://npm.webcache.cn/lazysizes@5.3.2/lazysizes.min.js" integrity="sha384-3gT&#x2F;vsepWkfz&#x2F;ff7PpWNUeMzeWoH3cDhm&#x2F;A8jM7ouoAK0&#x2F;fP&#x2F;9bcHHR5kHq2nf+e" crossorigin="anonymous"></script>
+
+
+<script src="https://npm.webcache.cn/clipboard@2.0.11/dist/clipboard.min.js" integrity="sha384-J08i8An&#x2F;QeARD9ExYpvphB8BsyOj3Gh2TSh1aLINKO3L0cMSH2dN3E22zFoXEi0Q" crossorigin="anonymous"></script>
+
+
+  
+<script src="https://npm.webcache.cn/material-theme@1.0.0/dist/material-theme.umd.js" integrity="sha384-vLev0II0HKFaxkcm+&#x2F;7kX5IGwVFBASkGchU311wmU&#x2F;veIj2bB0UcBkQbW6yw2asK" crossorigin="anonymous"></script>
+
+
+
+<script src="/js/script.js"></script>
+
+
+  
+<script src="/js/aos.js"></script>
+
+  <script>
+    var aosInit = () => {
+      AOS.init({
+        duration: 1000,
+        easing: "ease",
+        once: true,
+        offset: 50,
+      });
+    };
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', aosInit);
+    } else {
+      aosInit();
+    }
+  </script>
+
+
+<script src="/js/pjax_script.js" data-pjax></script>
+
+
+  
+<script src="/js/generator_search.js" defer></script>
+
+
+
+  <script>
+    var setupFirework = () => {
+      if (!false || !window.matchMedia('(max-width: 768px)').matches) {
+        window.firework && window.firework(JSON.parse('{"excludeElements":["a","button"],"particles":[{"shape":"circle","move":["emit"],"easing":"easeOutExpo","colors":["var(--red-1)","var(--red-2)","var(--red-3)","var(--red-4)"],"number":20,"duration":[1200,1800],"shapeOptions":{"radius":[16,32],"alpha":[0.3,0.5]}},{"shape":"circle","move":["diffuse"],"easing":"easeOutExpo","colors":["var(--red-0)"],"number":1,"duration":[1200,1800],"shapeOptions":{"radius":20,"alpha":[0.2,0.5],"lineWidth":6}}]}'));
+      }
+    }
+  </script>
+  
+<script src="https://npm.webcache.cn/mouse-firework@0.1.1/dist/index.umd.js" integrity="sha384-8LyaidD9GPxQQgLJO&#x2F;WRw&#x2F;O2h3BoNq&#x2F;ApI&#x2F;ecpvM6RsrCz2qP2ppBXUKihP4V&#x2F;2d" crossorigin="anonymous" onload="setupFirework()" defer></script>
+
+
+  
+<script src="https://npm.webcache.cn/theme-shokax-pjax@0.0.3/dist/index.umd.js" integrity="sha384-xneY1WY8hOfUzswrE4CrYq35N4BdVcxqxwHPr9zawE&#x2F;jMSCxD+jAPU55x&#x2F;jj3wlf" crossorigin="anonymous"></script>
+
+  
+<script src="/js/pjax.js"></script>
+
+
+
+
+
+<div id="lazy-script">
+  <div>
+      
+      
+      <script data-pjax>
+        window.REIMU_POST = {
+          author: "Chieko3020",
+          title: "AI Coding 中如何节省 Token",
+          url: "https://chieko3020.xyz/2026/09/01/AI%20Coding%20%E4%B8%AD%E5%A6%82%E4%BD%95%E8%8A%82%E7%9C%81%20Token/",
+          excerpt: "在 AI 编码中节省 token 的方法论：从计费原理、缓存命中到上下文与会话管理的实操",
+          description: "",
+          stripContent: "AI Coding 中如何节省 Token 文章分三大块：先讲清楚钱是按什么算的，再讲缓存这个省钱大头（缓存基础与缓存命中策略），最后是实操方法 参考来源以 DeepSeek 官方文档为主，具体价格数字会过时，以官方定价页为准。抓取时间 2026 年 9 月  第 1 章 计费标准1.1 一次对话发生了什么 要省钱先得知道钱花在哪。一次对话到底发生了什么，从头拆一遍 一次对话落到工程上就是一次 HTTP 请求，客户端把一整段 messages 数组发过去，服务端算完把结果发回来 关键事实：模型是",
+          date: "Tue Sep 01 2026 13:02:50 GMT+0800",
+          updated: "Tue Sep 01 2026 13:02:50 GMT+0800",
+          cover: "/images/%E7%94%BB%E5%BB%8A/pixiv/104391353_p0.webp",
+        };
+      </script>
+        
+<script src="/js/insert_highlight.js" data-pjax></script>
+
+      
+<script src="/js/tabs.js" data-pjax defer></script>
+
+      <script type="module" data-pjax>
+        (async () => {
+          const PhotoSwipeLightbox = (await safeImport("https://npm.webcache.cn/photoswipe@5.4.4/dist/photoswipe-lightbox.esm.min.js", "sha384-DiL6M/gG+wmTxmCRZyD1zee6lIhawn5TGvED0FOh7fXcN9B0aZ9dexSF/N6lrZi/")).default;
+          const initPswp = (gallery, children) => {
+            if (_$$(`${gallery} ${children}`).length > 0) {
+              new PhotoSwipeLightbox({
+                gallery,
+                children,
+                pswpModule: () => safeImport("https://npm.webcache.cn/photoswipe@5.4.4/dist/photoswipe.esm.min.js", "sha384-WkkO3GCmgkC3VQWpaV8DqhKJqpzpF9JoByxDmnV8+oTJ7m3DfYEWX1fu1scuS4+s")
+              }).init();
+            }
+          }
+          const pswp = () => {
+            initPswp('.article-entry', 'a.article-gallery-item');
+            initPswp('.article-gallery', 'a.article-gallery-item');
+          }
+          pswp();
+        })();
+      </script>
+        
+
+<script data-pjax>
+  var loadScript = (src, integrity) => {
+    const script = document.createElement('script');
+    script.src = src;
+    if (integrity) script.integrity = integrity;
+    script.crossOrigin = 'anonymous';
+    return script;
+  };
+
+  var commentConfigKeys = ["twikoo"];
+  var commentConfig = {
+    twikoo: {
+      enable: true,
+      load: async () => {
+        const container = document.querySelector('.twikoo-comment');
+        if (!container) return;
+        container.style.display = 'block';
+
+        const script = loadScript(
+          'https://npm.webcache.cn/twikoo@1.6.44/dist/twikoo.all.min.js',
+          'sha384-kwWLC0HjeZZnVPqCJ1AncI8tsk+kQqF9TbAmCclcc9Z0hGkfgHRzeQZxmdmZhE0K'
+        );
+
+        script.onload = () => {
+          if (window.twikoo) {
+            twikoo.init({
+              envId: 'https://comment.chieko3020.xyz',
+              el: '.twikoo-comment',
+              region: '',
+              lang: document.documentElement.lang || 'en',
+            });
+
+            twikoo.getCommentsCount({
+              envId: 'https://comment.chieko3020.xyz',
+              region: '',
+              urls: [
+                '/live2d/README.html'
+              ],
+              includeReply: false
+            }).then((res) => {
+              _$('.twikoo-comment-count').innerText = res[0].count;
+            }).catch((err) => {
+              console.error(err);
+            });
+          }
+        } 
+        document.head.appendChild(script);
+      }
+    },
+  }
+  commentConfig.enable = commentConfigKeys.some(key => commentConfig[key].enable);
+
+  var defaultComment = '';
+  if (commentConfig.enable) {
+    // 1. 首先检查localStorage中是否有保存的评论类型
+    var savedCommentType = localStorage.getItem('commentType');
+    
+    // 2. 如果localStorage中有值且对应的评论系统可用，就使用它
+    if (savedCommentType) {
+      if (commentConfig[savedCommentType]?.enable) {
+        defaultComment = savedCommentType;
+      }
+    }
+    
+    // 3. 如果localStorage无效，检查配置的默认评论系统
+    if (!defaultComment) {
+      var configDefault = 'waline';
+      if (commentConfig[configDefault]?.enable) {
+        defaultComment = configDefault;
+      }
+    }
+    
+    // 4. 如果前两项都无效，按指定顺序找到第一个可用的评论系统
+    if (!defaultComment) {
+      defaultComment = commentConfigKeys.find(sys => commentConfig[sys].enable) || '';
+    }
+  }
+  function loadComments() {
+    if (!commentConfig.enable) return;
+    const loadedComments = {
+      valine: false,
+      waline: false,
+      twikoo: false,
+      gitalk: false,
+      giscus: false
+    };
+
+    // 隐藏所有评论容器
+    const hideAllComments = () => {
+      const commentContainers = document.querySelectorAll('.comment');
+      commentContainers.forEach(container => {
+        container.style.display = 'none';
+      });
+    };
+
+    // 按需加载评论系统
+    const loadCommentSystem = (type) => {
+      if (loadedComments[type]) {
+        // 如果已加载，只需显示对应容器
+        document.querySelector(`.${type}-comment`).style.display = 'block';
+        return;
+      }
+
+      // 根据类型加载对应的脚本
+      commentConfig[type]?.load();
+      loadedComments[type] = true;
+    };
+
+    // 评论组件选择器
+    const changeActiveCommentItems = (item) => {
+      const commentItems = document.querySelectorAll('.selector-item');
+      for (let i = 0; i < commentItems.length; i++) {
+        commentItems[i].classList.remove('active');
+      }
+      item.classList.add('active');
+
+      // 获取要加载的评论系统类型
+      const commentType = item.getAttribute('data-selector');
+
+      // 隐藏所有评论系统
+      hideAllComments();
+
+      // 加载选中的评论系统
+      loadCommentSystem(commentType);
+    };
+
+    const commentInit = () => {
+      // 评论组件选择器点击事件
+      const commentItems = document.querySelectorAll('.selector-item');
+      for (let item of commentItems) {
+        item.addEventListener('click', () => {
+          // 保存选择器状态
+          const commentType = item.getAttribute('data-selector');
+          window.localStorage.setItem('commentType', commentType);
+          // 切换选中状态
+          changeActiveCommentItems(item);
+        });
+      }
+
+      // 检查是否需要加载默认评论系统
+      if (defaultComment) {
+        const defaultSelectorItem = document.querySelector(`[data-selector="${defaultComment}"]`);
+        if (!defaultSelectorItem) return;
+        defaultSelectorItem.style.display = 'block';
+        defaultSelectorItem.classList.add('active');
+        loadCommentSystem(defaultComment);
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', commentInit);
+    } else {
+      commentInit();
+    }
+  };
+  loadComments();
+</script>
+
+  </div>
+</div>
+
+
+  <script>
+    console.log(String.raw`%c 
+ ______     ______     __     __    __     __  __    
+/\  == \   /\  ___\   /\ \   /\ "-./  \   /\ \/\ \   
+\ \  __<   \ \  __\   \ \ \  \ \ \-./\ \  \ \ \_\ \  
+ \ \_\ \_\  \ \_____\  \ \_\  \ \_\ \ \_\  \ \_____\ 
+  \/_/ /_/   \/_____/   \/_/   \/_/  \/_/   \/_____/ 
+                                                  
+`,'color: #ff5252;')
+    console.log('%c Theme.Reimu v' + '1.12.3' + ' %c https://github.com/D-Sketon/hexo-theme-reimu ', 'color: white; background: #ff5252; padding:5px 0;', 'padding:4px;border:1px solid #ff5252;')
+  </script>
+  
+
+<script data-pjax>
+  var updateTime = _$('#post-update-time')?.innerHTML;
+
+  if (updateTime) {
+    const update = new Date(updateTime);
+    const now = new Date();
+    const diff = now - update;
+    const days = diff / 86400000;
+    const { daysAgo, message: template } = window.REIMU_CONFIG.outdate;
+    if (days >= daysAgo) {
+      let message = `This article was last updated on ${updateTime}. Please note that the content may no longer be applicable.`;
+      if (typeof template === 'string') {
+        message = template.replace(/{time}/, updateTime);
+      } else if (typeof template === 'object') {
+        const lang = document.documentElement.lang;
+        const messageKey = Object.keys(template).find(key => key.toLowerCase() === lang.toLowerCase());
+        if (messageKey && template[messageKey]) {
+          message = template[messageKey].replace(/{time}/, updateTime);
+        }
+      }
+      const blockquote = _$('#outdate-blockquote');
+      if (blockquote) {
+        blockquote.querySelectorAll('p')[1].innerText = message;
+        blockquote.style.display = 'flow-root';
+      }
+    }
+  }
+</script>
+
+  
+<script src="https://npm.webcache.cn/busuanzi@2.3.0/bsz.pure.mini.js" integrity="sha384-0M75wtSkhjIInv4coYlaJU83+OypaRCIq2SukQVQX04eGTCBXJDuWAbJet56id+S" crossorigin="anonymous" async></script>
+
+
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then((registrations) => {
+      for (let registration of registrations) {
+        registration.unregister();
+      }
+    });
+  }
+</script>
+
+
+    <script>
+      var setupAPlayer = () => {
+        if (!false || !window.matchMedia('(max-width: 768px)').matches) {
+          if (window.matchMedia('(max-width: 959px)').matches) {
+            const meting = _$('meting-js');
+            if (meting) {
+              meting.setAttribute('fixed', 'true');
+              const aside = meting.parentNode?.parentNode;
+              if (aside?.tagName === 'ASIDE') {
+                meting.parentNode.removeChild(meting);
+                document.body.appendChild(meting);
+              }
+            }
+          }
+        }
+      };
+        var meting_api = "https://music.chieko3020.xyz/?type=radio&id=1228381556";
+    </script>
+  
+<script src="https://npm.webcache.cn/aplayer@1.10.1/dist/APlayer.min.js" integrity="sha384-gdGYZwHnfJM54evoZhpO0s6ZF5BQiybkiyW7VXr+h5UfruuRL&#x2F;aORyw+5+HZoU6e" crossorigin="anonymous" defer onload="setupAPlayer()"></script>
+
+    
+<script src="https://npm.webcache.cn/meting@2.0.1/dist/Meting.min.js" integrity="sha384-ASVlpKF80A22OXTK3tfEjZm1EL6uFMKIC4p8+0maanw1S&#x2F;IyB+Y4JG+ZDU7GpKE8" crossorigin="anonymous" defer></script>
+
+
+
+  <!-- hexo injector body_end start --><script data-pjax src="https://registry.npmmirror.com/oh-my-live2d/latest/files"></script><script>const oml2d = OML2D.loadOml2d({libraryUrls:{"complete":"https://registry.npmmirror.com/oh-my-live2d/latest/files/lib/complete.js","cubism2":"https://registry.npmmirror.com/oh-my-live2d/latest/files/lib/cubism2.js","cubism5":"https://registry.npmmirror.com/oh-my-live2d/latest/files/lib/cubism5.js"},mobileDisplay:true,models:[{"path":"/live2d/Resources/model/March7th/March7th.model3.json","mobilePosition":[-10,23],"mobileScale":0.1,"mobileStageStyle":{"width":180,"height":166},"motionPreloadStrategy":"ALL","position":[-2,-6],"scale":0.08,"stageStyle":{"width":250,"height":250}},{"path":"/live2d/Resources/model/EverNight/EverNight.model3.json","mobilePosition":[-10,23],"mobileScale":0.1,"mobileStageStyle":{"width":180,"height":166},"motionPreloadStrategy":"ALL","position":[-20,0],"scale":0.12,"stageStyle":{"width":250,"height":250}}],parentElement:document.body,primaryColor:"var(--btn-bg)",sayHello:false,initialStatus:"sleep",tips:{style: {"width":300,"height":100,"left":"calc(50% - -40px)","top":"-80px","fontSize":"13px","lineHeight":1.3,"padding":"8px","textAlign":"left","maxHeight":"200px","overflowY":"auto","wordWrap":"break-word","whiteSpace":"normal"},mobileStyle: {"width":250,"height":150,"left":"calc(50% - -125px)","top":"-100px","fontSize":"12px","lineHeight":1.2,"padding":"6px","textAlign":"left","maxHeight":"150px","overflowY":"auto","wordWrap":"break-word","whiteSpace":"normal"},idleTips:{interval:20000,message:["你好，欢迎入职星穹列车，我是三月七，星穹列车的乘员，也是你的同事。现在，请先拍摄入职照…瞧把你吓的，咱是在开玩笑啦~","名字是我自己取的，大家也叫我三月、小三月…你呢？你想叫我什么？","我的过去，或许不在从前，而是在我的未来里。所以我一定会一站站走下去，哪怕有一天…没有列车。","果汁…一说就觉得馋，一馋就忒想喝，一喝就…停不下来……","要是没人和我聊天，我就闷得要命。但在列车上的时候，姬子很忙，杨叔很忙，帕姆很忙，丹恒倒是不忙，可他不喜欢聊天……","每次坐在书桌前整理完相册，抬头看向窗外，即使那一幕已经见过千遍万遍，我总是想再拍一张照片…现在咱能坐在列车里，像这样看着星星，真的很幸福。","我平时很喜欢仙舟幻戏嘛，心里一直有点剑侠情结。等我真正开始学剑之后，才发现比起幻戏里飞天遁地的大侠，还是教我一招一式的两位小师父更厉害！","即使看起来很「黑暗」的料理，也要拿出「开拓」的精神来面对！但，实话实说，砂鳗冻和姬子泡的咖啡真不太好……","丹恒…他在我之前上的车，从没透露过自己的来历…你要是有机会，也帮我打探打探？","美丽的姬子姐姐，成熟，可靠，又优雅，还是列车的领航员…以后，我也可以成为那样的大人吧！不过咱现在这样也很好~","听说杨叔曾经是秘密组织的首领，拯救过星球，当过老师，还画过动画的原画！哎，简直是外星人了……","列车长就是最棒的！","即使知道了他的神秘过去，他还是我们认识的那个丹恒呀！","彦卿师父的教学风格非常严谨，也一直把「将军当年是这么教我的」挂在嘴边…看来，景元将军教给他的，他都记得清清楚楚。","云璃师父的教学风格非常自由，她最常和我说的话是：「这是一种感觉！」…也许这就是「体验式教学」吧？","如果让列车长听到那段「七休日」的主张，不知道会是什么反应呀。","翁法罗斯的三月，是属于永夜之帷的时间…就请以「长夜月」这个称呼，将我放进你的回忆中吧。若能躲进岁月的罅隙，属于我们的时间还有很多，很多♭","我是被遗忘的过去，是陪伴「她」的长夜。那些残酷的往事由我来代劳，而我也将看护她的前路…不惜任何代价♭","「三月七」，多么美妙、可爱、活泼、有趣的名字，还带着一丝生日的甜蜜。所以，她应当也会喜欢「长夜月」这个称号……","三月抵达翁法罗斯的时间坐标比你们早许多，她已如烛火熄灭，但我是那烛火的影，藏进岁月的狭间，等待你们的到来。","为什么随身带伞？因为美好的记忆就像连绵的雨，一度落在伞上又悄无痕迹地滑落…当然，也因为拍照出片。","翁法罗斯，一颗悲剧的宝石，它与神相争的光芒吸引了那些觊觎记忆的窃贼。但那些伤痕累累的「岁月」，分明向我诉说着对「忘却」的渴求。","与你们一起旅行的日子，早在他身上留下了不可磨灭的烙印。","对她来说，最好的未来，就是我可以彻底消失的那一天。","能在我面前保持镇定的忆者，不超过一掌之数。难道说…她看过更可怕的东西？","这位优秀的裁衣师本该为翁法罗斯编织出更多的回忆，若是我的话，一定会为自己无法亲眼见证翁法罗斯的未来而感到遗憾。","「明天见」，无论对谁来说，都是个简单而又奢侈的愿望。","身为王储的他，还是身为战士的他，都肩负着太多关于仇恨的记忆。但当他履行自己的职责时，却从未将过往与未来混为一谈。","以前她种下的那片花海，是否能挺过感官之雨的洗礼呢？","我一直都想问他一个问题：「大地兽和世界真理的真相都掉到了海里，你先捡哪个？」","晴天让人烦躁，但不得不说，她洒下的光，连我也觉得柔和舒适。","一个美好的谎言，的确胜过万千残酷的真相。","每个轮回里，他都在空白的起点出发，却又总是走向同一个结局。我和三月七的命运，是否会有所不同？","能把那位「天才」拉下马，果然不能小看擅长益智游戏的人…有机会好想和她过过招呀。","她就像那美丽的泡沫，即便破裂时，也像弦上落下的颤音一样令人动容。","我能看到，过往的英雄之火仍在他的心中燃烧。有这样经验丰富的前辈引路，让人放心多了。","成熟、优雅、如玫瑰般馥郁…三月一直在努力向她学习呢。当列车驶向更深邃的星空，未来…她又会以怎样的姿态绽放？","好想摸摸它呀。可惜，这位神秘莫测的「列车长」，一看就不会乖乖就范呢~","何物能使生灵长存？是记忆么？不，记忆只能保存腐朽的过去。而它却甘愿成为后世的基石，为这个世界留下了生生不息的传承。","希望我带来的这一场意料之外的「雨」，能让荒芜的岁月盛开…如她所愿的百花♭"]}},then:"(oml2d)=>{\nwindow.__oml2d = oml2d;\ntry { localStorage.removeItem('oml2d-status') } catch(e){}\ntry { oml2d && oml2d.sleep && oml2d.sleep() } catch(e){}\ntry { oml2d && oml2d.statusBar && oml2d.statusBar.setRest && oml2d.statusBar.setRest('看板娘休息中', '💤') } catch(e){}\n}\n"});</script><!-- hexo injector body_end end --></body>
+  </html>
+
