@@ -6,6 +6,7 @@ tags: "你知道吗"
 categories: "只属于你的小妙招 <br> 看似有用实则没用"
 cover: /images/画廊/pixiv/107752063_p0.webp
 excerpt: 在 AI 编码中节省 token 的方法论：从计费原理、缓存命中到上下文与会话管理的实操
+mermaid: true
 ---
 
 # AI Coding 中如何节省 Token

@@ -6,6 +6,7 @@ tags: "你知道吗"
 categories: "只属于你的小妙招 <br> 看似有用实则没用"
 cover: /images/画廊/pixiv/124905855_p0.webp
 excerpt: Redis 有关数据结构、内存、网络部分源码的解析
+mermaid: true
 ---
 
 # Redis = Ready + Start——如何开始

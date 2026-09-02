@@ -6,6 +6,7 @@ tags: "你知道吗"
 categories: "只属于你的小妙招 <br> 看似有用实则没用"
 cover: /images/画廊/Arcara/Last3_epilogue.webp
 excerpt: 有关 Java 的基础知识
+mermaid: true
 ---
 
 # Java学习笔记

@@ -6,6 +6,7 @@ tags: "你知道吗"
 categories: "只属于你的小妙招 <br> 看似有用实则没用"
 cover: /images/画廊/Arcara/4-7.webp
 excerpt: 有关 MySQL 的基本知识概括
+mermaid: true
 ---
 
 # MySQL 查询语句执行过程

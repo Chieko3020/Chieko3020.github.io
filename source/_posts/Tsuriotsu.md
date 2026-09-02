@@ -6,6 +6,7 @@ tags: "你知道吗"
 categories: "只属于你的小妙招 <br> 看似有用实则没用"
 banner: /images/Tsuriotsu/tsuriotsu_title.webp
 cover: /images/Tsuriotsu/tsuriotsu_title.webp
+mermaid: true
 ---
 
 # ⭕⭕⭕🐶～

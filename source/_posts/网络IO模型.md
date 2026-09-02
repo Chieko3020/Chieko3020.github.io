@@ -6,6 +6,7 @@ tags: "你知道吗"
 categories: "只属于你的小妙招 <br> 看似有用实则没用"
 cover: /images/画廊/pixiv/illust_72300844_20200720_031307.webp
 excerpt: 网络IO模型概念
+mermaid: true
 ---
 
 - 网络IO模型也是 Linux 网络编程经常问到的题目，有次面试没答详细，只是简单介绍了一下，这里再写出来复习用
