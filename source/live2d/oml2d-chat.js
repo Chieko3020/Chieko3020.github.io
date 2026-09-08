@@ -116,8 +116,14 @@
 
   function notify(text, duration) {
     try {
-      if (oml2d && typeof oml2d.showMessage === "function") {
-        oml2d.showMessage(text, duration || 5000, 5);
+      // 优先 oml2d 气泡（tips 组件真实挂载时显示在模型上方）
+      const t = oml2d && oml2d.tips;
+      if (t && typeof t.showMessage === "function") {
+        t.showMessage(text, duration || 5000, 5);
+        return;
+      }
+      if (oml2d && typeof oml2d.tipsMessage === "function") {
+        oml2d.tipsMessage(text, duration || 5000, 5);
         return;
       }
     } catch (_) {}
@@ -126,7 +132,7 @@
     if (box) {
       box.textContent = text;
       box.style.display = "block";
-      setTimeout(() => (box.style.display = "none"), 4000);
+      setTimeout(() => (box.style.display = "none"), duration || 5000);
     }
   }
 
@@ -227,8 +233,47 @@
     if (bubbleEl) bubbleEl.classList.remove("show");
   }
   function toggleChat() {
-    if (bubbleEl && bubbleEl.classList.contains("show")) closeChat();
-    else openChat();
+    if (bubbleEl && bubbleEl.classList.contains("show")) {
+      closeChat();
+    } else {
+      greetRandomIdle(); // 打开聊天时先随机弹一句
+      openChat();
+    }
+  }
+
+  // ---- 点击聊天时弹随机一句话（复用 idleTips 语料与气泡）----
+  function greetRandomIdle() {
+    const doGreet = () => {
+      try {
+        if (!oml2d) return false;
+        const idleTips = oml2d.options && oml2d.options.tips && oml2d.options.tips.idleTips;
+        const pool = idleTips && Array.isArray(idleTips.message) ? idleTips.message : [];
+        if (!pool.length) return false;
+        const text = pool[Math.floor(Math.random() * pool.length)];
+        const duration = idleTips.duration || 5000;
+        const priority = idleTips.priority !== undefined ? idleTips.priority : 0;
+        const tips = oml2d && oml2d.tips;
+        // tips 组件挂载后 showMessage 才会真正显示气泡：以 #oml2d-tips 在 DOM 为准
+        const tipsMounted = !!document.getElementById("oml2d-tips");
+        if (tipsMounted && tips && typeof tips.showMessage === "function") {
+          tips.showMessage(text, duration, priority);
+          return true;
+        }
+        // 未挂载时若走主实例 notification 也无法显示，返回 false 触发重试
+        return false;
+      } catch (e) {
+        console.error("[oml2d-chat] greetRandomIdle:", e);
+        return false;
+      }
+    };
+    // 立即尝试；若 tips 尚未挂载（模型还在加载），最多重试 3 次
+    let attempt = 0;
+    const tryGreet = () => {
+      attempt++;
+      if (doGreet()) return;
+      if (attempt < 4) setTimeout(tryGreet, 1200);
+    };
+    tryGreet();
   }
 
   // ---- 表情 ----
@@ -384,7 +429,12 @@
     "#oml2d-chat-panel textarea:disabled{opacity:.6}" +
     "#oml2d-chat-panel .oml2d-chat-actions{margin-top:8px;display:flex;gap:8px;justify-content:flex-end}" +
     "#oml2d-chat-panel .oml2d-chat-actions button{background:rgba(100,140,255,.25);border:1px solid rgba(100,140,255,.35);color:#fff;border-radius:8px;padding:5px 12px;cursor:pointer;font-size:13px}" +
-    "#oml2d-chat-panel .oml2d-chat-actions button:hover{background:rgba(100,140,255,.4)}";
+    "#oml2d-chat-panel .oml2d-chat-actions button:hover{background:rgba(100,140,255,.4)}" +
+    /* 菜单两列布局：避免 7 项竖排过高遮挡气泡 */
+    "#oml2d-stage #oml2d-menus{display:grid !important;grid-template-columns:repeat(2,36px) !important;gap:10px 8px !important;align-content:center;right:auto !important;left:auto !important;bottom:auto !important;top:50% !important;transform:translateY(-50%);max-height:none !important}" +
+    "#oml2d-stage #oml2d-menus .oml2d-menus-item{margin-bottom:0 !important}" +
+    /* 气泡置顶：显示在菜单之上，避免被盖 */
+    "#oml2d-stage #oml2d-tips{z-index:10000 !important}";
   document.head.appendChild(style);
 
   console.log("[oml2d-chat] 增强模块就绪 | 聊天/表情/拍照 已挂载");
