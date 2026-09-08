@@ -6,7 +6,6 @@ tags: "你知道吗"
 categories: "不可解的它的一切 <br> 那不就是「关于网站」吗"
 banner: /images/Tsuriotsu/tsuriotsu_title.webp
 cover: /images/Tsuriotsu/tsuriotsu_title.webp
-mermaid: true
 ---
 
 # ⭕⭕⭕🐶～

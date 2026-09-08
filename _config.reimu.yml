@@ -196,14 +196,16 @@ custom_font:
   article:
     - css: /fonts/mulish.css
       name: Mulish
+    - css: /fonts/noto-serif-sc.css
+      name: Noto Serif SC
   code:
 
 # https://fonts.google.com/
 # Google Fonts, higher priority than local_font
+# Noto Serif SC 已自托管(见 custom_font/noto-serif-sc.css)，关闭 Google Fonts 避免跨境请求
 font:
-  enable: true
+  enable: false
   article:
-    - Noto Serif SC
   code:
     # - Ubuntu Mono
     # - Source Code Pro

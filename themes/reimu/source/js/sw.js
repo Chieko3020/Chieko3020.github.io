@@ -1,5 +1,4 @@
 const cacheDomain = [
-  "fonts.googleapis.com",
   "npm.webcache.cn",
   "unpkg.com",
   "fastly.jsdelivr.net",

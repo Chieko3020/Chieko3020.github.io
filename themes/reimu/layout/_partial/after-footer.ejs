@@ -115,7 +115,7 @@
         };
       </script>
     <%_ } _%>   
-    <%_ if (theme.mermaid.enable && page.mermaid) { _%>
+    <%_ if (theme.mermaid.enable && (page.mermaid || (page.content || '').indexOf('<pre class="mermaid"') > -1)) { _%>
       <%- js({src: vendorCdn(theme.vendor.js.mermaid)[0], integrity: vendorCdnIntegrity(theme.vendor.js.mermaid)[0], crossorigin: "anonymous", 'data-pjax': true}) %>
       <%- js({src: vendorCdn(theme.vendor.js.dompurify)[0], integrity: vendorCdnIntegrity(theme.vendor.js.dompurify)[0], crossorigin: "anonymous"}) %>
       <%_ if (theme.mermaid.zoom) { _%>
