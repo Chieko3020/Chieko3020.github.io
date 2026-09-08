@@ -258,17 +258,20 @@
       if (!canvas) return notify("找不到画布", 3000);
 
       let dataUrl = null;
-      // oml2d.pixiApp = { app: PixiApplication, stage }
+      // oml2d.pixiApp = { app: PixiApplication(真容器), stage: oml2d自定义DOM层 }
+      // 截图必须用 app.stage（真 pixi Container，有 enableTempParent/extract 支持）
       const pixiApp = o.pixiApp;
-      const renderer = pixiApp && pixiApp.app ? pixiApp.app.renderer : (pixiApp ? pixiApp.renderer : null);
+      const app = pixiApp && pixiApp.app;
+      const renderer = app ? app.renderer : null;
+      const pixiStage = app ? app.stage : null;
       // pixi 6: renderer.plugins.extract.canvas() 不受 preserveDrawingBuffer 限制
       try {
-        if (renderer && pixiApp && (pixiApp.stage || (pixiApp.app && pixiApp.app.stage))) {
-          const stageEl = pixiApp.stage || pixiApp.app.stage;
+        if (renderer && pixiStage) {
           const extract = renderer.plugins && renderer.plugins.extract;
           if (extract && typeof extract.canvas === "function") {
-            renderer.render(stageEl);
-            const snap = extract.canvas(stageEl);
+            // 先强制渲染当前帧到 app.stage
+            renderer.render(pixiStage);
+            const snap = extract.canvas(pixiStage);
             if (snap) dataUrl = snap.toDataURL("image/png");
           }
         }
@@ -279,8 +282,8 @@
       // 回退：直接 canvas.toDataURL（加手动渲染）
       if (!dataUrl || dataUrl.length < 2000) {
         try {
-          if (renderer && pixiApp) {
-            renderer.render(pixiApp.stage || (pixiApp.app && pixiApp.app.stage));
+          if (renderer && pixiStage) {
+            renderer.render(pixiStage);
           }
           await new Promise((resolve) => requestAnimationFrame(() => resolve()));
           await new Promise((resolve) => setTimeout(resolve, 80));
