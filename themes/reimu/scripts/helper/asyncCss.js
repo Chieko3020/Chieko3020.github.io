@@ -28,7 +28,7 @@ function asyncCssHelper(content) {
             .map(([key, value]) => {
               if (value === true) {
                 return ` ${key}`;
-              } else if (value === false) {
+              } else if (value === false || value == null) {
                 return "";
               } else {
                 return ` ${key}="${value}"`;
