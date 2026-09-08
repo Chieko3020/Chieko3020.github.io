@@ -3,7 +3,7 @@ title: Tsuriotsu
 date: 2026-03-27 18:18:32
 updated: 2026-03-27 18:18:32
 tags: "你知道吗"
-categories: "只属于你的小妙招 <br> 看似有用实则没用"
+categories: "不可解的它的一切 <br> 那不就是「关于网站」吗"
 banner: /images/Tsuriotsu/tsuriotsu_title.webp
 cover: /images/Tsuriotsu/tsuriotsu_title.webp
 mermaid: true
