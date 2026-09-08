@@ -28,7 +28,10 @@ archive_dir: archives
 category_dir: categories
 code_dir: downloads/code
 i18n_dir: :lang
-skip_render: 
+skip_render:
+  - assets/vendor/**
+  - fonts/**
+  - live2d/**
 
 # Writing
 new_post_name: :title.md # File name of new posts
@@ -139,14 +142,14 @@ markdown_it_plus:
 # _config.yml
 OhMyLive2d:
   enable: true
-  CDN: https://registry.npmmirror.com/oh-my-live2d/latest/files
-  # CDN: https://registry.npmmirror.com/oh-my-live2d/0.13/files/dist/index.min.js
+  CDN: local # self-hosted: hexo-oh-my-live2d copies node_modules SDK to /pluginsSrc/ during build
+  # CDN: https://registry.npmmirror.com/oh-my-live2d/latest/files
   option:
     # importType: 'cubism2' #  导入类型, 默认使用全量导入: complete , 可选值: complete, cubism2, cubism5
-    libraryUrls: # 自定义 Cubism SDK 外部资源地址
-      complete: https://registry.npmmirror.com/oh-my-live2d/latest/files/lib/complete.js
-      cubism2: https://registry.npmmirror.com/oh-my-live2d/latest/files/lib/cubism2.js
-      cubism5: https://registry.npmmirror.com/oh-my-live2d/latest/files/lib/cubism5.js
+    # libraryUrls: # 自定义 Cubism SDK 外部资源地址 (removed: index.min.js bundles the Cubism runtime)
+    #   complete: https://registry.npmmirror.com/oh-my-live2d/latest/files/lib/complete.js
+    #   cubism2: https://registry.npmmirror.com/oh-my-live2d/latest/files/lib/cubism2.js
+    #   cubism5: https://registry.npmmirror.com/oh-my-live2d/latest/files/lib/cubism5.js
     # menus:
     # items: |
     #   (defaultItems)=>{
@@ -176,7 +179,7 @@ OhMyLive2d:
         mobileStageStyle: # 移动端时舞台的样式
           width: 180
           height: 166
-        motionPreloadStrategy: ALL # 动作预加载策略 默认值: IDLE 可选值: ALL | IDLE | NONE
+        motionPreloadStrategy: NONE # 动作预加载策略 默认值: IDLE 可选值: ALL | IDLE | NONE
         position: [-2, -6] # 模型在舞台中的位置。 默认值: [0,0] [横坐标, 纵坐标]
         scale: 0.08 # 模型的缩放比例 默认值: 0.1
         # showHitAreaFrames: false # 是否显示点击区域 默认值: false
@@ -190,7 +193,7 @@ OhMyLive2d:
         mobileStageStyle: # 移动端时舞台的样式
           width: 180
           height: 166
-        motionPreloadStrategy: ALL # 动作预加载策略 默认值: IDLE 可选值: ALL | IDLE | NONE
+        motionPreloadStrategy: NONE # 动作预加载策略 默认值: IDLE 可选值: ALL | IDLE | NONE
         position: [-20, 0] # 模型在舞台中的位置。 默认值: [0,0] [横坐标, 纵坐标]
         scale: 0.12 # 模型的缩放比例 默认值: 0.1
         # showHitAreaFrames: false # 是否显示点击区域 默认值: false

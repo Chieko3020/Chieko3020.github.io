@@ -192,10 +192,10 @@ icon_font: 4552607_4k4bc36ef96
 
 # Custom Font
 custom_font:
-  enable: false
+  enable: true
   article:
-    # - css: https://fontsapi.zeoseven.com/292/main/result.css
-      # name: LXGW WenKai
+    - css: /fonts/mulish.css
+      name: Mulish
   code:
 
 # https://fonts.google.com/
@@ -203,7 +203,6 @@ custom_font:
 font:
   enable: true
   article:
-    - Mulish
     - Noto Serif SC
   code:
     # - Ubuntu Mono
@@ -634,7 +633,7 @@ player:
       autoplay: false
       loop: 'all'
       order: 'list'
-      preload: 'auto'
+      preload: 'none' # 点击播放后才加载音频，避免页面打开即预载整首歌
       volume: 0.3
       mutex: true
       listFolded: false
@@ -735,17 +734,13 @@ vendor:
   webcache: https://npm.webcache.cn/
   js:
     clipboard:
-      src: webcache|clipboard@2.0.11/dist/clipboard.min.js
-      integrity: sha384-J08i8An/QeARD9ExYpvphB8BsyOj3Gh2TSh1aLINKO3L0cMSH2dN3E22zFoXEi0Q
+      src: /assets/vendor/clipboard.min.js
     lazysizes:
-      src: webcache|lazysizes@5.3.2/lazysizes.min.js
-      integrity: sha384-3gT/vsepWkfz/ff7PpWNUeMzeWoH3cDhm/A8jM7ouoAK0/fP/9bcHHR5kHq2nf+e
+      src: /assets/vendor/lazysizes.min.js
     photoswipe:
-      src: webcache|photoswipe@5.4.4/dist/photoswipe.esm.min.js
-      integrity: sha384-WkkO3GCmgkC3VQWpaV8DqhKJqpzpF9JoByxDmnV8+oTJ7m3DfYEWX1fu1scuS4+s
+      src: /assets/vendor/photoswipe.esm.min.js
     photoswipe_lightbox:
-      src: webcache|photoswipe@5.4.4/dist/photoswipe-lightbox.esm.min.js
-      integrity: sha384-DiL6M/gG+wmTxmCRZyD1zee6lIhawn5TGvED0FOh7fXcN9B0aZ9dexSF/N6lrZi/
+      src: /assets/vendor/photoswipe-lightbox.esm.min.js
     valine:
       src: webcache|valine@1.5.1/dist/Valine.min.js
       integrity: sha384-3ma91AExDeMAZ1rjTjaP8V2A2obQE+s5ltKRwYlwdpArz9xVbp0tF3b0VV2ACNPn
@@ -753,14 +748,12 @@ vendor:
       src: webcache|@waline/client@2.15.8/dist/waline.mjs
       integrity: sha384-9sbqJjrfGjbkI6/PI4nU/MvBfEmkkPC4YK9I4zBeMIf1CVCZdCMH/KinBEAZII/5
     twikoo:
-      src: webcache|twikoo@1.6.44/dist/twikoo.all.min.js
-      integrity: sha384-kwWLC0HjeZZnVPqCJ1AncI8tsk+kQqF9TbAmCclcc9Z0hGkfgHRzeQZxmdmZhE0K
+      src: /assets/vendor/twikoo.all.min.js
     gitalk:
       src: webcache|gitalk@1.8.0/dist/gitalk.min.js
       integrity: sha384-kspnZUWBoSWwoJHa0hBCXYbHGbhvU/lcEH5O8eVbSDhbPwsiVUTp/aGX/z/5EuMA
     busuanzi:
-      src: webcache|busuanzi@2.3.0/bsz.pure.mini.js
-      integrity: sha384-0M75wtSkhjIInv4coYlaJU83+OypaRCIq2SukQVQX04eGTCBXJDuWAbJet56id+S
+      src: /assets/vendor/busuanzi.min.js
     algolia:
       src: webcache|algoliasearch@4.17.1/dist/algoliasearch-lite.umd.js
       integrity: sha384-xvLS0jfKuoREs7pqkRI/OI8GcqohO5S+jQz7ZBtQXnsXmD+9jDOOY4cL6dCPzlrk
@@ -768,20 +761,15 @@ vendor:
       src: webcache|@reimujs/instantsearch.js@4.57.0-beta.1/dist/instantsearch.production.min.js
       integrity: sha384-aagKMe8nkqaP2DYQc8kkYOL5l+M5Q2WH/Uhr4teOh0Ybp0RZj0kUSDm45qPikMjK
     pace:
-      src: webcache|pace-js@1.2.4/pace.min.js
-      integrity: sha384-k6YtvFUEIuEFBdrLKJ3YAUbBki333tj1CSUisai5Cswsg9wcLNaPzsTHDswp4Az8
+      src: /assets/vendor/pace.min.js
     mermaid:
-      src: webcache|mermaid@11.10.1/dist/mermaid.min.js
-      integrity: sha384-7nxfNsXzOEcSwk+tzfq6tbjmfg0P2Gqmi7JTnRjv9Ll3gFWNro6lI7hPtZPM5ZLD
+      src: /assets/vendor/mermaid.min.js
     svg_pan_zoom:
-      src: webcache|svg-pan-zoom@3.6.2/dist/svg-pan-zoom.min.js
-      integrity: sha384-GGX4llYprEPGp9w5caepn95YWAEflHnsA5ewt+Y+cBEb95og5cXKllnWKSELlzbx
+      src: /assets/vendor/svg-pan-zoom.min.js
     firework:
-      src: webcache|mouse-firework@0.1.1/dist/index.umd.js
-      integrity: sha384-8LyaidD9GPxQQgLJO/WRw/O2h3BoNq/ApI/ecpvM6RsrCz2qP2ppBXUKihP4V/2d
+      src: /assets/vendor/firework.umd.js
     pjax:
-      src: webcache|theme-shokax-pjax@0.0.3/dist/index.umd.js
-      integrity: sha384-xneY1WY8hOfUzswrE4CrYq35N4BdVcxqxwHPr9zawE/jMSCxD+jAPU55x/jj3wlf
+      src: /assets/vendor/pjax.umd.js
     live2d:
       base: fastly_jsdelivr_gh|D-Sketon/plugin-live2d/
       js: fastly_jsdelivr_gh|D-Sketon/plugin-live2d/js/live2d-autoload.js
@@ -804,30 +792,25 @@ vendor:
       src: webcache|mathjax@3.2.2/es5/tex-mml-chtml.js
       integrity: sha384-Wuix6BuhrWbjDBs24bXrjf4ZQ5aFeFWBuKkFekO2t8xFU0iNaLQfp2K6/1Nxveei
     aplayer:
-      src: webcache|aplayer@1.10.1/dist/APlayer.min.js
-      integrity: sha384-gdGYZwHnfJM54evoZhpO0s6ZF5BQiybkiyW7VXr+h5UfruuRL/aORyw+5+HZoU6e
+      src: /assets/vendor/aplayer.min.js
     meting:
-      src: webcache|meting@2.0.1/dist/Meting.min.js
-      integrity: sha384-ASVlpKF80A22OXTK3tfEjZm1EL6uFMKIC4p8+0maanw1S/IyB+Y4JG+ZDU7GpKE8
+      src: /assets/vendor/meting.min.js
     qrcode:
       src: webcache|qrcode@1.5.1/build/qrcode.js
       integrity: sha384-VT1EeewTCEXgndcPMQ0PzV+uVFYjxFIjmAA7s5gcMX9t4Dt5TD+OVQIn7NJWIXn7
     dompurify:
-      src: webcache|dompurify@3.2.6/dist/purify.min.js
-      integrity: sha384-JEyTNhjM6R1ElGoJns4U2Ln4ofPcqzSsynQkmEc/KGy6336qAZl70tDLufbkla+3
+      src: /assets/vendor/purify.min.js
     pangu:
       src: webcache|pangu@4.0.7/dist/browser/pangu.min.js
       integrity: sha384-HeUHqi0nVsPUm/E0ss7OfnIV/yD96JWB8ehZvUuoVax9DpNHL17jj9pdfXHzqDxm
     material_theme:
-      src: webcache|material-theme@1.0.0/dist/material-theme.umd.js
-      integrity: sha384-vLev0II0HKFaxkcm+/7kX5IGwVFBASkGchU311wmU/veIj2bB0UcBkQbW6yw2asK
+      src: /assets/vendor/material-theme.umd.js
     snapdom:
       src: webcache|@zumer/snapdom@1.9.9/dist/snapdom.min.js
       integrity: sha384-taz9Bq0wPqLsuiB4ix4blTozt/y84cjbMX5ZWkfPPjpVBme8M/jWopanNBcdH/qp
   css:
     photoswipe:
-      src: webcache|photoswipe@5.4.4/dist/photoswipe.css
-      integrity: sha384-IfxC36XL/toUyJ939C73PcgMuRzAZuIzZxE38drsmO5p6jD7ei+Zx/1oA/0l8ysE
+      src: /assets/vendor/photoswipe.css
     katex:
       src: webcache|katex@0.16.22/dist/katex.min.css
       integrity: sha384-5TcZemv2l/9On385z///+d7MSYlvIEw9FuZTIdZ14vJLqWphw7e7ZPuOiCHJcFCP
@@ -851,9 +834,7 @@ vendor:
         - src: webcache|@fortawesome/fontawesome-free@7.0.0/css/v4-font-face.min.css
           integrity: sha384-7c0mz5ReY2wCEDKNNEdrKdbtS/6+5dEgNsz/dU3e9m7xldAdTFwNTAuX+s4sJHJl
     aos:
-      src: webcache|@reimujs/aos@0.1.2/dist/aos.css
-      integrity: sha384-GMRP93c6Hkz9JVKGAuRR3nTS7M07RwPgTFenXiosjq2VbVgvdDNcz1g6Mkj8AONa
+      src: /assets/vendor/aos.css
     aplayer:
-      src: webcache|aplayer@1.10.1/dist/APlayer.min.css
-      integrity: sha384-tLMkTWh2pfXNWGFlUS0w1TFtRG5xZ9lPWFOooj+vDDLIL+xBGQU/voDBY5XE2lVh
+      src: /assets/vendor/aplayer.min.css
 

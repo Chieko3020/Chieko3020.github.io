@@ -227,7 +227,6 @@ custom_font:
 font:
   enable: true
   article:
-    - Mulish
     - Noto Serif SC
   code:
     # - Ubuntu Mono

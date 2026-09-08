@@ -1,4 +1,4 @@
-﻿<%_ if (page.type == 404) { _%>
+<%_ if (page.type == 404) { _%>
   <%- partial('404', {post: page}) %>
 <%_ } else { _%>
   <!DOCTYPE html>
@@ -30,7 +30,7 @@
             cssPath: cdnPath + "/waifu.css",
             tipsJsonPath: cdnPath + "/waifu-tips.json",
             tipsJsPath: cdnPath + "/waifu-tips.js",
-            live2dCorePath: cdnPath + "/Core/live2dcubismcore.js",
+            live2dCorePath: cdnPath + "/Core/live2dcubismcore.min.js",
             live2dSdkPath: cdnPath + "/live2d-sdk.js",
           },
           tools: [
@@ -67,30 +67,38 @@
           });
         }
 
-        // Keep original behavior: desktop only.
-        if (window.screen.width >= 768) {
-          Promise.all([
-            loadExternalResource(live2dConfig.path.cssPath, "css"),
-            loadExternalResource(live2dConfig.path.live2dCorePath, "js"),
-            loadExternalResource(live2dConfig.path.live2dSdkPath, "js"),
-            loadExternalResource(live2dConfig.path.tipsJsPath, "js"),
-          ])
-            .then(() => {
-              if (typeof initWidget === "function") {
-                initWidget({
-                  homePath: live2dConfig.path.homePath,
-                  waifuPath: live2dConfig.path.tipsJsonPath,
-                  cdnPath: live2dConfig.path.modelPath,
-                  tools: live2dConfig.tools,
-                  dragEnable: live2dConfig.drag.enable,
-                  dragDirection: live2dConfig.drag.direction,
-                  switchType: live2dConfig.switchType,
-                });
-              } else {
-                console.warn("[live2d] initWidget not found after script load");
-              }
-            })
-            .catch((err) => console.error("[live2d] Failed to initialize:", err));
+        function bootLive2d() {
+          // Keep original behavior: desktop only.
+          if (window.screen.width >= 768) {
+            Promise.all([
+              loadExternalResource(live2dConfig.path.cssPath, "css"),
+              loadExternalResource(live2dConfig.path.live2dCorePath, "js"),
+              loadExternalResource(live2dConfig.path.live2dSdkPath, "js"),
+              loadExternalResource(live2dConfig.path.tipsJsPath, "js"),
+            ])
+              .then(() => {
+                if (typeof initWidget === "function") {
+                  initWidget({
+                    homePath: live2dConfig.path.homePath,
+                    waifuPath: live2dConfig.path.tipsJsonPath,
+                    cdnPath: live2dConfig.path.modelPath,
+                    tools: live2dConfig.tools,
+                    dragEnable: live2dConfig.drag.enable,
+                    dragDirection: live2dConfig.drag.direction,
+                    switchType: live2dConfig.switchType,
+                  });
+                } else {
+                  console.warn("[live2d] initWidget not found after script load");
+                }
+              })
+              .catch((err) => console.error("[live2d] Failed to initialize:", err));
+          }
+        }
+        // Defer live2d boot so it does not compete with first-paint resources.
+        if ("requestIdleCallback" in window) {
+          window.requestIdleCallback(bootLive2d, { timeout: 4000 });
+        } else {
+          window.addEventListener("load", bootLive2d);
         }
       })();
     </script>
