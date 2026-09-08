@@ -12,6 +12,9 @@ menu:
   - name: archives
     url: /archives
     icon:
+  - name: gallery
+    url: /gallery
+    icon:
   - name: about
     url: /about
     icon:

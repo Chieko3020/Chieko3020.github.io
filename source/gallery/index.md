@@ -1,12 +1,8 @@
 ---
 title: 画廊
-date: 2025-10-12 12:00:30
-update: 2026-04-12 16:05:04
-tags: "你知道吗"
-categories: "不可解的它的一切 <br> 那不就是「关于网站」吗"
+date: 2026-09-08 19:38:46
+comments: true
 cover: /images/画廊/Arcara/1-1.webp
-excerpt: Pixiv 插画、Arcaea CG、无限暖暖摄影、魔女裁判 CG，以及 ⬛⬛⬛⬛
-mermaid: true
 ---
 
 {% tabs 1 center %}

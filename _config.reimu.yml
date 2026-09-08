@@ -1,4 +1,4 @@
-﻿########################################
+########################################
 # Basic Configuration
 ########################################
 theme_version_check: true
@@ -11,6 +11,9 @@ menu:
     icon: /images/Website_Config/loading/loading.webp # default use taichi icon, you can use a hexadecimal representation of fontawesome or icon_font, like 'f0c1'
   - name: archives
     url: /archives
+    icon: /images/Website_Config/loading/loading.webp
+  - name: gallery
+    url: /gallery
     icon: /images/Website_Config/loading/loading.webp
   - name: about
     url: /about
