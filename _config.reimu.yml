@@ -15,6 +15,9 @@ menu:
   - name: gallery
     url: /gallery
     icon: /images/Website_Config/loading/loading.webp
+  - name: profile
+    url: /profile
+    icon: /images/Website_Config/loading/loading.webp
   - name: about
     url: /about
     icon: /images/Website_Config/loading/loading.webp

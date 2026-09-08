@@ -15,6 +15,9 @@ menu:
   - name: gallery
     url: /gallery
     icon:
+  - name: profile
+    url: /profile
+    icon:
   - name: about
     url: /about
     icon:
