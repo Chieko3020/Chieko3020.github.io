@@ -234,10 +234,14 @@
   // ---- 表情 ----
   async function randomExpression() {
     try {
-      if (oml2d && typeof oml2d.expression === "function") {
-        const ok = await oml2d.expression(); // 无参数 = 随机
-        if (ok === false) notify("当前模型没有更多表情啦~", 3000);
-        return;
+      // 主路径：oml2d.models.model 是 pixi Live2DModel，expression() 无参 = 随机表情
+      if (oml2d && oml2d.models && oml2d.models.model) {
+        const m = oml2d.models.model;
+        if (typeof m.expression === "function") {
+          const ok = await m.expression();
+          if (ok === false) notify("当前模型没有更多表情啦~", 3000);
+          return;
+        }
       }
     } catch (e) {
       console.error("[oml2d-chat] expression:", e);
@@ -245,7 +249,7 @@
     notify("表情切换暂不可用", 3000);
   }
 
-  // ---- 拍照：强制渲染当前帧后截图 ----
+  // ---- 拍照：用 pixi extract 读像素，绕过 preserveDrawingBuffer=false 空帧 ----
   async function photo() {
     try {
       const o = oml2d;
@@ -253,32 +257,33 @@
       const canvas = document.getElementById("oml2d-canvas");
       if (!canvas) return notify("找不到画布", 3000);
 
-      // PixiJS preserveDrawingBuffer=false：必须手动渲染一帧后再截取
-      const app = o.pixiApp;
-      if (app && app.renderer && app.stage) {
-        try {
-          app.renderer.render(app.stage);
-        } catch (_) {}
-      }
-      // 再等一帧让合成器拿到内容
-      await new Promise((resolve) => requestAnimationFrame(() => resolve()));
-      await new Promise((resolve) => setTimeout(resolve, 60));
-
       let dataUrl = null;
+      // oml2d.pixiApp = { app: PixiApplication, stage }
+      const pixiApp = o.pixiApp;
+      const renderer = pixiApp && pixiApp.app ? pixiApp.app.renderer : (pixiApp ? pixiApp.renderer : null);
+      // pixi 6: renderer.plugins.extract.canvas() 不受 preserveDrawingBuffer 限制
       try {
-        dataUrl = canvas.toDataURL("image/png");
+        if (renderer && pixiApp && (pixiApp.stage || (pixiApp.app && pixiApp.app.stage))) {
+          const stageEl = pixiApp.stage || pixiApp.app.stage;
+          const extract = renderer.plugins && renderer.plugins.extract;
+          if (extract && typeof extract.canvas === "function") {
+            renderer.render(stageEl);
+            const snap = extract.canvas(stageEl);
+            if (snap) dataUrl = snap.toDataURL("image/png");
+          }
+        }
       } catch (e) {
+        console.warn("[oml2d-chat] extract 截图失败，回退 toDataURL:", e.message);
         dataUrl = null;
       }
-      // 空白兜底：提示触发 + 再次手动渲染
+      // 回退：直接 canvas.toDataURL（加手动渲染）
       if (!dataUrl || dataUrl.length < 2000) {
         try {
-          o.showMessage && o.showMessage("茄子~", 1500, 6);
-          if (app && app.renderer && app.stage) app.renderer.render(app.stage);
-        } catch (_) {}
-        await new Promise((resolve) => requestAnimationFrame(() => resolve()));
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        try {
+          if (renderer && pixiApp) {
+            renderer.render(pixiApp.stage || (pixiApp.app && pixiApp.app.stage));
+          }
+          await new Promise((resolve) => requestAnimationFrame(() => resolve()));
+          await new Promise((resolve) => setTimeout(resolve, 80));
           dataUrl = canvas.toDataURL("image/png");
         } catch (e) {
           dataUrl = null;
@@ -322,6 +327,42 @@
   if (existing) {
     oml2d = existing;
     loadHistory();
+  }
+
+  // ---- monkey-patch OML2D.loadOml2d：主动捕获实例（插件序列化 bug 导致 then 回调不执行）----
+  // 插件把 option.then 字符串化后传入，oml2d 从不执行它，window.__oml2d 因此永远为空。
+  // 这里包装 loadOml2d，在返回实例时立即接管，保证聊天/表情/拍照无需依赖菜单点击也能拿到实例。
+  function patchLoadOml2d() {
+    if (window.OML2D && typeof window.OML2D.loadOml2d === "function" && !window.OML2D.__chatPatched) {
+      const original = window.OML2D.loadOml2d;
+      window.OML2D.__chatPatched = true;
+      window.OML2D.loadOml2d = function (...args) {
+        const instance = original.apply(this, args);
+        // loadOml2d 可能返回实例或 Promise，两者都尝试接管
+        const take = (inst) => {
+          if (inst) {
+            oml2d = inst;
+            window.__oml2d = inst;
+            loadHistory();
+          }
+        };
+        take(instance);
+        if (instance && typeof instance.then === "function") {
+          instance.then(take).catch(() => {});
+        }
+        return instance;
+      };
+      return true;
+    }
+    return false;
+  }
+  // SDK 加载时机不定：立即尝试 + 轮询兜底
+  if (!patchLoadOml2d()) {
+    let tries = 0;
+    const t = setInterval(() => {
+      tries++;
+      if (patchLoadOml2d() || tries > 40) clearInterval(t);
+    }, 500);
   }
 
   // ---- 注入自定义图标 ----

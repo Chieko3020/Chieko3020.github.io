@@ -226,7 +226,7 @@ OhMyLive2d:
         - id: 'Expression'
           icon: 'icon-expression'
           title: '表情'
-          onClick: (i)=>{ const c = window.__oml2dChat; if (c) { c.attach && c.attach(i); c.randomExpression && c.randomExpression(); } }
+          onClick: (i)=>{ try { const m = i && i.models && i.models.model; if (m && typeof m.expression === 'function') { m.expression(); } else { const c = window.__oml2dChat; c && c.randomExpression && c.randomExpression(); } } catch(e){} }
         - id: 'Photo'
           icon: 'icon-photo'
           title: '拍照'
