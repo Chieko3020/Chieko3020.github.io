@@ -238,32 +238,50 @@ OhMyLive2d:
     tips:
       # messageLine: 行数截断(默认3)。设大值让文字完整显示，不出现省略号
       messageLine: 999
+      # 自适应气泡：宽度随文字收缩(max-content)，上限 maxWidth；高度随行数自动增高；
+      # 短句小气泡、长句自然长高，文字完整显示。
       style:
-        width: 250
-        height: 220
+        width: max-content
+        boxSizing: border-box
+        minWidth: 60px
+        minHeight: 0
+        maxWidth: 300px
+        maxHeight: 400px
         left: calc(50% - -30px)
-        top: -180px
+        top: -40px
         fontSize: 13px
-        lineHeight: 1.4
-        padding: 10px 12px
+        lineHeight: 1.5
+        padding: 8px 14px
         textAlign: left
-        maxHeight: 320px
         overflowY: auto
         wordWrap: break-word
         whiteSpace: normal
+        borderRadius: 12px
+        background: rgba(30, 30, 46, 0.92)
+        color: '#eee'
+        border: '1px solid rgba(255, 255, 255, 0.25)'
+        boxShadow: 0 4px 16px rgba(0, 0, 0, 0.35)
       mobileStyle:
-        width: 220
-        height: 180
-        left: calc(50% - -100px)
-        top: -140px
+        width: max-content
+        boxSizing: border-box
+        minWidth: 50px
+        minHeight: 0
+        maxWidth: 250px
+        maxHeight: 320px
+        left: calc(50% - -80px)
+        top: -30px
         fontSize: 12px
-        lineHeight: 1.3
-        padding: 8px 10px
+        lineHeight: 1.4
+        padding: 6px 10px
         textAlign: left
-        maxHeight: 260px
         overflowY: auto
         wordWrap: break-word
         whiteSpace: normal
+        borderRadius: 10px
+        background: rgba(30, 30, 46, 0.92)
+        color: '#eee'
+        border: '1px solid rgba(255, 255, 255, 0.25)'
+        boxShadow: 0 4px 12px rgba(0, 0, 0, 0.3)
       idleTips:
         interval: 300000
         message:
