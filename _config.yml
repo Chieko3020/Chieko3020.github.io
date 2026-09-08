@@ -210,27 +210,27 @@ OhMyLive2d:
         - id: 'Rest'
           icon: 'icon-rest'
           title: '休息'
-          onClick: (oml2d)=>{ window.__oml2d && window.__oml2d.sleep && window.__oml2d.sleep() }
+          onClick: (i)=>{ i.statusBarOpen((i.options && i.options.statusBar && i.options.statusBar.restMessage) || '休息一下~'); i.clearTips(); i.setStatusBarClickEvent(()=>{ i.statusBarClose(); i.stageSlideIn(); i.statusBarClearEvents(); }); i.stageSlideOut(); }
         - id: 'SwitchModelClothes'
           icon: 'icon-skin'
           title: '切换衣服'
-          onClick: (oml2d)=>{ oml2d && oml2d.loadNextModelClothes && oml2d.loadNextModelClothes() }
+          onClick: (i)=>{ i.loadNextModelClothes() }
         - id: 'SwitchModel'
           icon: 'icon-switch'
           title: '切换模型'
-          onClick: (oml2d)=>{ oml2d && oml2d.loadNextModel && oml2d.loadNextModel() }
+          onClick: (i)=>{ i.loadNextModel() }
         - id: 'Chat'
           icon: 'icon-chat'
           title: '聊天'
-          onClick: ()=>{ window.__oml2dChat && window.__oml2dChat.toggle && window.__oml2dChat.toggle() }
+          onClick: (i)=>{ const c = window.__oml2dChat; if (c) { c.attach && c.attach(i); c.toggle && c.toggle(); } }
         - id: 'Expression'
           icon: 'icon-expression'
           title: '表情'
-          onClick: ()=>{ window.__oml2dChat && window.__oml2dChat.randomExpression && window.__oml2dChat.randomExpression() }
+          onClick: (i)=>{ const c = window.__oml2dChat; if (c) { c.attach && c.attach(i); c.randomExpression && c.randomExpression(); } }
         - id: 'Photo'
           icon: 'icon-photo'
           title: '拍照'
-          onClick: ()=>{ window.__oml2dChat && window.__oml2dChat.photo && window.__oml2dChat.photo() }
+          onClick: (i)=>{ const c = window.__oml2dChat; if (c) { c.attach && c.attach(i); c.photo && c.photo(); } }
         - id: 'About'
           icon: 'icon-about'
           title: '关于'
@@ -305,9 +305,3 @@ OhMyLive2d:
             - "好想摸摸它呀。可惜，这位神秘莫测的「列车长」，一看就不会乖乖就范呢~"
             - "何物能使生灵长存？是记忆么？不，记忆只能保存腐朽的过去。而它却甘愿成为后世的基石，为这个世界留下了生生不息的传承。"
             - "希望我带来的这一场意料之外的「雨」，能让荒芜的岁月盛开…如她所愿的百花♭"
-    then: |
-        (oml2d)=>{
-        window.__oml2d = oml2d;
-        try { localStorage.removeItem('oml2d-status') } catch(e){}
-        try { window.__oml2dChat && window.__oml2dChat.onReady && window.__oml2dChat.onReady(oml2d) } catch(e){}
-        }

@@ -298,11 +298,19 @@
     }
   }
 
-  // ---- 供 oml2d then 回调与菜单按钮调用 ----
+  // ---- 供 oml2d 菜单按钮与 then 回调调用 ----
   window.__oml2dChat = {
     toggle: toggleChat,
     randomExpression: randomExpression,
     photo: photo,
+    // 菜单 onClick 会把 oml2d 实例传入，此处接管实例
+    attach: (instance) => {
+      if (!instance) return;
+      oml2d = instance;
+      loadHistory();
+      // 存入全局供调试/其他逻辑
+      window.__oml2d = instance;
+    },
     onReady: (instance) => {
       oml2d = instance;
       loadHistory();
