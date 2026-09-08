@@ -393,3 +393,11 @@
     }
   </script>
 <%_ } _%>
+<%_ if ((!theme.Oml2dChat || theme.Oml2dChat.enable !== false) && config.OhMyLive2d && config.OhMyLive2d.enable) { _%>
+  <script src="/live2d/oml2d-chat.js" defer></script>
+<%_ } _%>
+
+<%_ if (config.OhMyLive2d && config.OhMyLive2d.enable) { _%>
+  <%_ /* oh-my-live2d 需要全局 Live2DCubismCore，须先于其初始化加载 */ _%>
+  <script src="/live2d/Core/live2dcubismcore.min.js" defer></script>
+<%_ } _%>

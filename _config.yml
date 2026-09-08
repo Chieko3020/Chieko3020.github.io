@@ -204,7 +204,37 @@ OhMyLive2d:
     parentElement: document.body #为组件提供一个父元素，如果未指定则默认挂载到 body 中
     primaryColor: 'var(--btn-bg)' # 主题色 支持变量
     sayHello: false # 是否在初始化阶段打印项目信息
-    initialStatus: "sleep" # 初始状态设置为休眠
+    initialStatus: "active" # 初始直接显示看板娘（原 sleep 会让菜单/交互不可用）
+    menus:
+      items:
+        - id: 'Rest'
+          icon: 'icon-rest'
+          title: '休息'
+          onClick: (oml2d)=>{ window.__oml2d && window.__oml2d.sleep && window.__oml2d.sleep() }
+        - id: 'SwitchModelClothes'
+          icon: 'icon-skin'
+          title: '切换衣服'
+          onClick: (oml2d)=>{ oml2d && oml2d.loadNextModelClothes && oml2d.loadNextModelClothes() }
+        - id: 'SwitchModel'
+          icon: 'icon-switch'
+          title: '切换模型'
+          onClick: (oml2d)=>{ oml2d && oml2d.loadNextModel && oml2d.loadNextModel() }
+        - id: 'Chat'
+          icon: 'icon-chat'
+          title: '聊天'
+          onClick: ()=>{ window.__oml2dChat && window.__oml2dChat.toggle && window.__oml2dChat.toggle() }
+        - id: 'Expression'
+          icon: 'icon-expression'
+          title: '表情'
+          onClick: ()=>{ window.__oml2dChat && window.__oml2dChat.randomExpression && window.__oml2dChat.randomExpression() }
+        - id: 'Photo'
+          icon: 'icon-photo'
+          title: '拍照'
+          onClick: ()=>{ window.__oml2dChat && window.__oml2dChat.photo && window.__oml2dChat.photo() }
+        - id: 'About'
+          icon: 'icon-about'
+          title: '关于'
+          onClick: ()=>{ window.open('https://oml2d.com') }
     tips:
       style:
         width: 300
@@ -279,6 +309,5 @@ OhMyLive2d:
         (oml2d)=>{
         window.__oml2d = oml2d;
         try { localStorage.removeItem('oml2d-status') } catch(e){}
-        try { oml2d && oml2d.sleep && oml2d.sleep() } catch(e){}
-        try { oml2d && oml2d.statusBar && oml2d.statusBar.setRest && oml2d.statusBar.setRest('看板娘休息中', '💤') } catch(e){}
+        try { window.__oml2dChat && window.__oml2dChat.onReady && window.__oml2dChat.onReady(oml2d) } catch(e){}
         }
