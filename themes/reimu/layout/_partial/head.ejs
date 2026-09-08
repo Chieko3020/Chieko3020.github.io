@@ -42,7 +42,7 @@
     <%- css(theme.vendor.css.fontawesome.high_priority.map(i => ({href: vendorCdn(i)[0], integrity: vendorCdnIntegrity(i)[0], crossorigin: "anonymous"}))) %>
     <%- asyncCss(theme.vendor.css.fontawesome.low_priority.map(i => ({href: vendorCdn(i)[0], integrity: vendorCdnIntegrity(i)[0], crossorigin: "anonymous"}))) %>
   <%_ } else { _%>
-    <link rel="preload" href="//at.alicdn.com/t/c/font_<%- theme.icon_font %>.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="/fonts/iconfont.woff2" as="font" type="font/woff2" crossorigin="anonymous">
   <%_ } _%>
   <%_ if (theme.preloader.enable) { _%>
     <%- css('css/loader') %>

@@ -502,7 +502,28 @@
         if (!defaultSelectorItem) return;
         defaultSelectorItem.style.display = 'block';
         defaultSelectorItem.classList.add('active');
-        loadCommentSystem(defaultComment);
+
+        // 延迟到评论区块接近视口才真正加载评论系统 JS，
+        // 避免每个文章页 DOMContentLoaded 后立即拉取 twikoo(595KB) 等脚本
+        const defaultContainer = document.querySelector(`.${defaultComment}-comment`);
+        const startDefaultLoad = () => {
+          loadCommentSystem(defaultComment);
+          if (defaultObserver) defaultObserver.disconnect();
+        };
+        let defaultObserver = null;
+        if (defaultContainer && 'IntersectionObserver' in window) {
+          defaultObserver = new IntersectionObserver(
+            (entries) => {
+              entries.forEach((entry) => {
+                if (entry.isIntersecting) startDefaultLoad();
+              });
+            },
+            { rootMargin: '600px 0px' } // 进入视口前 600px 预载
+          );
+          defaultObserver.observe(defaultContainer);
+        } else {
+          startDefaultLoad();
+        }
       }
     }
 

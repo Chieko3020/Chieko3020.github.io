@@ -9,83 +9,104 @@
     "beforeend",
     '<form id="search-form"><input type="text" id="search-text"></form>'
   );
+
+  // 懒加载：search.json（含全文摘要索引）仅在用户首次打开搜索框时才 fetch，
+  // 避免每个页面无条件多下载几百 KB。
+  let dataLoaded = false;
+  let searchDataPromise = null;
+
   const baseUrl = window.REIMU_CONFIG?.base;
   const searchUrl = baseUrl
     ? new URL("search.json", baseUrl.replace(/\/?$/, "/")).toString()
     : "/search.json";
-  fetch(searchUrl)
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Network response was not ok " + response.statusText);
-      }
-      return response.json();
-    })
-    .then((data) => {
-      _$("#search-form")
-        .off("submit")
-        .on("submit", (event) => {
-          event.preventDefault();
-          const inputText = _$("#search-text").value;
-          searchResult.innerHTML = "";
-          pagination.innerHTML = "";
-          currentPage = 1;
-          if (inputText) {
-            const hits = data.filter((post) => {
-              return (
-                (post.title &&
-                  post.title.toLowerCase().includes(inputText.toLowerCase())) ||
-                (post.content &&
-                  post.content.toLowerCase().includes(inputText.toLowerCase()))
-              );
-            });
 
-            const totalPages = Math.ceil(hits.length / itemsPerPage);
-            pagination.insertAdjacentHTML(
-              "beforeend",
-              '<ul class="ais-Pagination-list pagination">'
-            );
-            for (let i = 1; i <= totalPages; i++) {
-              const pageItem = document.createElement("li");
-              pageItem.className =
-                "ais-Pagination-item pagination-item ais-Pagination-item--page";
-              pageItem.innerHTML = `<a class="ais-Pagination-link page-number" aria-label="Page ${i}" href="#">${i}</a>`;
-              if (i === currentPage) {
-                pageItem.classList.add(
-                  "ais-Pagination-item--selected",
-                  "current"
+  const ensureSearchData = () => {
+    if (searchDataPromise) return searchDataPromise;
+    searchDataPromise = fetch(searchUrl)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(
+            "Network response was not ok " + response.statusText
+          );
+        }
+        return response.json();
+      })
+      .then((data) => {
+        dataLoaded = true;
+        _$("#search-form")
+          .off("submit")
+          .on("submit", (event) => {
+            event.preventDefault();
+            const inputText = _$("#search-text").value;
+            searchResult.innerHTML = "";
+            pagination.innerHTML = "";
+            currentPage = 1;
+            if (inputText) {
+              const hits = data.filter((post) => {
+                return (
+                  (post.title &&
+                    post.title
+                      .toLowerCase()
+                      .includes(inputText.toLowerCase())) ||
+                  (post.content &&
+                    post.content
+                      .toLowerCase()
+                      .includes(inputText.toLowerCase()))
                 );
-              }
-              pagination.querySelector("ul").appendChild(pageItem);
-            }
+              });
 
-            _$$(".page-number").forEach((element) => {
-              element.off("click").on("click", (event) => {
-                event.preventDefault();
-                currentPage = element.innerText;
-                _$$(".ais-Pagination-item").forEach((element) => {
-                  element.classList.remove(
+              const totalPages = Math.ceil(hits.length / itemsPerPage);
+              pagination.insertAdjacentHTML(
+                "beforeend",
+                '<ul class="ais-Pagination-list pagination">'
+              );
+              for (let i = 1; i <= totalPages; i++) {
+                const pageItem = document.createElement("li");
+                pageItem.className =
+                  "ais-Pagination-item pagination-item ais-Pagination-item--page";
+                pageItem.innerHTML = `<a class="ais-Pagination-link page-number" aria-label="Page ${i}" href="#">${i}</a>`;
+                if (i === currentPage) {
+                  pageItem.classList.add(
                     "ais-Pagination-item--selected",
                     "current"
                   );
-                });
-                element.parentNode.classList.add(
-                  "ais-Pagination-item--selected",
-                  "current"
-                );
-                displayHits(hits, currentPage, itemsPerPage);
-              });
-            });
+                }
+                pagination.querySelector("ul").appendChild(pageItem);
+              }
 
-            displayHits(hits, currentPage, itemsPerPage);
-          }
-        });
-    })
-    .catch((error) => {
-      console.error(
-        "There has been a problem with your fetch operation:",
-        error
-      );
-    });
+              _$$(".page-number").forEach((element) => {
+                element.off("click").on("click", (event) => {
+                  event.preventDefault();
+                  currentPage = element.innerText;
+                  _$$(".ais-Pagination-item").forEach((element) => {
+                    element.classList.remove(
+                      "ais-Pagination-item--selected",
+                      "current"
+                    );
+                  });
+                  element.parentNode.classList.add(
+                    "ais-Pagination-item--selected",
+                    "current"
+                  );
+                  displayHits(hits, currentPage, itemsPerPage);
+                });
+              });
+
+              displayHits(hits, currentPage, itemsPerPage);
+            }
+          });
+        return data;
+      })
+      .catch((error) => {
+        console.error(
+          "There has been a problem with your fetch operation:",
+          error
+        );
+        searchDataPromise = null; // 允许重试
+        throw error;
+      });
+    return searchDataPromise;
+  };
 
   function displayHits(hits, page, itemsPerPage) {
     searchResult.innerHTML = "";
@@ -113,6 +134,8 @@
       popup.classList.add("show");
       _$("#mask").classList.remove("hide");
       document.body.style.overflow = "hidden";
+      // 打开搜索框的同时预取索引（首次）
+      ensureSearchData().catch(() => {});
       setTimeout(() => {
         _$("#reimu-search-input input")?.focus();
       }, 100);
