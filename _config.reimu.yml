@@ -85,7 +85,7 @@ rss:
 # a very simple alternative for https://hexo.io/api/injector
 injector:
   head_begin: # Inject code snippet right after <head>
-  head_end: # Inject code snippet right before </head>
+  head_end: '<link rel="stylesheet" href="/css/forgejo-icon.css">' # Forgejo 社交图标样式（主题 iconfont 无此字形）
   body_begin: # Inject code snippet right after <body>
   body_end: # Inject code snippet right before </body>
   sidebar_begin: # Inject code snippet right after <aside>
@@ -116,6 +116,7 @@ sidebar: right
 social:
   # email: mailto:xxx@gmail.com
   github: https://github.com/Chieko3020
+  forgejo: https://git.chieko3020.xyz/Chieko3020
   # google: https://plus.google.com/yourname
   # twitter: https://twitter.com/yourname
   # facebook: https://www.facebook.com/yourname
