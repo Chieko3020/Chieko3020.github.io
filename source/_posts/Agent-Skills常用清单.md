@@ -4,7 +4,7 @@ date: 2026-11-14 18:00:00
 updated: 2026-11-14 18:00:00
 tags: "你知道吗"
 categories: "只属于你的小妙招 <br> 看似有用实则没用"
-cover: /images/画廊/pixiv/112432125_p0.webp
+cover: /images/画廊/pixiv/150179065_p0_master1200.webp
 excerpt: 用 315 个会话日志统计出真正在用的 Agent Skills，按工作流讲清每个技能解决什么问题、怎么用、以及背后的取舍
 mermaid: false
 ---

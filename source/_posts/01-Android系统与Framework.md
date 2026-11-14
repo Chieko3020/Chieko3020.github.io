@@ -4,7 +4,7 @@ date: 2026-11-14 03:50:00
 updated: 2026-11-14 03:50:00
 tags: "你知道吗"
 categories: "只属于你的小妙招 <br> 看似有用实则没用"
-cover: /images/画廊/pixiv/107752063_p0.webp
+cover: /images/画廊/pixiv/149674760_p0_master1200.webp
 excerpt: 某 Android 系统开发岗的面试复盘，逐题记录当时的回答、参考答案与相关知识点：分层、启动流程、Framework 角色、HAL、音频服务
 mermaid: true
 ---
@@ -229,11 +229,11 @@ Binder 是 IPC 机制，横跨三层：
 
 - BootROM 加载硬件 ROM 代码，然后跳转内核。
 - 内核启动文件系统、调度，创建 init。
-- init 初始化类和资源，加载 rc 文件，按顺序创建服务。
+- init 初始化类和资源，加载 rc 文件，按顺序创建 AMS，PMS，WMS 等服务。
 - zygote 是所有 app 的父进程。
 - Launcher 由 AMS 的 systemReady 启动，依赖 PMS 绘制 UI，又改口说 WMS。
 
-错在三处：init 不做“初始化类和资源”，那是 zygote；没提 init 启动 zygote，也没提 zygote 的 socket 监听；Launcher 的依赖说成 PMS 或 WMS，实际是 PMS 解析 HOME Intent、WMS 管窗口、SurfaceFlinger 合成。
+错在三处：init 不做“初始化类和资源”，那是 zygote，AMS、PMS、WMS 这些服务是 system_server 启动的；没提 init 启动 zygote，也没提 zygote 的 socket 监听；Launcher 的依赖说成 PMS 或 WMS，实际是 PMS 解析 HOME Intent、WMS 管窗口、SurfaceFlinger 合成。
 
 ## 参考答案
 
@@ -311,7 +311,7 @@ zygote 的入口是 `app_process`，它启动 ART 运行时，执行 `ZygoteInit
 - 设置 capabilities。
 - 关闭不需要的 fd。
 
-用 fork 而不是 exec，是因为 fork 能继承预加载好的 ART、类和资源，省去重复初始化。代价是 zygote 的内存被所有子进程共享（写时复制），zygote 本身不能随便改状态。
+Zygote 在创建 App 进程时，采用 fork 后不 exec 的路线，而不是传统的 fork + execve，是因为 fork 能继承预加载好的 ART、类和资源，省去重复初始化。代价是 zygote 的内存被所有子进程共享（写时复制），一旦发生写操作就会触发写时复制，同时还会带来状态污染风险，因此 Zygote 主线程必须尽量维持干净、只读的状态，zygote 本身不能随便改状态。
 
 ### system_server
 
@@ -426,7 +426,7 @@ on boot
 
 A/B 设备有两个 slot，bootloader 根据 `misc` 分区里的 `bootloader_control` 选择从哪个 slot 启动。更新时写入非活动 slot，重启切换。首次启动成功后，framework 调 `markBootSuccessful`，失败则按重试次数回滚。
 
-这套机制让 OTA 失败不至于变砖，但也让启动链路多了一层 slot 选择，排查时要先确认当前 slot 与启动成功标记。
+这套机制让 OTA 升级系统分区失败不至于变砖，但也让启动链路多了一层 slot 选择，排查时要先确认当前 slot 与启动成功标记。
 
 
 ### 启动日志怎么读
@@ -538,7 +538,7 @@ Framework 的价值是把这三段包起来，给 App 一个稳定的 API。App 
 | AudioService | 音频焦点、音量曲线、ringer mode |
 | InputManagerService | 输入设备管理、事件分发入口 |
 
-Android 10 之后，AMS 拆出 ATMS，Activity 与任务栈归 ATMS，进程与内存归 AMS。面试时把这两者说反，会显得没跟上版本变化。
+Android 10 之后，AMS 拆出 ATMS，Activity 与任务栈归 ATMS，进程与内存归 AMS。
 
 ### 三种通信方式
 
@@ -572,7 +572,7 @@ WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVI
 | 媒体编解码 | mediaserver 或应用进程 | C++ |
 | 相机 | cameraserver | C++ |
 
-Java framework 通过 Binder 调这些 native 服务，native 服务再通过 HAL 访问硬件。所以“音频是 Framework 做的”这句话不准确，准确说法是“Java 层有 AudioService 管策略，native 层有 AudioFlinger 管流”。
+Java framework 通过 Binder 调这些 native 服务，native 服务再通过 HAL 访问硬件。
 
 ### 源码位置
 
@@ -986,7 +986,7 @@ hal_server_domain(hal_audio_default, hal_audio);
 
 ## 我的回答
 
-我把三个服务混着说：有时说 AudioService 管路由，有时说 AudioFlinger 管策略，中间还改口。复盘时看，问题在于没有按“进程、语言、职责”三个维度把三者分开。
+我把三个服务混着说：有时说 AudioService 管路由，有时说 AudioFlinger 管策略，复盘时看，问题在于没有按“进程、语言、职责”三个维度把三者分开。
 
 ## 参考答案
 
@@ -1130,7 +1130,7 @@ flowchart LR
 - HIDL：`android.hardware.audio@x.x`，独立服务或 passthrough。
 - AIDL：`android.hardware.audio.core`，新平台默认。
 
-AudioFlinger 通过 `loadHwModule` 加载模块，再打开输入/输出流。不同代 HAL 的接口不同，但“打开设备、读写流、设置参数”的基本模型一致。
+AudioFlinger 通过 `loadHwModule` 加载模块，再打开输入/输出流。不同版本 HAL 的接口不同，但“打开设备、读写流、设置参数”的基本模型一致。
 
 ### 常见音频问题
 

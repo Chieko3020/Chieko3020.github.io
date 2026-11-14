@@ -4,7 +4,7 @@ date: 2026-11-14 19:30:00
 updated: 2026-11-14 19:30:00
 tags: "你知道吗"
 categories: "只属于你的小妙招 <br> 看似有用实则没用"
-cover: /images/画廊/pixiv/112432125_p0.webp
+cover: /images/画廊/pixiv/149673605_p0_master1200.webp
 excerpt: DSH 没有原生记忆机制，Hermes 有一套带字符上限的策展式记忆。这个插件让两边共用同一份记忆文件，写回后自动归档可回滚
 mermaid: false
 ---
