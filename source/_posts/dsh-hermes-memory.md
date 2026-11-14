@@ -1,5 +1,5 @@
 ---
-title: 两个 Agent 共用一份记忆：dsh-hermes-memory 插件
+title: DSH 复用 hermes 记忆机制插件
 date: 2026-11-14 19:30:00
 updated: 2026-11-14 19:30:00
 tags: "你知道吗"
