@@ -83,6 +83,29 @@ cover: /images/画廊/Arcara/1-1.webp
 ![魔法少女的魔女裁判 400](/images/画廊/Majo%20Saiban/Still_400_002.webp)
 {% endgallery %}
 
+<!-- tab GPT -->
+{% gallery %}
+![GPT 插画 01](/images/画廊/GPT/gpt_anime_01.webp)
+![GPT 插画 02](/images/画廊/GPT/gpt_anime_02.webp)
+![GPT 插画 03](/images/画廊/GPT/gpt_anime_03.webp)
+![GPT 插画 04](/images/画廊/GPT/gpt_anime_04.webp)
+![GPT 插画 05](/images/画廊/GPT/gpt_anime_05.webp)
+![GPT 插画 06](/images/画廊/GPT/gpt_anime_06.webp)
+![GPT 插画 07](/images/画廊/GPT/gpt_anime_07.webp)
+![GPT 插画 08](/images/画廊/GPT/gpt_anime_08.webp)
+![GPT 插画 09](/images/画廊/GPT/gpt_anime_09.webp)
+![GPT 插画 10](/images/画廊/GPT/gpt_anime_10.webp)
+![GPT 插画 11](/images/画廊/GPT/gpt_anime_11.webp)
+![GPT 插画 12](/images/画廊/GPT/gpt_anime_12.webp)
+![GPT 无限暖暖 01](/images/画廊/GPT/gpt_nikki_01.webp)
+![GPT 无限暖暖 02](/images/画廊/GPT/gpt_nikki_02.webp)
+![GPT 无限暖暖 03](/images/画廊/GPT/gpt_nikki_03.webp)
+![GPT 无限暖暖 04](/images/画廊/GPT/gpt_nikki_04.webp)
+![GPT 无限暖暖 05](/images/画廊/GPT/gpt_nikki_05.webp)
+![GPT 无限暖暖 06](/images/画廊/GPT/gpt_nikki_06.webp)
+![GPT 无限暖暖 07](/images/画廊/GPT/gpt_nikki_07.webp)
+{% endgallery %}
+
 <!-- tab 图灵的诅咒 -->
 <blockquote class="warning custom-block">
 <p class="custom-block-title">观前提醒</p>
