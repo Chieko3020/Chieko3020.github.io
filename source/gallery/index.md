@@ -104,6 +104,15 @@ cover: /images/画廊/Arcara/1-1.webp
 ![GPT 无限暖暖 05](/images/画廊/GPT/gpt_nikki_05.webp)
 ![GPT 无限暖暖 06](/images/画廊/GPT/gpt_nikki_06.webp)
 ![GPT 无限暖暖 07](/images/画廊/GPT/gpt_nikki_07.webp)
+![DeepSeek Smile](/images/画廊/GPT/01_DeepSeek_Smile.webp)
+![GPT Sister](/images/画廊/GPT/02_GPT_Sister.webp)
+![Grok Sweet](/images/画廊/GPT/03_Grok_Sweet.webp)
+![Claude Upright](/images/画廊/GPT/04_Claude_Upright.webp)
+![Gemini Surprise](/images/画廊/GPT/05_Gemini_Surprise.webp)
+![Qwen Service](/images/画廊/GPT/06_Qwen_Service.webp)
+![Kimi Symphony](/images/画廊/GPT/07_Kimi_Symphony.webp)
+![GLM Silence](/images/画廊/GPT/08_GLM_Silence.webp)
+![Claude Suspended](/images/画廊/GPT/09_Claude_Original_Inverted.webp)
 {% endgallery %}
 
 <!-- tab 图灵的诅咒 -->
