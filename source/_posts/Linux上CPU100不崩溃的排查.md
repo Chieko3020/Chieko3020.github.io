@@ -1,5 +1,5 @@
 ---
-title: Linux 上 CPU 100% 不崩溃的排查
+title: Linux上程序跑满100% CPU却不崩溃的排查办法
 date: 2026-11-25 12:00:00
 updated: 2026-11-25 12:00:00
 tags: "你知道吗"
