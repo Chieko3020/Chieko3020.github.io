@@ -32,6 +32,7 @@ skip_render:
   - assets/vendor/**
   - fonts/**
   - live2d/**
+  - "2026/11/25/Linux上CPU100不崩溃的排查/**"
 
 # Writing
 new_post_name: :title.md # File name of new posts
