@@ -117,6 +117,7 @@ flamegraph.pl out.folded > out.svg
 ## gdb 和线程栈
 
 - 不想交互时，用 batch 一次打完所有线程：`gdb -p PID -batch -ex 'set pagination off' -ex 'thread apply all bt'`。
+- 线上优先 perf：它采样而不是停住进程；gdb attach 会暂停，适合需要看局部变量、或者 perf 权限或符号不可用时。
 - 需要反复采样时，进入交互式 gdb。`gdb -p PID` 是附加到进程；`gdb attach PID` 不是 shell 命令，`attach` 是 gdb 内部的命令，进入 gdb 后再执行 `attach PID`。
 - `info threads` 列出所有线程。最左边的编号是 gdb 的线程编号，紧跟着的才是系统 TID；`thread <编号>` 用的是 gdb 编号，不是 TID。
 - 切到热点线程后连续执行几次 `bt` 或 `bt full`。栈顶固定在同一处，偏向死循环或自旋；栈在推进、函数不断变化，偏向真实计算。
@@ -210,6 +211,7 @@ for (;;) {
 | 数字对不上 | 容器或虚拟机 | cgroup 配额、steal、Irix/Solaris 模式 | 换算口径，查宿主 |
 
 - 这张表只能给方向，最终还是要落到栈和系统调用上。采样到同一行代码后，再回到源码检查循环条件和错误处理。
+- 死循环不一定是 `while (true)`：`for` 条件恒真、状态机没有出口、回调重入、事件循环空转都可能。
 - 死递归不是永久不崩：栈还在增长时进程看起来只是 CPU 高，继续跑最终会触发栈溢出；观察时间短不代表安全。
 - 共享停止标志是最容易写错的一类。普通 bool 被多个线程读写属于数据竞争，编译器可能把读提升到寄存器，循环看不到修改；`volatile` 不是同步手段，应该用 `std::atomic<bool>`，或者用 mutex/condition_variable 等待。
 
