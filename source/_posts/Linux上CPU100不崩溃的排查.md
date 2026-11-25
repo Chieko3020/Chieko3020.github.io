@@ -11,7 +11,7 @@ mermaid: false
 
 - 某次面试被问到：一个 C++ 程序在 Linux 上跑着，CPU 占了 100%，但进程没有崩溃，可能是什么原因，怎么排查，能用哪些工具。
 - 当时把 top、gdb、strace、perf 都提了一遍，但没有讲清楚先看什么、怎么从“哪个进程”收敛到“哪一行代码”。这里按实际排查顺序重写一份。
-- 约定：程序是 Linux 用户态 C++，分配器以 glibc 为主。
+- 约定：程序是 Linux 用户态 C++。
 
 # 太长不看 ？
 
@@ -24,6 +24,8 @@ mermaid: false
 
 - top 里的 %CPU 是任务占用的 CPU 时间比例，不是“整机跑了多少”。在 SMP 机器上，如果不开线程模式，多线程进程的 %CPU 可以超过 100%。
 - 单核 100% 和多核 100% 是两件事。一个线程死循环能让一核跑满；在八核机器上，八个线程各跑满一核，进程的 %CPU 可以到 800%。
+- top 里按 `H` 打开线程视图后，显示的是 LWP，也就是内核线程 ID（TID），不是 pthread_t。pthread_t 是线程库的句柄，两者不能直接对照；perf、gdb 和 /proc 里的线程都用 TID。
+- CPU 100% 和内存越界是两类现象。越界通常直接触发 SIGSEGV，程序会崩；本题强调不崩溃，排查重点在循环、自旋和事件空转。
 - 容器里的 100% 可能只是把 cgroup 的 cpu.max 配额用满了，宿主机整体并不忙。
 - 虚拟机的 st（steal）是 hypervisor 拿走的时间，进程并没有真正跑；st 高的时候，先怀疑宿主超卖。
 - “没有崩溃”排除了几类情况：没有收到致命信号，没有生成 core，没有被 OOM killer 杀掉。剩下的通常是纯用户态循环，或者内核态的自旋和系统调用风暴。
@@ -31,9 +33,11 @@ mermaid: false
 # 第一步：定位到进程和线程
 
 - 先看整机：`top` 或 `htop`，按 CPU 排序，记下 PID、%CPU、%MEM、STAT。
+- 只看一个进程可以用 `top -p PID`，避免被其他进程干扰。
 - 再看线程：`top -H -p PID`，或者在 top 里按 `H`。多线程程序里，通常只有一两个线程是热的。
-- `ps -L -p PID -o pid,tid,pcpu,stat,wchan:24,comm` 能一次看到线程号、CPU、状态和睡眠点。
+- `ps -T -p PID` 和 `ps -L -p PID -o pid,tid,pcpu,stat,wchan:24,comm` 都能看到线程；`ps -T` 输出里的 SPID 就是 TID。
 - `pidstat -t -p PID 1` 按秒刷新线程级数据，适合观察波动。
+- `/proc/PID/status` 里有 Threads 和 VmRSS，`ls /proc/PID/task/` 能直接列出所有 TID，适合快速确认线程数。
 - `/proc/PID/stat` 里的 utime 和 stime 是进程累计的用户态和内核态时间，单位是 clock tick，通常要除以 `sysconf(_SC_CLK_TCK)` 换成秒；同文件的 num_threads 是线程数，rss 是常驻页数。
 - 每个线程在 `/proc/PID/task/TID/stat` 下也有一份同样的数据。
 - `/proc/PID/schedstat` 的三个数分别是运行时间、在运行队列里等待的时间、时间片次数。运行时间高说明真的在算，等待时间高说明在排队。
@@ -41,13 +45,17 @@ mermaid: false
 ```bash
 # 找到吃 CPU 的进程
 top -b -n1 -o %CPU | head -20
+top -p <pid>
 
 # 看进程内哪个线程在跑
 top -H -p <pid>
+ps -T -p <pid>
 ps -L -p <pid> -o pid,tid,pcpu,stat,wchan:24,comm
 pidstat -t -p <pid> 1
 
 # 直接读内核记账
+cat /proc/<pid>/status
+ls /proc/<pid>/task/
 cat /proc/<pid>/stat
 cat /proc/<pid>/task/<tid>/stat
 cat /proc/<pid>/schedstat
@@ -108,16 +116,33 @@ flamegraph.pl out.folded > out.svg
 
 ## gdb 和线程栈
 
-- `gdb -p PID -batch -ex 'set pagination off' -ex 'thread apply all bt'` 打出所有线程的栈，不需要交互。
+- 不想交互时，用 batch 一次打完所有线程：`gdb -p PID -batch -ex 'set pagination off' -ex 'thread apply all bt'`。
+- 需要反复采样时，进入交互式 gdb。`gdb -p PID` 是附加到进程；`gdb attach PID` 不是 shell 命令，`attach` 是 gdb 内部的命令，进入 gdb 后再执行 `attach PID`。
+- `info threads` 列出所有线程。最左边的编号是 gdb 的线程编号，紧跟着的才是系统 TID；`thread <编号>` 用的是 gdb 编号，不是 TID。
+- 切到热点线程后连续执行几次 `bt` 或 `bt full`。栈顶固定在同一处，偏向死循环或自旋；栈在推进、函数不断变化，偏向真实计算。
+- `bt full` 会打印局部变量，但 -O2 下常见 `<optimized out>`。perf 采样对局部变量不敏感，但内联和缺帧指针同样会影响调用链；想看局部变量则更依赖 `-g` 和优化等级。
+- attach 期间进程会暂停，CPU 占用掉到 0 是正常的；排查完执行 `detach`，再 `quit`。不要用 `kill`，否则进程会直接退出。
 - `gcore PID` 把现场保留成 core，之后慢慢分析；`eu-stack -p PID` 和 `pstack PID` 也能直接打栈。gcore 随 gdb 提供，eu-stack 来自 elfutils，pstack 是 gdb 的包装脚本，部分发行版需要额外安装。
 - 看栈时抓几个特征：同一个函数反复出现在栈顶，通常是死循环；栈里出现 `__lll_lock_wait`、`futex`，是锁等待或锁竞争；栈里是 `epoll_wait`、`accept`、`read`，说明在系统调用附近打转。
-- attach 会让进程短暂停下，生产环境先评估影响。在常见的 `ptrace_scope=1` 下，普通用户通常只能 attach 自己的子进程。
+- attach 需要 ptrace 权限。在常见的 `ptrace_scope=1` 下，普通用户通常只能 attach 自己的子进程。
+- gdb、perf、strace 不要同时挂在同一个进程上，互相干扰，也会改变时序；一次只用一个工具。
 - 没有符号时栈里只有地址，排查前要保留带 `-g` 的二进制和 debug symbol。
 
 ```bash
+# 非交互，一次打完
 gdb -p <pid> -batch \
     -ex 'set pagination off' \
     -ex 'thread apply all bt'
+
+# 交互式，反复看栈
+gdb -p <pid>
+(gdb) set pagination off
+(gdb) info threads
+(gdb) thread 3
+(gdb) bt
+(gdb) bt full
+(gdb) detach
+(gdb) quit
 
 gcore <pid>
 eu-stack -p <pid>
@@ -142,6 +167,7 @@ pstack <pid>
 bpftrace -e 'profile:hz:99 /pid == 1234/ { @[ustack] = count(); }'
 ```
 
+- strace 的读法：CPU 满但几乎看不到 syscall，基本是纯用户态循环；如果 epoll_wait、accept、read 反复返回，查事件触发和 fd 状态。`strace -c` 的次数要和请求量对照，不能只看绝对值。
 - 系统调用层面的典型空转有几类：
   - `accept` 返回 EMFILE 后没有退避，监听 fd 一直可读，循环立刻再次 accept。
   - `epoll_wait` 因为 EPOLLHUP 或 EPOLLERR 立即返回，fd 没有关闭，事件一直就绪。
@@ -170,6 +196,9 @@ for (;;) {
 | 现象 | 现场特征 | 常见根因 | 处理方向 |
 | --- | --- | --- | --- |
 | 单线程 100%，栈顶固定 | 同一函数反复采样到 | 死循环、状态机没有出口、重试没有退避 | 加日志和断言，检查循环条件与退出路径 |
+| 死递归或深递归 | 栈里大量重复帧 | 递归没有终止条件、嵌套解析没有深度上限 | 加深度上限，改迭代 |
+| 停止标志未同步 | 循环读普通 bool，栈顶在循环 | 数据竞争，编译器把读提升到寄存器 | 用 std::atomic 或 mutex/condition_variable |
+| 消息或定时器风暴 | 回调反复执行，epoll_wait/read/write 高频 | 队列无背压、定时器重叠 | 限流、合并定时器、背压 |
 | 多线程 100%，栈在 futex | `__lll_lock_wait`、`futex` | 锁竞争、临界区过大、自旋锁 | 缩小临界区，分片锁，读写分离 |
 | CPU 高但吞吐不涨 | epoll_wait 立即返回 | EPOLLHUP/ERR、fd 泄漏、ET 未读完 | 处理错误事件，关闭 fd，读到 EAGAIN |
 | 大量 accept 失败 | EMFILE、ENFILE | 文件描述符耗尽 | 提高 limit，预留 fd，失败后退避 |
@@ -181,10 +210,29 @@ for (;;) {
 | 数字对不上 | 容器或虚拟机 | cgroup 配额、steal、Irix/Solaris 模式 | 换算口径，查宿主 |
 
 - 这张表只能给方向，最终还是要落到栈和系统调用上。采样到同一行代码后，再回到源码检查循环条件和错误处理。
+- 死递归不是永久不崩：栈还在增长时进程看起来只是 CPU 高，继续跑最终会触发栈溢出；观察时间短不代表安全。
+- 共享停止标志是最容易写错的一类。普通 bool 被多个线程读写属于数据竞争，编译器可能把读提升到寄存器，循环看不到修改；`volatile` 不是同步手段，应该用 `std::atomic<bool>`，或者用 mutex/condition_variable 等待。
+
+```cpp
+// 错误：普通 bool 被多个线程读写，属于数据竞争
+bool stop = false;
+
+void worker() {
+    while (!stop) {
+        // 空转
+    }
+}
+
+// 修复：改用原子变量；volatile 不提供同步
+std::atomic<bool> stop_atomic{false};
+```
+
+- pthread_mutex 抢不到时会进入 futex 等待，通常不再占 CPU；spinlock 会一直自旋。std::mutex 在进入 futex 前可能短暂自旋，不能简单说完全不占 CPU。持续 100% 且栈在 futex 或原子变量自旋，才更像锁竞争。
 
 # 第六步：修复和验证
 
 - 先做可复现的最小输入。死循环往往依赖某个边界条件，能稳定复现再改。
+- 在循环入口加计数日志或埋点，观察迭代速度；日志要限速，避免把 CPU 问题变成 IO 问题。
 - 修完用同一份压测对比：`perf stat` 的 cycles、instructions、IPC、context-switches，`pidstat` 的 CPU 曲线，`strace -c` 的调用次数。
 - 观察要覆盖长时间运行，短时间不涨不代表没问题；定时器、重连、缓存淘汰这些问题经常在几小时后才出现。
 - 监控上至少放进程 CPU、线程 CPU、系统调用速率、运行队列长度、cgroup throttling 五项。只放一个进程 CPU，无法区分用户态、内核态和限流。
@@ -211,12 +259,15 @@ for (;;) {
 | 目的 | 命令 | 备注 |
 | --- | --- | --- |
 | 找进程 | `top -b -n1 -o %CPU` | 先看全局 |
+| 只看一个进程 | `top -p PID` | 排除其他进程干扰 |
 | 找线程 | `top -H -p PID` | 或 ps -L |
+| 线程列表 | `ps -T -p PID` | SPID 就是 TID |
 | 线程级采样 | `pidstat -t -p PID 1` | sysstat 包 |
 | 每核分布 | `mpstat -P ALL 1` | 区分单核和多核 |
 | 实时热点 | `perf top -p PID` | 需要符号和权限 |
 | 采样调用链 | `perf record -F 99 -g -p PID -- sleep 30` | 帧指针缺失时用 dwarf |
 | 线程栈 | `gdb -p PID -batch -ex 'thread apply all bt'` | attach 会短暂停顿 |
+| 交互式栈 | `gdb -p PID`，再执行 `info threads`、`bt` | 反复采样看栈是否变化 |
 | 保留现场 | `gcore PID` | 生成 core |
 | 系统调用统计 | `strace -c -p PID` | 开销较大 |
 | 系统调用明细 | `strace -f -tt -T -p PID` | 看单次耗时 |
@@ -229,6 +280,8 @@ for (;;) {
 
 - [top(1) — Linux manual page](https://man7.org/linux/man-pages/man1/top.1.html)
 - [proc_pid_stat(5) — Linux manual page](https://man7.org/linux/man-pages/man5/proc_pid_stat.5.html)
+- [proc_pid_status(5) — Linux manual page](https://man7.org/linux/man-pages/man5/proc_pid_status.5.html)
+- [GDB User Manual](https://sourceware.org/gdb/current/onlinedocs/gdb.html/)
 - [perf-record(1) — Linux manual page](https://man7.org/linux/man-pages/man1/perf-record.1.html)
 - [perf-security — Linux kernel documentation](https://docs.kernel.org/admin-guide/perf-security.html)
 - [Yama — Linux kernel documentation](https://docs.kernel.org/admin-guide/LSM/Yama.html)
